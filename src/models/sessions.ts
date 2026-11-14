@@ -52,9 +52,14 @@ export interface Session {
 
 /**
  * Session rooms are locked while this is false, as in the app: the session
- * page doesn't show a room and editors can't change it. Lists still show it.
+ * page doesn't show a room, lists show "Room TBD", and editors can't change it.
  */
 export const SESSION_ROOMS_ENABLED = false;
+
+/** Where a session is, for lists: "Room TBD" while rooms are locked. */
+export function sessionPlace(s: Pick<Session, 'location'>): string {
+  return SESSION_ROOMS_ENABLED ? s.location : 'Room TBD';
+}
 
 /** The parts of a line that have text, joined with " · ". */
 export function joinParts(...parts: (string | null | undefined)[]): string {

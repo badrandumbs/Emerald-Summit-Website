@@ -58,7 +58,7 @@ vi.mock('../../models/sessions', () => {
     { ...base, id: 'afternoon', title: 'Afternoon registered session', time: '14:15' },
     { ...base, id: 'morning', title: 'Morning registered session', time: '10:30' },
     { ...base, id: 'unregistered', title: 'Unregistered catalogue session', time: '12:00' },
-  ] };
+  ], sessionPlace: () => 'Room TBD' };
 });
 
 import SchedulePage from '../SchedulePage';

@@ -24,7 +24,7 @@ import { useSchedule } from '../context/ScheduleContext';
 import { useNotifications } from '../context/NotificationsContext';
 import { roleByName, roleLabelFor, USER_ROLES } from '../models/roles';
 import { signOut } from '../services/auth';
-import { MOCK_SESSIONS, joinParts } from '../models/sessions';
+import { MOCK_SESSIONS, joinParts, sessionPlace } from '../models/sessions';
 import { useSiteSwitches } from '../services/siteSwitches';
 import BrandMark from './BrandMark';
 import QrPassModal from './QrPassModal';
@@ -162,7 +162,7 @@ function GlobalSearch({ items }: { items: NavItem[] }) {
     ).map((s) => ({
       key: s.id,
       label: s.title,
-      sub: joinParts(showTimes ? s.time : undefined, s.location),
+      sub: joinParts(showTimes ? s.time : undefined, sessionPlace(s)),
       to: `/sessions/${s.id}`,
       icon: CalendarDays,
     }));

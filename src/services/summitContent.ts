@@ -122,7 +122,7 @@ const sessionFromRow = (r: SessionRow): Session => ({
   speaker: '',
   time: displayTime(r.start_time),
   duration: `${Math.max(0, toMinutes(r.end_time) - toMinutes(r.start_time))} min`,
-  // Lists show the room; the session page hides it while rooms are locked.
+  // Lists show "Room TBD" and the session page hides it while rooms are locked.
   location: r.room ?? '',
   room: r.room ?? '',
   description: r.description,

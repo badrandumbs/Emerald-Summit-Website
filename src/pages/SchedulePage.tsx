@@ -14,7 +14,7 @@ import { useSchedule } from '../context/ScheduleContext';
 import { projectProblemMessage } from '../models/registration';
 import { toMinutes, useSummitContent } from '../services/summitContent';
 import { TBD, useSiteSwitches } from '../services/siteSwitches';
-import { MOCK_SESSIONS, type Session } from '../models/sessions';
+import { MOCK_SESSIONS, sessionPlace, type Session } from '../models/sessions';
 import { bookedMinutes, formatMinutes, openSessionsThatFit } from '../models/suggested';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -126,7 +126,7 @@ function ScheduleBody() {
                     <h2 className="text-base font-semibold"><Link to={`/sessions/${s.id}`} className="text-left hover:underline">{s.title}</Link></h2>
                     {s.speaker && <p className="mt-1 text-xs text-muted-foreground">{s.speaker}</p>}
                     <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.description}</p>
-                    {s.location && <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium" style={{ color: accent }}><MapPin className="h-3 w-3" /> {s.location}</p>}
+                    {sessionPlace(s) && <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium" style={{ color: accent }}><MapPin className="h-3 w-3" /> {sessionPlace(s)}</p>}
                   </div>
                   {!managing && <button
                     type="button"

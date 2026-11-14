@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { Check, ChevronLeft, ChevronRight, Lightbulb, Pencil, Plus } from '@/components/icons';
 import { USER_DISCIPLINES, type DisciplineInfo } from '../../models/disciplines';
-import { MOCK_SESSIONS, joinParts, type Session } from '../../models/sessions';
+import { MOCK_SESSIONS, joinParts, sessionPlace, type Session } from '../../models/sessions';
 import { FORMAT_NOTES, TRACKS, tracksForUniverse, type TrackInfo } from '../../models/tracks';
 import { useTheme } from '../../context/ThemeContext';
 import {
@@ -118,9 +118,9 @@ function VerseSessionCard({
       <h3 className="mt-1.5 font-display text-[17px] font-bold leading-snug">
         <Link to={`/sessions/${s.id}`} className="hover:underline">{s.title}</Link>
       </h3>
-      {joinParts(s.speaker, s.location) && (
+      {joinParts(s.speaker, sessionPlace(s)) && (
         <div className="mt-0.5 text-[13px]" style={{ color: vibe.textDim }}>
-          {joinParts(s.speaker, s.location)}
+          {joinParts(s.speaker, sessionPlace(s))}
         </div>
       )}
       {s.trackName && onTrack && (
