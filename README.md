@@ -1756,6 +1756,23 @@ have it yet; see the to-do below.
     Function (deployed Nov 14, 2026; sends through Resend once its key is
     set); SUPABASE.md step 63 and §3d. Upload screenshots to
     the private `bug_report_screenshots` bucket at
+- [ ] **Tracks are sessions** (website, Nov 14, 2026). A discipline page
+  lists its sessions under a **Tracks** heading (was "Sessions") with no row
+  of track chips, and there are no separate track pages (Format, What you
+  can do, More in this discipline). Track chips on Discover use each
+  session's exact title. Schedule cards have no track tag. A session opens
+  inside its discipline's world without reloading it: the list swaps for
+  the session, which grows out of the tap point while the background, motif
+  and flowing border carry on, and Back returns to the list. Opened from
+  anywhere else, the session page is its own full screen in its
+  discipline's world (no tab bar or app bar), growing in like the
+  discipline portal.
+- [ ] **No grey square behind +, −, ✓ and ×** (website, Nov 14, 2026).
+  Phosphor's duotone draws a faint square or rectangle behind bare marks
+  (plus, minus, check, double check, x, three dots, left-right arrows,
+  list/menu, download, scan, terminal, math operations). The website draws
+  those at the regular weight instead; check `duotone_icon.dart` for the
+  same box.
     `<user_id>/<report_id>/<n>.<ext>` (the app picks `report_id`, a UUID),
     then call `submit_bug_report(p_id, p_kind, p_name, p_description,
     p_screenshots, p_client, p_email_copy)`, then invoke
