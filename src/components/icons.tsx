@@ -114,12 +114,21 @@ import {
 export type AppIcon = Icon;
 export type LucideIcon = Icon;
 
-function duotone(Base: Icon, name: string): Icon {
+function duotone(Base: Icon, name: string, weight: IconProps['weight'] = 'duotone'): Icon {
   const Wrapped = forwardRef<SVGSVGElement, IconProps>((props, ref) => (
-    <Base ref={ref} weight="duotone" {...props} />
+    <Base ref={ref} weight={weight} {...props} />
   ));
   Wrapped.displayName = name;
   return Wrapped as Icon;
+}
+
+/**
+ * Bare marks (plus, minus, check, x, dots, arrows, lines) have no shape of
+ * their own, so Phosphor's duotone puts a plain grey square or rectangle
+ * behind them. These draw the mark alone, at the duotone stroke width.
+ */
+function plain(Base: Icon, name: string): Icon {
+  return duotone(Base, name, 'regular');
 }
 
 // Same thing, same icon as the app: tabs are Home, Schedule, Discover, Announcements (News in the app).
@@ -129,7 +138,7 @@ export const Compass = duotone(PhCompass, 'Compass');
 
 export const AlertCircle = duotone(WarningCircle, 'AlertCircle');
 export const AlertTriangle = duotone(Warning, 'AlertTriangle');
-export const ArrowLeftRight = duotone(ArrowsLeftRight, 'ArrowLeftRight');
+export const ArrowLeftRight = plain(ArrowsLeftRight, 'ArrowLeftRight');
 export const ArrowRight = duotone(PhArrowRight, 'ArrowRight');
 export const Award = duotone(Medal, 'Award');
 export const Bell = duotone(PhBell, 'Bell');
@@ -140,8 +149,8 @@ export const CalendarCog = duotone(CalendarCheck, 'CalendarCog');
 export const CalendarDays = duotone(CalendarBlank, 'CalendarDays');
 export const Camera = duotone(PhCamera, 'Camera');
 export const ChartLine = duotone(PhChartLine, 'ChartLine');
-export const Check = duotone(PhCheck, 'Check');
-export const CheckCheck = duotone(Checks, 'CheckCheck');
+export const Check = plain(PhCheck, 'Check');
+export const CheckCheck = plain(Checks, 'CheckCheck');
 export const CheckCircle2 = duotone(CheckCircle, 'CheckCircle2');
 export const ChevronDown = duotone(CaretDown, 'ChevronDown');
 export const ChevronLeft = duotone(CaretLeft, 'ChevronLeft');
@@ -154,8 +163,8 @@ export const Clock3 = duotone(PhClock, 'Clock3');
 export const Copy = duotone(PhCopy, 'Copy');
 export const CornerDownLeft = duotone(ArrowElbowDownLeft, 'CornerDownLeft');
 export const Dna = duotone(PhDna, 'Dna');
-export const Download = duotone(DownloadSimple, 'Download');
-export const MoreHorizontal = duotone(DotsThree, 'MoreHorizontal');
+export const Download = plain(DownloadSimple, 'Download');
+export const MoreHorizontal = plain(DotsThree, 'MoreHorizontal');
 export const Eye = duotone(PhEye, 'Eye');
 export const EyeOff = duotone(EyeSlash, 'EyeOff');
 export const File = duotone(PhFile, 'File');
@@ -178,8 +187,8 @@ export const LogOut = duotone(SignOut, 'LogOut');
 export const Mail = duotone(Envelope, 'Mail');
 export const MapPin = duotone(PhMapPin, 'MapPin');
 export const Megaphone = duotone(PhMegaphone, 'Megaphone');
-export const Menu = duotone(List, 'Menu');
-export const Minus = duotone(PhMinus, 'Minus');
+export const Menu = plain(List, 'Menu');
+export const Minus = plain(PhMinus, 'Minus');
 export const Moon = duotone(PhMoon, 'Moon');
 export const Music = duotone(MusicNotes, 'Music');
 export const Orbit = duotone(Planet, 'Orbit');
@@ -190,13 +199,13 @@ export const Phone = duotone(PhPhone, 'Phone');
 export const Pin = duotone(PushPin, 'Pin');
 export const PinOff = duotone(PushPinSlash, 'PinOff');
 export const Play = duotone(PhPlay, 'Play');
-export const Plus = duotone(PhPlus, 'Plus');
+export const Plus = plain(PhPlus, 'Plus');
 export const Presentation = duotone(PhPresentation, 'Presentation');
 export const QrCode = duotone(PhQrCode, 'QrCode');
 export const RefreshCw = duotone(ArrowClockwise, 'RefreshCw');
 export const Route = duotone(Path, 'Route');
 export const Scale = duotone(Scales, 'Scale');
-export const ScanLine = duotone(Scan, 'ScanLine');
+export const ScanLine = plain(Scan, 'ScanLine');
 export const School = duotone(Buildings, 'School');
 export const ScrollText = duotone(Scroll, 'ScrollText');
 export const Search = duotone(MagnifyingGlass, 'Search');
@@ -211,7 +220,7 @@ export const UserCheck = duotone(PhUserCheck, 'UserCheck');
 export const UserRound = duotone(UserCircle, 'UserRound');
 export const UserX = duotone(UserMinus, 'UserX');
 export const Users = duotone(PhUsers, 'Users');
-export const X = duotone(PhX, 'X');
+export const X = plain(PhX, 'X');
 export const XCircle = duotone(PhXCircle, 'XCircle');
 export const Globe = duotone(PhGlobe, 'Globe');
 export const Instagram = duotone(InstagramLogo, 'Instagram');
@@ -220,12 +229,12 @@ export const MessageSquare = duotone(ChatText, 'MessageSquare');
 
 /** The app's discipline icon keys (disciplineIcon() in models.dart), as Phosphor icons. */
 export const DISCIPLINE_ICONS: Record<string, Icon> = {
-  terminal: duotone(PhTerminal, 'Terminal'),
+  terminal: plain(PhTerminal, 'Terminal'),
   precision_manufacturing: duotone(Robot, 'Robot'),
   biotech: Dna,
   rocket_launch: duotone(Rocket, 'Rocket'),
   palette: Palette,
-  functions: duotone(MathOperations, 'MathOperations'),
+  functions: plain(MathOperations, 'MathOperations'),
   science: duotone(Flask, 'Flask'),
   public: Globe,
   psychology: duotone(Brain, 'Brain'),

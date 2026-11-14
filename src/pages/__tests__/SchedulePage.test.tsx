@@ -26,11 +26,6 @@ vi.mock('../../context/ScheduleContext', () => ({
   useSchedule: () => state.schedule,
 }));
 vi.mock('../../components/AppShell', () => ({ default: ({ children }: { children: ReactNode }) => <div>{children}</div> }));
-vi.mock('../../components/verse/ExploreVerses', () => ({
-  VersePortalProvider: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  TrackTag: ({ track }: { track: string }) => <span>{track}</span>,
-  useOpenVerse: () => vi.fn(),
-}));
 vi.mock('../../context/ThemeContext', () => ({ useTheme: () => ({ theme: 'light' }) }));
 vi.mock('../../services/summitContent', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../services/summitContent')>(),
@@ -121,7 +116,7 @@ describe('personal schedule', () => {
     state.role = 'attendee';
     state.schedule.spectating = ['morning'];
     render(page());
-    expect(screen.getByText('Morning registered session')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Morning registered session' })).toBeInTheDocument();
     expect(screen.getByText('Spectating')).toBeInTheDocument();
   });
 

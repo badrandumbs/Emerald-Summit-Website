@@ -5,7 +5,6 @@ import { CalendarDays, Check, Clock, MapPin, Minus, ArrowRight } from '@/compone
 import AppShell from '../components/AppShell';
 import PageHeader from '../components/PageHeader';
 import TrackPill from '../components/TrackPill';
-import { TrackTag, VersePortalProvider } from '../components/verse/ExploreVerses';
 import { useTheme } from '../context/ThemeContext';
 import { rgba, vibeFor } from '../models/verseVibes';
 import { useRequireRole } from '../hooks/useRequireProfile';
@@ -24,22 +23,6 @@ function startMinutes(session: Session): number {
 }
 
 export default function SchedulePage() {
-  const { profile } = useAuth();
-  const { mySchedule, expertSchedule, volunteerSchedule, spectating } = useSchedule();
-  // Every role can add sessions in the app; the session page offers the role's choices.
-  const canAdd = profile != null;
-  return (
-    <VersePortalProvider
-      mine={new Set([...mySchedule, ...expertSchedule, ...volunteerSchedule, ...spectating])}
-      canSchedule={false}
-      canAdd={canAdd}
-    >
-      <ScheduleBody />
-    </VersePortalProvider>
-  );
-}
-
-function ScheduleBody() {
   useSummitContent();
   const { ready, redirect } = useRequireRole(['participant', 'expert', 'volunteer', 'ambassador', 'attendee', 'admin']);
   const { profile } = useAuth();
@@ -120,7 +103,7 @@ function ScheduleBody() {
                       {justAdded === s.id && <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald"><Check className="h-3 w-3" /> Added</span>}
                     </div>
                     <div className="mb-2 flex flex-wrap items-center gap-2">
-                      {keynote ? <TrackPill track={s.track} /> : <TrackTag verse={s.track} track={s.trackName} />}
+                      {keynote && <TrackPill track={s.track} />}
                       <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><Clock className="h-3 w-3" /> {showTimes ? s.duration : TBD}</span>
                     </div>
                     <h2 className="text-base font-semibold"><Link to={`/sessions/${s.id}`} className="text-left hover:underline">{s.title}</Link></h2>

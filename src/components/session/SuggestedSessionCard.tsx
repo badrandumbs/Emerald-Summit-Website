@@ -11,10 +11,13 @@ import { fetchSessionPhotos } from '../../services/sessionPhotos';
 export default function SuggestedSessionCard({
   session: s,
   time,
+  onOpen,
   onAdd,
 }: {
   session: Session;
   time: string;
+  /** Opens the session in place (inside a discipline's world) instead of following the link. */
+  onOpen?: () => void;
   onAdd: () => void;
 }) {
   const [image, setImage] = useState<string | null>(s.heroImageUrl ?? null);
@@ -36,7 +39,15 @@ export default function SuggestedSessionCard({
 
   return (
     <article className="flex w-56 shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-border bg-card">
-      <Link to={`/sessions/${s.id}`} className="block">
+      <Link
+        to={`/sessions/${s.id}`}
+        className="block"
+        onClick={(e) => {
+          if (!onOpen || e.metaKey || e.ctrlKey || e.shiftKey) return;
+          e.preventDefault();
+          onOpen();
+        }}
+      >
         <div className="grid aspect-video place-items-center bg-muted text-muted-foreground">
           {image && !broken ? (
             <img src={image} alt="" width={224} height={126} loading="lazy" onError={() => setBroken(true)} className="h-full w-full object-cover" />

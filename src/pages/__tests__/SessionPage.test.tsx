@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -33,7 +32,8 @@ vi.mock('../../context/AuthContext', () => ({ useAuth: () => ({
 }) }));
 vi.mock('../../context/ScheduleContext', () => ({ useSchedule: () => state.schedule }));
 vi.mock('../../context/ThemeContext', () => ({ useTheme: () => ({ theme: 'light' }) }));
-vi.mock('../../components/AppShell', () => ({ default: ({ children }: { children: ReactNode }) => <div>{children}</div> }));
+vi.mock('../../components/verse/VerseMotif', () => ({ default: () => null }));
+vi.mock('../../components/verse/FlowingBorder', () => ({ default: () => null }));
 vi.mock('../../components/session/SessionRoster', () => ({ default: () => <p>Roster</p> }));
 vi.mock('../../components/session/SessionVolunteers', () => ({ default: () => <p>Volunteers list</p> }));
 vi.mock('../../components/session/SessionMetrics', () => ({ default: () => <p>Metrics view</p> }));

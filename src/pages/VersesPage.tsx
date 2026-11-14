@@ -1,5 +1,5 @@
 import { useEffect, useState, type KeyboardEvent } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { ArrowRight, Check, Plus } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import NewDisciplineDialog from '../components/verse/NewDisciplineDialog';
@@ -18,7 +18,6 @@ import { ownScheduleKind, useSchedule } from '../context/ScheduleContext';
 import { useTheme } from '../context/ThemeContext';
 import { useRequireProfile } from '../hooks/useRequireProfile';
 import { countWord, USER_DISCIPLINES, type DisciplineInfo } from '../models/disciplines';
-import { tracksForUniverse } from '../models/tracks';
 import { rgba, vibeFor, type VerseVibe } from '../models/verseVibes';
 import { useSummitContent } from '../services/summitContent';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -41,7 +40,7 @@ function useWideScreen(): boolean {
  * The Disciplines tab: every discipline (from the database) side by side, each a panel in its own
  * colors and live motif. On wide screens they sit in a row and the one under
  * the pointer (or keyboard focus) opens up to show its tracks; on phones they
- * stack. Each opens its discipline page, and each track chip opens that track's page.
+ * stack. Each opens its discipline page; a track chip opens it on that session.
  */
 export default function VersesPage() {
   const { profile } = useAuth();
@@ -158,7 +157,6 @@ function VersePanel({
   const openVerse = useOpenVerse();
   const vibe = vibeFor(discipline.name, theme);
   const sessions = sessionsFor(discipline.name);
-  const tracks = tracksForUniverse(discipline.name);
   const seatsOpen = sessions.reduce((sum, s) => sum + Math.max(s.capacity - s.enrolled, 0), 0);
   const onDay = sessions.filter((s) => mine.has(s.id)).length;
   const number = String(index + 1).padStart(2, '0');
@@ -247,9 +245,9 @@ function VersePanel({
           {discipline.description}
         </p>
         <p className="mt-3 text-[14px]">
-          <span className="font-bold">{tracks.length} tracks</span>
+          <span className="font-bold">{sessions.length} {sessions.length === 1 ? 'track' : 'tracks'}</span>
           {' · '}
-          {sessions.length} {sessions.length === 1 ? 'session' : 'sessions'} · {seatsOpen} seats open
+          {seatsOpen} seats open
           {onDay > 0 && (
             <span className="ml-2 inline-flex items-center gap-1 font-bold" style={{ color: vibe.accent }}>
               <Check className="h-3.5 w-3.5" /> {onDay} on your day
@@ -258,14 +256,18 @@ function VersePanel({
         </p>
 
         <div className="pointer-events-auto mt-4 flex flex-wrap gap-2">
-          {tracks.map((name) => (
-            <button
-              key={name}
-              type="button"
+          {/* One chip per session, named exactly like it. It opens the
+              discipline's world straight on that session. */}
+          {sessions.map((s) => (
+            <Link
+              key={s.id}
+              to={`/sessions/${s.id}`}
               tabIndex={stacked || expanded ? 0 : -1}
               onClick={(e) => {
                 e.stopPropagation();
-                openVerse(discipline.name, originOf(e), name);
+                if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+                e.preventDefault();
+                openVerse(discipline.name, originOf(e), s.id);
               }}
               className="rounded-full px-3 py-1 text-[12.5px] font-semibold transition-transform hover:-translate-y-0.5"
               style={{
@@ -274,8 +276,8 @@ function VersePanel({
                 border: `1px solid ${rgba(vibe.accent, 0.32)}`,
               }}
             >
-              {name}
-            </button>
+              {s.title}
+            </Link>
           ))}
         </div>
 

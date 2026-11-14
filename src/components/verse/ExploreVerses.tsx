@@ -1,10 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useNavigate } from 'react-router-dom';
-import { Check, ChevronLeft, ChevronRight, Lightbulb, Pencil, Plus } from '@/components/icons';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Check, ChevronLeft, ChevronRight, Pencil, Plus } from '@/components/icons';
 import { USER_DISCIPLINES, type DisciplineInfo } from '../../models/disciplines';
 import { MOCK_SESSIONS, joinParts, sessionPlace, type Session } from '../../models/sessions';
-import { FORMAT_NOTES, TRACKS, tracksForUniverse, type TrackInfo } from '../../models/tracks';
 import { useTheme } from '../../context/ThemeContext';
 import {
   mixHex,
@@ -14,14 +13,11 @@ import {
 } from '../../models/verseVibes';
 import VerseMotif from './VerseMotif';
 import { useAuth } from '../../context/AuthContext';
-import { canEditVerse, useSummitContent, usesSharedBackend, toMinutes } from '../../services/summitContent';
-import {
-  SessionEditorDialog,
-  TrackEditorDialog,
-  type SessionEditorTarget,
-  type TrackEditorTarget,
-} from './ContentEditors';
+import { canEditVerse, useSummitContent, toMinutes } from '../../services/summitContent';
+import { SessionEditorDialog, type SessionEditorTarget } from './ContentEditors';
 import FlowingBorder from './FlowingBorder';
+import { growIn, useCircleReveal, type Origin } from './useCircleReveal';
+import SessionView from '../session/SessionView';
 import { toast } from 'sonner';
 import { REGISTRATION_CLOSED_MESSAGE, TBD, useSiteSwitches } from '../../services/siteSwitches';
 
@@ -51,27 +47,24 @@ export function VerseBadge({ vibe, size }: { vibe: VerseVibe; size: number }) {
   );
 }
 
-const reducedMotion = () =>
-  typeof window.matchMedia === 'function' &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
 /**
- * A session in a verse's colors, with its track as a link. With onAdd, a +
- * in the top right adds it to the viewer's schedule.
+ * A session in a verse's colors. With onAdd, a + in the top right adds it to
+ * the viewer's schedule.
  */
 function VerseSessionCard({
   session: s,
   vibe,
   mine,
-  onTrack,
+  onOpen,
   onAdd,
   onEdit,
 }: {
   session: Session;
   vibe: VerseVibe;
   mine: Set<string>;
-  onTrack?: (name: string) => void;
-  onAdd?: (id: string) => void;
+  /** Opens the session inside this world instead of following the link. */
+  onOpen?: (id: string, from: Origin) => void;
+  onAdd?: (id: string, from: Origin) => void;
   /** Opens the session editor; only for people who can edit this verse. */
   onEdit?: (session: Session) => void;
 }) {
@@ -111,27 +104,27 @@ function VerseSessionCard({
               <Check className="h-3.5 w-3.5" /> On your day
             </span>
           ) : (
-            onAdd && <AddToScheduleButton vibe={vibe} full={left === 0} onClick={() => onAdd(s.id)} />
+            onAdd && <AddToScheduleButton vibe={vibe} full={left === 0} onClick={(e) => onAdd(s.id, originOf(e))} />
           )}
         </span>
       </div>
       <h3 className="mt-1.5 font-display text-[17px] font-bold leading-snug">
-        <Link to={`/sessions/${s.id}`} className="hover:underline">{s.title}</Link>
+        <Link
+          to={`/sessions/${s.id}`}
+          className="hover:underline"
+          onClick={(e) => {
+            if (!onOpen || e.metaKey || e.ctrlKey || e.shiftKey) return;
+            e.preventDefault();
+            onOpen(s.id, originOf(e));
+          }}
+        >
+          {s.title}
+        </Link>
       </h3>
       {joinParts(s.speaker, sessionPlace(s)) && (
         <div className="mt-0.5 text-[13px]" style={{ color: vibe.textDim }}>
           {joinParts(s.speaker, sessionPlace(s))}
         </div>
-      )}
-      {s.trackName && onTrack && (
-        <button
-          type="button"
-          onClick={() => onTrack(s.trackName!)}
-          className="mt-2 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11.5px] font-semibold transition-transform hover:translate-x-0.5"
-          style={{ background: rgba(vibe.accent, 0.16), color: vibe.accent }}
-        >
-          {s.trackName} <ChevronRight className="h-3 w-3" />
-        </button>
       )}
       <div className="mt-3 h-1 w-full overflow-hidden rounded-sm" style={{ background: vibe.meter }}>
         <div
@@ -143,47 +136,6 @@ function VerseSessionCard({
         {left === 0 ? 'Full' : `${left} of ${s.capacity} seats left`}
       </div>
     </article>
-  );
-}
-
-/** A row of a verse's tracks as chips; the current one is filled. */
-function TrackChips({
-  verse,
-  vibe,
-  current,
-  onPick,
-  onAddTrack,
-}: {
-  verse: string;
-  vibe: VerseVibe;
-  current?: string;
-  onPick: (name: string) => void;
-  /** Shown to people who can edit this verse. */
-  onAddTrack?: () => void;
-}) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {tracksForUniverse(verse).map((name) => {
-        const active = name === current;
-        return (
-          <button
-            key={name}
-            type="button"
-            onClick={() => onPick(name)}
-            aria-current={active || undefined}
-            className="rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition-colors"
-            style={
-              active
-                ? { background: vibe.accent, color: vibe.background }
-                : { background: rgba(vibe.surface, 0.8), color: vibe.text, border: `1px solid ${rgba(vibe.accent, 0.3)}` }
-            }
-          >
-            {name}
-          </button>
-        );
-      })}
-      {onAddTrack && <EditChip vibe={vibe} icon={Plus} label="Add track" onClick={onAddTrack} dashed />}
-    </div>
   );
 }
 
@@ -220,124 +172,122 @@ function EditChip({
 /**
  * A verse's own page, opened as a circle of its color growing out of the
  * point that was clicked (mobile: DisciplinePortalRoute + DisciplineScreen).
- * With `track`, it opens on that track's page instead; the chips switch
- * between the verse and its tracks without leaving the verse's world.
  */
 function VersePage({
   discipline,
   origin,
-  track: initialTrack,
   mine,
   canSchedule,
-  onAdd,
+  canAdd,
   onClosed,
 }: {
   discipline: DisciplineInfo;
-  origin: { x: number; y: number };
-  track?: string;
+  origin: Origin;
   mine: Set<string>;
   canSchedule: boolean;
-  /** Adds a session to the viewer's schedule; no + on the cards without it. */
-  onAdd?: (id: string) => void;
+  /** Shows the + on session cards, which opens the session with its chooser. */
+  canAdd: boolean;
   onClosed: () => void;
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   useSummitContent();
   const { profile } = useAuth();
   const canEdit = canEditVerse(profile, discipline.name);
-  const canEditTracks = canEdit && !usesSharedBackend();
   const [sessionEditor, setSessionEditor] = useState<SessionEditorTarget | null>(null);
-  const [trackEditor, setTrackEditor] = useState<TrackEditorTarget | null>(null);
-  const [trackName, setTrackName] = useState(initialTrack);
-  const track = TRACKS.find((t) => t.verse === discipline.name && t.name === trackName);
-  const scroller = useRef<HTMLDivElement>(null);
-  const show = (name: string | undefined) => {
-    setTrackName(name);
-    scroller.current?.scrollTo({ top: 0 });
-  };
   const { theme } = useTheme();
   const vibe = vibeFor(discipline.name, theme);
   const sessions = sessionsFor(discipline.name);
   const seatsOpen = sessions.reduce((sum, s) => sum + Math.max(s.capacity - s.enrolled, 0), 0);
   const onDay = sessions.filter((s) => mine.has(s.id)).length;
-  const shell = useRef<HTMLDivElement>(null);
-  const content = useRef<HTMLDivElement>(null);
+  const { shell, content, close } = useCircleReveal(origin);
   const backButton = useRef<HTMLButtonElement>(null);
-  const closing = useRef(false);
+  const scroller = useRef<HTMLDivElement>(null);
+  const sessionPane = useRef<HTMLDivElement>(null);
 
-  const farthest = useCallback(() => {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    return Math.max(
-      Math.hypot(origin.x, origin.y),
-      Math.hypot(w - origin.x, origin.y),
-      Math.hypot(origin.x, h - origin.y),
-      Math.hypot(w - origin.x, h - origin.y),
-    );
-  }, [origin]);
+  // A session opens inside this world (?session=id) instead of on a page of
+  // its own, so the background, motif and border carry on untouched and only
+  // the content changes, growing out of the click point.
+  const [params, setParams] = useSearchParams();
+  const sessionId = params.get('session');
+  const shown = sessionId ? MOCK_SESSIONS.find((s) => s.id === sessionId) : undefined;
+  const [addFor, setAddFor] = useState<string | null>(null);
+  const clickPoint = useRef<Origin | null>(null);
+  const listScroll = useRef(0);
+  const firstPaint = useRef(true);
 
-  // Grow in: the circle eases out to the farthest corner, then the content
-  // fades in over the last two thirds (mobile timings: 620ms in, 420ms out).
+  const openSession = useCallback(
+    (id: string, opts?: { add?: boolean; from?: Origin }) => {
+      if (!sessionId) listScroll.current = scroller.current?.scrollTop ?? 0;
+      clickPoint.current = opts?.from ?? null;
+      setAddFor(opts?.add ? id : null);
+      setParams(
+        (cur) => {
+          const next = new URLSearchParams(cur);
+          next.set('session', id);
+          return next;
+        },
+        { state: { sessionPushed: true } },
+      );
+    },
+    [sessionId, setParams],
+  );
+  const backToList = useCallback(() => {
+    // Opened from this page: step back in history, so the browser's Back
+    // agrees. Opened straight from a Discover chip: just drop the session.
+    if ((location.state as { sessionPushed?: boolean } | null)?.sessionPushed) navigate(-1);
+    else
+      setParams(
+        (cur) => {
+          const next = new URLSearchParams(cur);
+          next.delete('session');
+          return next;
+        },
+        { replace: true },
+      );
+  }, [location.state, navigate, setParams]);
+  const back = useCallback(() => (sessionId ? backToList() : close(onClosed)), [sessionId, backToList, close, onClosed]);
+
+  // Switching between the list and a session: a session starts at the top
+  // and grows in; the list comes back where it was left.
   useLayoutEffect(() => {
-    const el = shell.current;
-    const inner = content.current;
-    if (!el || !inner) return;
-    if (reducedMotion() || typeof el.animate !== 'function') {
-      el.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 200, fill: 'forwards' });
-      return;
+    const first = firstPaint.current;
+    firstPaint.current = false;
+    const el = scroller.current;
+    if (!el) return;
+    if (sessionId) {
+      el.scrollTop = 0;
+      if (!first) growIn(sessionPane.current, clickPoint.current);
+    } else {
+      el.scrollTop = listScroll.current;
     }
-    const at = `at ${origin.x}px ${origin.y}px`;
-    el.animate([{ clipPath: `circle(0px ${at})` }, { clipPath: `circle(${farthest()}px ${at})` }], {
-      duration: 620,
-      easing: 'cubic-bezier(0.65, 0, 0.35, 1)',
-      fill: 'forwards',
-    });
-    inner.animate([{ opacity: 0 }, { opacity: 1 }], {
-      duration: 400,
-      delay: 220,
-      easing: 'ease-out',
-      fill: 'backwards',
-    });
-  }, [origin, farthest]);
-
-  const close = useCallback(() => {
-    if (closing.current) return;
-    closing.current = true;
-    const el = shell.current;
-    if (!el || reducedMotion() || typeof el.animate !== 'function') {
-      onClosed();
-      return;
-    }
-    const at = `at ${origin.x}px ${origin.y}px`;
-    const anim = el.animate(
-      [{ clipPath: `circle(${farthest()}px ${at})` }, { clipPath: `circle(0px ${at})` }],
-      { duration: 420, easing: 'cubic-bezier(0.32, 0, 0.67, 0)', fill: 'forwards' },
-    );
-    anim.onfinish = onClosed;
-  }, [origin, farthest, onClosed]);
+  }, [sessionId]);
 
   useEffect(() => {
     backButton.current?.focus();
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, []);
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       // Escape in an open editor (or its menus) closes that, not the verse:
       // Radix handles it first and marks it handled.
-      if (e.key === 'Escape' && !e.defaultPrevented) close();
+      if (e.key === 'Escape' && !e.defaultPrevented) back();
     };
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', onKey);
-    return () => {
-      document.body.style.overflow = overflow;
-      window.removeEventListener('keydown', onKey);
-    };
-  }, [close]);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [back]);
 
   return createPortal(
     <div
       ref={shell}
       role="dialog"
       aria-modal="true"
-      aria-label={discipline.label}
+      aria-label={shown ? shown.title : discipline.label}
       className="fixed inset-0 z-50 overflow-hidden"
       style={{ background: vibe.background, color: vibe.text }}
     >
@@ -348,42 +298,22 @@ function VersePage({
             <button
               ref={backButton}
               type="button"
-              onClick={close}
+              onClick={back}
               className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors"
               style={{ background: rgba(vibe.surface, 0.7), color: vibe.text }}
             >
               <ChevronLeft className="h-4 w-4" /> Back
             </button>
 
-            {track ? (
-              <TrackView
-                track={track}
-                discipline={discipline}
-                vibe={vibe}
-                mine={mine}
-                canSchedule={canSchedule}
-                onAdd={onAdd}
-                onVerse={() => show(undefined)}
-                onTrack={show}
-                onEditTrack={
-                  canEditTracks
-                    ? () =>
-                        setTrackEditor({
-                          verse: discipline.name,
-                          track,
-                          sessionCount: sessions.filter((s) => s.trackName === track.name).length,
-                        })
-                    : undefined
-                }
-                onAddSession={
-                  canEdit
-                    ? () => setSessionEditor({ verse: discipline.name, trackName: track.name })
-                    : undefined
-                }
-                onEditSession={
-                  canEdit ? (session) => setSessionEditor({ verse: discipline.name, session }) : undefined
-                }
-              />
+            {sessionId ? (
+              <div ref={sessionPane} key={sessionId} className="mt-8">
+                <SessionView
+                  id={sessionId}
+                  wantsAdd={addFor === sessionId}
+                  onAddHandled={() => setAddFor(null)}
+                  onOpenSession={(id, opts) => openSession(id, opts)}
+                />
+              </div>
             ) : (
               <>
                 <header className="mt-10">
@@ -408,21 +338,9 @@ function VersePage({
                   {canSchedule && <ScheduleButton vibe={vibe} onClick={() => navigate('/schedule')} />}
                 </header>
 
-                <section className="mt-8">
-                  <h3 className="mb-3 text-[12px] font-bold uppercase tracking-[0.14em]" style={{ color: vibe.textDim }}>
-                    Tracks
-                  </h3>
-                  <TrackChips
-                    verse={discipline.name}
-                    vibe={vibe}
-                    onPick={show}
-                    onAddTrack={canEditTracks ? () => setTrackEditor({ verse: discipline.name }) : undefined}
-                  />
-                </section>
-
                 <div className="mt-8 mb-3 flex items-center justify-between gap-3">
                   <h3 className="text-[12px] font-bold uppercase tracking-[0.14em]" style={{ color: vibe.textDim }}>
-                    Sessions
+                    Tracks
                   </h3>
                   {canEdit && (
                     <EditChip
@@ -436,7 +354,7 @@ function VersePage({
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {sessions.length === 0 && (
-                    <p style={{ color: vibe.textDim }}>No sessions in this discipline yet.</p>
+                    <p style={{ color: vibe.textDim }}>No tracks in this discipline yet.</p>
                   )}
                   {sessions.map((s) => (
                     <VerseSessionCard
@@ -444,8 +362,8 @@ function VersePage({
                       session={s}
                       vibe={vibe}
                       mine={mine}
-                      onTrack={show}
-                      onAdd={onAdd}
+                      onOpen={(id, from) => openSession(id, { from })}
+                      onAdd={canAdd ? (id, from) => openSession(id, { add: true, from }) : undefined}
                       onEdit={canEdit ? (session) => setSessionEditor({ verse: discipline.name, session }) : undefined}
                     />
                   ))}
@@ -457,15 +375,6 @@ function VersePage({
       </div>
       <FlowingBorder vibe={vibe} cornerRadius={0} />
       <SessionEditorDialog target={sessionEditor} onClose={() => setSessionEditor(null)} />
-      <TrackEditorDialog
-        target={trackEditor}
-        onClose={() => setTrackEditor(null)}
-        // Follow a renamed track; a deleted one goes back to the verse.
-        onSaved={(name) => {
-          if (trackEditor?.track) show(name ?? undefined);
-          else if (name) show(name);
-        }}
-      />
     </div>,
     document.body,
   );
@@ -495,7 +404,7 @@ function AddToScheduleButton({
 }: {
   vibe: VerseVibe;
   full: boolean;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent<HTMLElement>) => void;
 }) {
   // Greyed out until website_registration_open is set on the backend.
   // aria-disabled (not disabled) so a tap still explains why.
@@ -529,145 +438,8 @@ function AddToScheduleButton({
   );
 }
 
-/** One track's page, inside its verse's world. */
-function TrackView({
-  track,
-  discipline,
-  vibe,
-  mine,
-  canSchedule,
-  onAdd,
-  onVerse,
-  onTrack,
-  onEditTrack,
-  onAddSession,
-  onEditSession,
-}: {
-  track: TrackInfo;
-  discipline: DisciplineInfo;
-  vibe: VerseVibe;
-  mine: Set<string>;
-  canSchedule: boolean;
-  onAdd?: (id: string) => void;
-  onVerse: () => void;
-  onTrack: (name: string) => void;
-  /** Editor actions; absent for people who can't edit this verse. */
-  onEditTrack?: () => void;
-  onAddSession?: () => void;
-  onEditSession?: (session: Session) => void;
-}) {
-  const navigate = useNavigate();
-  const sessions = sessionsFor(discipline.name).filter((s) => s.trackName === track.name);
-  return (
-    <>
-      <header className="mt-10">
-        <button
-          type="button"
-          onClick={onVerse}
-          className="inline-flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 text-[13px] font-semibold transition-transform hover:translate-x-0.5"
-          style={{ background: rgba(vibe.surface, 0.8), border: `1px solid ${rgba(vibe.accent, 0.3)}` }}
-        >
-          <VerseBadge vibe={vibe} size={26} />
-          {discipline.label}
-          <ChevronRight className="h-3.5 w-3.5" style={{ color: vibe.textDim }} />
-        </button>
-        <div className="mt-5 font-mono text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: vibe.accent }}>
-          Track · Summit '26
-        </div>
-        <h2 className="mt-2 font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
-          {track.name}
-        </h2>
-        <p className="mt-3 max-w-2xl text-[16px] leading-relaxed" style={{ color: vibe.textDim }}>
-          {track.about}
-        </p>
-        <div className="flex flex-wrap items-center gap-3">
-          {canSchedule && <ScheduleButton vibe={vibe} onClick={() => navigate('/schedule')} />}
-          {onEditTrack && (
-            <span className="mt-5">
-              <EditChip vibe={vibe} icon={Pencil} label="Edit track" onClick={onEditTrack} />
-            </span>
-          )}
-        </div>
-      </header>
-
-      <div className="mt-8 grid gap-3 sm:grid-cols-2">
-        <section
-          className="rounded-2xl p-5"
-          style={{ background: rgba(vibe.surface, 0.88), border: `1px solid ${rgba(vibe.accent, 0.22)}` }}
-        >
-          <h3 className="text-[12px] font-bold uppercase tracking-[0.14em]" style={{ color: vibe.textDim }}>
-            Format
-          </h3>
-          <ul className="mt-3 space-y-3">
-            {track.formats.map((f) => (
-              <li key={f}>
-                <div className="font-display text-[16px] font-bold" style={{ color: vibe.accent }}>
-                  {f}
-                </div>
-                <div className="text-[13.5px]" style={{ color: vibe.textDim }}>
-                  {FORMAT_NOTES[f]}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-        <section
-          className="rounded-2xl p-5"
-          style={{ background: rgba(vibe.surface, 0.88), border: `1px solid ${rgba(vibe.accent, 0.22)}` }}
-        >
-          <h3 className="text-[12px] font-bold uppercase tracking-[0.14em]" style={{ color: vibe.textDim }}>
-            What you can do
-          </h3>
-          <ul className="mt-3 space-y-2.5">
-            {track.ideas.map((idea) => (
-              <li key={idea} className="flex gap-2.5 text-[14px] leading-snug">
-                <Lightbulb className="mt-0.5 h-4 w-4 shrink-0" style={{ color: vibe.accent }} />
-                {idea}
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
-
-      <section className="mt-8">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <h3 className="text-[12px] font-bold uppercase tracking-[0.14em]" style={{ color: vibe.textDim }}>
-            Sessions
-          </h3>
-          {onAddSession && <EditChip vibe={vibe} icon={Plus} label="Add session" onClick={onAddSession} dashed />}
-        </div>
-        {sessions.length === 0 ? (
-          <p className="text-[14px]" style={{ color: vibe.textDim }}>
-            No sessions announced for this track yet.
-          </p>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {sessions.map((s) => (
-              <VerseSessionCard
-                key={s.id}
-                session={s}
-                vibe={vibe}
-                mine={mine}
-                onAdd={onAdd}
-                onEdit={onEditSession}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="mt-8">
-        <h3 className="mb-3 text-[12px] font-bold uppercase tracking-[0.14em]" style={{ color: vibe.textDim }}>
-          More in {discipline.label}
-        </h3>
-        <TrackChips verse={discipline.name} vibe={vibe} current={track.name} onPick={onTrack} />
-      </section>
-    </>
-  );
-}
-
-type Origin = { x: number; y: number };
-type OpenVerse = (verse: string, origin: Origin, track?: string) => void;
+/** Opens a discipline's page, or one of its sessions inside it. */
+type OpenVerse = (verse: string, origin: Origin, sessionId?: string) => void;
 
 const VersePortalContext = createContext<OpenVerse | null>(null);
 
@@ -683,7 +455,7 @@ export function originOf(e: React.MouseEvent<HTMLElement>): Origin {
 
 /**
  * Owns the open verse page, so anything on the dashboard (the verse cards,
- * the Tracks row) can open one with useOpenVerse().
+ * the Enter buttons) can open one with useOpenVerse().
  */
 export function VersePortalProvider({
   mine,
@@ -693,20 +465,59 @@ export function VersePortalProvider({
 }: {
   /** Session ids on the viewer's day (competing or spectating). */
   mine: Set<string>;
-  /** Shows the "Build your schedule" link on verse and track pages. */
+  /** Shows the "Build your schedule" link on verse pages. */
   canSchedule: boolean;
   /** Shows the + on session cards. Defaults to canSchedule. */
   canAdd?: boolean;
   children: React.ReactNode;
 }) {
-  const navigate = useNavigate();
-  const [opened, setOpened] = useState<{ discipline: DisciplineInfo; origin: Origin; track?: string } | null>(
-    null,
+  const content = useSummitContent();
+  const [opened, setOpened] = useState<{ discipline: DisciplineInfo; origin: Origin } | null>(null);
+  // The open discipline lives in the URL (?verse=techverse), so Back from one
+  // of its session pages comes back to the discipline page, not the grid.
+  const [params, setParams] = useSearchParams();
+  const verseInUrl = params.get('verse');
+  // The ?verse= already shown, so closing it doesn't open it again before
+  // the URL catches up.
+  const shownFromUrl = useRef<string | null>(null);
+  const setVerseInUrl = useCallback(
+    (verse: string | null, sessionId?: string) =>
+      setParams(
+        (cur) => {
+          const next = new URLSearchParams(cur);
+          if (verse) next.set('verse', verse);
+          else next.delete('verse');
+          if (sessionId) next.set('session', sessionId);
+          else next.delete('session');
+          return next;
+        },
+        { replace: true },
+      ),
+    [setParams],
   );
-  const open = useCallback<OpenVerse>((verse, origin, track) => {
-    const discipline = USER_DISCIPLINES.find((d) => d.name === verse);
-    if (discipline) setOpened({ discipline, origin, track });
-  }, []);
+  const open = useCallback<OpenVerse>(
+    (verse, origin, sessionId) => {
+      const discipline = USER_DISCIPLINES.find((d) => d.name === verse);
+      if (!discipline) return;
+      shownFromUrl.current = verse;
+      setOpened({ discipline, origin });
+      setVerseInUrl(verse, sessionId);
+    },
+    [setVerseInUrl],
+  );
+  // Coming back with ?verse=: open it from the middle of the screen. Waits
+  // for the disciplines to load from the database if they haven't yet.
+  useEffect(() => {
+    if (!verseInUrl) {
+      shownFromUrl.current = null;
+      return;
+    }
+    if (shownFromUrl.current === verseInUrl) return;
+    const discipline = USER_DISCIPLINES.find((d) => d.name === verseInUrl);
+    if (!discipline) return;
+    shownFromUrl.current = verseInUrl;
+    setOpened({ discipline, origin: { x: window.innerWidth / 2, y: window.innerHeight / 2 } });
+  }, [verseInUrl, content]);
 
   return (
     <VersePortalContext.Provider value={open}>
@@ -716,24 +527,17 @@ export function VersePortalProvider({
           key={opened.discipline.name}
           discipline={opened.discipline}
           origin={opened.origin}
-          track={opened.track}
           mine={mine}
           canSchedule={canSchedule}
-          // The session page does the adding, with the same choices and
-          // checks as the app's "Add to my day".
-          onAdd={
-            canAdd
-              ? (id) => {
-                  setOpened(null);
-                  navigate(`/sessions/${id}`, { state: { add: true } });
-                }
-              : undefined
-          }
+          // The + opens the session in place with the app's "Add to my
+          // day" choices and checks.
+          canAdd={canAdd}
           // Only clear this verse: a page still closing must not close the
           // next one opened in the meantime.
-          onClosed={() =>
-            setOpened((cur) => (cur?.discipline.name === opened.discipline.name ? null : cur))
-          }
+          onClosed={() => {
+            setOpened((cur) => (cur?.discipline.name === opened.discipline.name ? null : cur));
+            if (verseInUrl === opened.discipline.name) setVerseInUrl(null);
+          }}
         />
       )}
     </VersePortalContext.Provider>
@@ -745,33 +549,4 @@ export function useOpenVerse(): OpenVerse {
   const open = useContext(VersePortalContext);
   if (!open) throw new Error('useOpenVerse must be used inside VersePortalProvider');
   return open;
-}
-
-/**
- * A session's track as a tag in its verse's colors (the verse's icon, then
- * the track). Opens the track's page, or the verse's when there's no track.
- */
-export function TrackTag({ verse, track }: { verse: string; track?: string }) {
-  const open = useOpenVerse();
-  const { theme } = useTheme();
-  const vibe = vibeFor(verse, theme);
-  const Icon = vibe.icon;
-  const label = track ?? USER_DISCIPLINES.find((d) => d.name === verse)?.label ?? verse;
-  return (
-    <button
-      type="button"
-      onClick={(e) => open(verse, originOf(e), track)}
-      title={track ? `About ${track}` : undefined}
-      className="group inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition-colors"
-      style={{
-        background: rgba(vibe.accent, 0.13),
-        color: vibe.accent,
-        boxShadow: `inset 0 0 0 1px ${rgba(vibe.accent, 0.35)}`,
-      }}
-    >
-      <Icon className="h-3 w-3" strokeWidth={2.2} />
-      {label}
-      <ChevronRight className="-ml-0.5 h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-    </button>
-  );
 }
