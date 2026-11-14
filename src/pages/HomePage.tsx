@@ -521,14 +521,15 @@ export default function HomePage() {
               key={to}
               type="button"
               onClick={() => navigate(to)}
-              className="glass group flex items-center gap-3 rounded-2xl p-4 text-left transition-all hover:-translate-y-0.5 hover:border-emerald/40"
+              className="glass group flex flex-col items-start gap-2.5 rounded-2xl p-4 text-left transition-all hover:-translate-y-0.5 hover:border-emerald/40 sm:flex-row sm:items-center sm:gap-3"
             >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-emerald">
+              {/* Phones stack the icon over the text so two tiles fit a row without cutting the words off. */}
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent text-emerald sm:h-11 sm:w-11">
                 <Icon className="h-5 w-5" />
               </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[14px] font-semibold">{label}</span>
-                <span className="block truncate text-xs text-muted-foreground">{sub}</span>
+              <span className="w-full min-w-0 flex-1">
+                <span className="block text-[14px] font-semibold leading-snug sm:truncate">{label}</span>
+                <span className="line-clamp-2 text-xs text-muted-foreground sm:block sm:truncate">{sub}</span>
               </span>
               <ChevronRight className="hidden h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 sm:block" />
             </button>

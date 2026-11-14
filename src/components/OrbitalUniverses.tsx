@@ -8,6 +8,8 @@ import {
   useTransform,
 } from 'framer-motion';
 import SummitLogo from './SummitLogo';
+import { useIsPhoneScreen } from '../lib/device';
+import { useSummitContent } from '../services/summitContent';
 import { VERSE_DISCIPLINES as USER_DISCIPLINES } from '../models/verseVibes';
 import { tracksForUniverse } from '../models/tracks';
 
@@ -22,12 +24,17 @@ const STEP = 360 / COUNT;
  * A tall section pins one frame while the reader scrolls: the ring turns with
  * the scroll and each universe comes round to the top in its turn, while the
  * panel beside it shows that universe's tracks. The index of names jumps the
- * scroll to any one of them; on phones the frame stacks. Reduced motion gets
- * the same content as a plain index, with nothing pinned.
+ * scroll to any one of them. Phones and reduced motion get the same content
+ * as a plain index, with nothing pinned.
  */
 export default function OrbitalUniverses() {
   const reduceMotion = useReducedMotion();
-  if (reduceMotion) return <UniverseIndex />;
+  // On a phone the pinned orbit was ~4 screens of scrolling with the track
+  // list cut off at the bottom, so phones get the plain index too.
+  const phone = useIsPhoneScreen();
+  // Tracks arrive from the database after first paint; re-render when they do.
+  useSummitContent();
+  if (reduceMotion || phone) return <UniverseIndex />;
   return <UniverseOrbit />;
 }
 

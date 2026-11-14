@@ -14,6 +14,7 @@ import { SIGN_IN_ROLES } from '../models/roles';
 import { DAY_PARTS, type DayPart } from '../landing/dayParts';
 import SunArc from '../landing/SunArc';
 import { Mail } from '@/components/icons';
+import { useIsTouchScreen } from '../lib/device';
 import '../landing/landing.css';
 
 const VENUE = 'Emerald High School, Dublin, CA';
@@ -108,6 +109,7 @@ export default function WelcomePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const reduceMotion = useReducedMotion();
+  const touch = useIsTouchScreen();
 
   // When the sequence plays, the page holds still and the copy waits for it.
   const [playingIntro] = useState(shouldPlayIntro);
@@ -364,7 +366,9 @@ export default function WelcomePage() {
                 className="lp-hairline lp-hairline--summit"
                 onPick={setPart}
               />
-              <figcaption className="lp-day__hint">Hover over a terrace to see that part of the day.</figcaption>
+              <figcaption className="lp-day__hint">
+                {touch ? 'Tap' : 'Hover over'} a terrace to see that part of the day.
+              </figcaption>
             </figure>
             <DayPanel part={DAY_PARTS[part]} index={part} />
           </div>

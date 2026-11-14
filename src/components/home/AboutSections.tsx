@@ -102,7 +102,7 @@ export function SupportEafCard() {
     <section aria-labelledby="support-eaf" className="flex flex-col">
       <SectionTitle id="support-eaf">Support EAF</SectionTitle>
       <div className="flex flex-1 flex-col rounded-3xl border border-emerald/20 bg-gradient-to-br from-emerald/10 to-emerald/[0.03] p-5 sm:p-6">
-        <div className="flex items-start gap-3">
+        <div className="flex flex-col items-start gap-3 sm:flex-row">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald text-white">
             <HeartHandshake className="h-5 w-5" />
           </span>

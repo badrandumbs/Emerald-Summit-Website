@@ -490,7 +490,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex justify-around bg-navy px-1 dark:border-t dark:border-white/10 pb-[max(0.375rem,env(safe-area-inset-bottom))] pt-1.5 lg:hidden">
+      <nav className="portal-tabbar fixed inset-x-0 bottom-0 z-30 flex justify-around bg-navy px-1 dark:border-t dark:border-white/10 pb-[max(0.375rem,env(safe-area-inset-bottom))] pt-1.5 lg:hidden">
         {mobileItems.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
