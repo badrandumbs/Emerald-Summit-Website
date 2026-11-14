@@ -489,7 +489,7 @@ permissions, rooms, session assignments, and attendance). Run these in order,
     `set_bug_report_status(p_id, p_status)`. Then deploy the
     `bug-report-email` function (§3d) for the emailed copies; reports save
     without it. Run after the files it names at the top. Safe to re-run.
-    *(Not run yet.)*
+    *(Run on the dev project 2026-11-14; a test report saved as Bug #1.)*
 
 After this, sign in and build a schedule — it should persist across restarts
 and devices. Everyone is a `participant` until the allowlist sync runs.
@@ -706,41 +706,50 @@ costs and confirm cache hits (`cache_read` > 0 from the second question on).
 **After changing `index.ts`, redeploy** (secrets persist across deploys):
 `supabase functions deploy archie-chat --no-verify-jwt`.
 
-## 3d. Bug report emails (`bug-report-email`)
-Sends the "Email me a copy" copy of a bug report to the sender's own sign-in
-address, and (optionally) every report to a team inbox. Supabase Auth's email
-only sends sign-in messages, so this function sends its own. Run
-`bug_reports_setup.sql` (step 63) first.
+## 3d. Email through Resend (bug reports and sign-in codes)
+Decided 2026-11-14: Resend sends the project's email, both the bug-report
+emails and the sign-in codes (replacing the Google Workspace SMTP). Supabase
+Auth's own email only covers sign-in messages, so bug reports go through the
+`bug-report-email` function, and sign-in codes go through Resend's SMTP.
 
-Pick one way to send:
+**1. Resend account and domain** (once):
+1. Sign up at [resend.com](https://resend.com) with the team's account.
+2. **Domains → Add domain** → `ehsacademics.org` (the Workspace domain).
+3. Add the DNS records Resend shows at the domain's DNS host: a TXT for DKIM
+   (`resend._domainkey`), and an MX and a TXT (SPF) on the `send` subdomain.
+   They don't touch the Workspace MX records, so normal mail keeps working.
+   Optional: a DMARC TXT on `_dmarc` if the domain has none.
+4. Wait for **Verified**, then **API Keys → Create** (Sending access, this
+   domain). Copy it once; Resend won't show it again.
 
-- **The Google Workspace account that already sends sign-in codes**
-  (Auth → SMTP Settings). Reuse its address and App Password. Edge
-  Functions can't reach port 587, so it uses 465.
-  ```bash
-  supabase secrets set SMTP_USER="<the Workspace address>" SMTP_PASS="<its App Password, no spaces>"
-  ```
-- **Resend.** Verify the org's domain in Resend, create an API key, and set
-  a sender on that domain:
-  ```bash
-  supabase secrets set RESEND_API_KEY="re_..." BUG_REPORT_FROM="Emerald Summit <summit@your-domain>"
-  ```
-  If `RESEND_API_KEY` is set, it wins over SMTP.
-
-Optional: `BUG_REPORT_TO="a@x.org,b@x.org"` emails every report to the team
-(Reply-To is the sender), and `SITE_URL="https://<website>"` adds an
-"Open in Reports" link to those emails.
-
+**2. Bug report emails.** `bug-report-email` is deployed (2026-11-14, with
+`--no-verify-jwt` like the other functions; it checks the session itself),
+and `BUG_REPORT_TO` (the team inbox that gets every ticket) and `SITE_URL`
+(`https://emerald-summit.vercel.app`, for the "Open in Reports" link) are
+set. What's left is the key and the sender:
 ```bash
-supabase functions deploy bug-report-email   # keep JWT verification on
+supabase secrets set --project-ref dgrskmykbkvphnaasfzl \
+  RESEND_API_KEY="re_..." \
+  BUG_REPORT_FROM="Emerald Summit <summit@ehsacademics.org>"
 ```
-
-It only emails the caller's own address and `BUG_REPORT_TO`, once per report
+No redeploy needed. Until both are set the function answers
+`{ ok: false, error: "email_not_configured" }`, the report is still saved,
+and the website says the copy couldn't be emailed. It only emails the
+caller's own sign-in address and `BUG_REPORT_TO`, once per report
 (`emailed_at` is claimed in one update), so it can't send mail anywhere else.
-If sending fails, the report is still saved and `bug_reports.email_error`
-says why. Without any of these secrets it answers
-`{ ok: false, error: "email_not_configured" }` and the website says the copy
-couldn't be emailed.
+A failed send is kept in `bug_reports.email_error`. To redeploy after a code
+change: `supabase functions deploy bug-report-email --no-verify-jwt`.
+
+**3. Sign-in codes.** Dashboard → **Authentication → Emails → SMTP
+Settings** (keep Custom SMTP on), replace the Workspace values with:
+- Host `smtp.resend.com`, port `465`
+- Username `resend`, password: the Resend API key (a separate key just for
+  Auth is fine)
+- Sender email `summit@ehsacademics.org` (any address on the verified
+  domain), sender name `Emerald Summit`
+
+Then sign in with a real email once to check the code arrives. The email
+templates (both with `{{ .Token }}`) don't change.
 
 ## 4. Verify Realtime
 Dashboard → Database → Replication → ensure `announcements` is in the

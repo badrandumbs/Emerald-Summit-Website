@@ -12,23 +12,25 @@
 // address, and only once per report (emailed_at is claimed atomically), so it
 // can't be used to send mail to anyone else or to resend a report.
 //
-// How it sends (Supabase Auth's email only covers sign-in messages):
-//   * RESEND_API_KEY set → Resend's API. BUG_REPORT_FROM must be an address on
-//     a domain verified in Resend, e.g. "Emerald Summit <summit@example.org>".
-//   * otherwise SMTP: SMTP_USER and SMTP_PASS (for Google Workspace, the same
-//     account and App Password used for sign-in codes under Auth → SMTP).
-//     SMTP_HOST defaults to smtp.gmail.com and SMTP_PORT to 465. Port 587 is
-//     blocked from Edge Functions, so keep 465. BUG_REPORT_FROM defaults to
-//     SMTP_USER; Gmail refuses any other sender.
-// Optional: SITE_URL (e.g. https://summit.example.org) adds a link to the
-// admin Reports page in the team email.
+// It sends through Resend (Supabase Auth's email only covers sign-in
+// messages). Secrets:
+//   RESEND_API_KEY   an API key from resend.com (Sending access is enough)
+//   BUG_REPORT_FROM  the sender, on a domain verified in Resend, e.g.
+//                    "Emerald Summit <summit@ehsacademics.org>"
+//   BUG_REPORT_TO    optional: where every ticket goes (comma-separated)
+//   SITE_URL         optional: the website's address, for an "Open in
+//                    Reports" link in the team email
+// Without RESEND_API_KEY and BUG_REPORT_FROM it answers
+// { ok: false, error: "email_not_configured" } and sends nothing; the report
+// itself is already saved.
 //
-// Deploy with JWT verification ON (the default): only signed-in people call it.
-//   supabase functions deploy bug-report-email
+// Deploy with --no-verify-jwt, like the project's other functions: it checks
+// the caller's session itself (auth.getUser), and the gateway's JWT check
+// doesn't fit the project's new signing keys.
+//   supabase functions deploy bug-report-email --no-verify-jwt
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected automatically.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import nodemailer from "npm:nodemailer@6.9.16";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -93,7 +95,7 @@ Deno.serve(async (req) => {
       if (data?.signedUrl) links.push({ name: path.split("/").pop() ?? path, url: data.signedUrl });
     }
 
-    const label = report.kind === "feedback" ? "Feedback" : "Bug report";
+    const label = report.kind === "feedback" ? "Feedback" : "Bug";
     const errors: string[] = [];
     let sentCopy = false;
     let sentTeam = false;
@@ -102,7 +104,9 @@ Deno.serve(async (req) => {
       try {
         await sendMail({
           to: [user.email],
-          subject: `Your Emerald Summit ${label.toLowerCase()} #${report.ticket_no}`,
+          subject: report.kind === "feedback"
+            ? `Your Emerald Summit feedback (Feedback #${report.ticket_no})`
+            : `Your Emerald Summit bug report (Bug #${report.ticket_no})`,
           html: renderHtml(report, links, "copy"),
           text: renderText(report, links, "copy"),
           replyTo: teamAddresses()[0],
@@ -146,39 +150,26 @@ function teamAddresses(): string[] {
 }
 
 function transportConfigured(): boolean {
-  return Boolean(
-    Deno.env.get("RESEND_API_KEY") ||
-      (Deno.env.get("SMTP_USER") && Deno.env.get("SMTP_PASS")),
-  );
+  return Boolean(Deno.env.get("RESEND_API_KEY") && Deno.env.get("BUG_REPORT_FROM"));
 }
 
 async function sendMail(m: { to: string[]; subject: string; html: string; text: string; replyTo?: string }) {
-  const resendKey = Deno.env.get("RESEND_API_KEY");
-  const from = Deno.env.get("BUG_REPORT_FROM") ||
-    `Emerald Summit <${Deno.env.get("SMTP_USER") ?? ""}>`;
-  if (resendKey) {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from, to: m.to, subject: m.subject, html: m.html, text: m.text,
-        ...(m.replyTo ? { reply_to: m.replyTo } : {}),
-      }),
-    });
-    if (!res.ok) throw new Error(`Resend ${res.status}: ${(await res.text()).slice(0, 300)}`);
-    return;
-  }
-  const port = Number(Deno.env.get("SMTP_PORT") ?? 465);
-  const transport = nodemailer.createTransport({
-    host: Deno.env.get("SMTP_HOST") ?? "smtp.gmail.com",
-    port,
-    secure: port === 465,
-    auth: { user: Deno.env.get("SMTP_USER"), pass: Deno.env.get("SMTP_PASS") },
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${Deno.env.get("RESEND_API_KEY")}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: Deno.env.get("BUG_REPORT_FROM"),
+      to: m.to,
+      subject: m.subject,
+      html: m.html,
+      text: m.text,
+      ...(m.replyTo ? { reply_to: m.replyTo } : {}),
+    }),
   });
-  await transport.sendMail({
-    from, to: m.to.join(", "), subject: m.subject, html: m.html, text: m.text,
-    ...(m.replyTo ? { replyTo: m.replyTo } : {}),
-  });
+  if (!res.ok) throw new Error(`Resend ${res.status}: ${(await res.text()).slice(0, 300)}`);
 }
 
 // ── Rendering ──────────────────────────────────────────────────────────────
@@ -262,10 +253,10 @@ function summary(report: Report): { title: string; rows: [string, string][] }[] 
 }
 
 function renderHtml(report: Report, links: { name: string; url: string }[], audience: Audience): string {
-  const label = report.kind === "feedback" ? "Feedback" : "Bug report";
+  const label = report.kind === "feedback" ? "Feedback" : "Bug";
   const site = (Deno.env.get("SITE_URL") ?? "").replace(/\/$/, "");
   const intro = audience === "copy"
-    ? `<p style="margin:0 0 16px">Thanks, ${esc(report.reporter_name)}. We got your ${label.toLowerCase()}. This is a copy of everything that was sent, including what the Summit app attached from your account to help us fix it. Only the Summit's admins can see it. Reply to this email if you have more to add.</p>`
+    ? `<p style="margin:0 0 16px">Thanks, ${esc(report.reporter_name)}. We got your ${report.kind === "feedback" ? "feedback" : "bug report"}. This is a copy of everything that was sent, including what the Summit app attached from your account to help us fix it. Only the Summit's admins can see it. Reply to this email if you have more to add.</p>`
     : `<p style="margin:0 0 16px">From ${esc(report.reporter_name)} (${esc(asObject(asObject(report.snapshot).auth).email)}).${site ? ` <a href="${esc(site)}/admin/reports?ticket=${report.ticket_no}">Open in Reports</a>` : ""}</p>`;
   const shots = links.length
     ? `<p style="margin:12px 0 0"><b>Screenshots</b><br>${links.map((l) => `<a href="${esc(l.url)}">${esc(l.name)}</a>`).join("<br>")}</p>`
@@ -292,7 +283,7 @@ function renderHtml(report: Report, links: { name: string; url: string }[], audi
 }
 
 function renderText(report: Report, links: { name: string; url: string }[], audience: Audience): string {
-  const label = report.kind === "feedback" ? "Feedback" : "Bug report";
+  const label = report.kind === "feedback" ? "Feedback" : "Bug";
   const lines = [
     `${label} #${report.ticket_no}`,
     audience === "copy"

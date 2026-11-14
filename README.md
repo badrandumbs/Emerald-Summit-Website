@@ -1072,7 +1072,10 @@ test/widget_test.dart       Widget tests
     auto-creates the row on sign-up. Schema + required dashboard steps in
     [supabase/profiles_setup.sql](supabase/profiles_setup.sql).
     - **Custom SMTP is required** for OTP and is **configured** (Google
-      Workspace, sending from the org address). Hard-won setup notes:
+      Workspace, sending from the org address). Decided 2026-11-14: move it
+      to **Resend** (`smtp.resend.com`), the same service that sends bug
+      report emails; steps in [SUPABASE.md §3d](SUPABASE.md). Until that's
+      done, the Workspace notes below still apply. Hard-won setup notes:
       - New free-tier projects can only edit email templates once custom SMTP
         is on (also needed for production — the built-in email service is
         test-only and rate-limited).
@@ -1721,20 +1724,23 @@ have it yet; see the to-do below.
     Builder $10,000+), **Become a sponsor** (mailto:contact.ehsaf@gmail.com)
     and **Sponsorship details**. When sponsors sign on, their logos could
     come from a `sponsors` bucket like `gallery_photos`.
-- [ ] **Report a bug or send feedback** (website, Nov 14, 2026). Profile has
-  a **Report a bug or send feedback** row that opens a form: Bug or
-  Feedback, name (filled in, required), description (required), up to 5
-  screenshots (10 MB each, images only) and **Email me a copy** (on by
-  default). A "What else is sent with your report" list says what's
-  attached, and that phone number and student ID aren't. After sending it
-  shows the ticket number. Admins get **Bug reports and feedback**
-  (`/admin/reports` on the website): open / resolved, screenshots, the
-  attached data, and **Copy as Markdown** for pasting a ticket to whoever
-  fixes it.
-  - Backend: [bug_reports_setup.sql](supabase/bug_reports_setup.sql) (not
-    run yet) and the
+- [ ] **Report a bug or send feedback** (website, Nov 14, 2026). Two
+  categories of ticket, from two rows on Profile: **Report a bug** and
+  **Send feedback**. Each opens the same form, titled for its category (a
+  switch at the top moves it to the other one): name (filled in,
+  required), description (required), up to 5 screenshots (10 MB each,
+  images only) and **Email me a copy** (on by default). A "What else is
+  sent with your report" list says what's attached, and that phone number
+  and student ID aren't. After sending it shows the ticket, e.g. "Bug #12"
+  or "Feedback #13". Admins get **Bug reports and feedback**
+  (`/admin/reports` on the website): Bugs and Feedback tabs with open
+  counts, open / resolved, screenshots, the attached data, and **Copy as
+  Markdown** for pasting a ticket to whoever fixes it.
+  - Backend: [bug_reports_setup.sql](supabase/bug_reports_setup.sql) (run
+    Nov 14, 2026) and the
     [bug-report-email](supabase/functions/bug-report-email/index.ts) Edge
-    Function (not deployed yet); SUPABASE.md step 63. Upload screenshots to
+    Function (deployed Nov 14, 2026; sends through Resend once its key is
+    set); SUPABASE.md step 63 and §3d. Upload screenshots to
     the private `bug_report_screenshots` bucket at
     `<user_id>/<report_id>/<n>.<ext>` (the app picks `report_id`, a UUID),
     then call `submit_bug_report(p_id, p_kind, p_name, p_description,
