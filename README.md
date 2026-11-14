@@ -75,8 +75,9 @@ Home header** (Uber-style), not a bottom-bar tab.
   down on first view.
   **Three more sections are coming to Home** (the website's dashboard has
   them; building them in the app is on the to-do list under **Home: smaller
-  slideshow, no Tracks row, three new sections**). They go above Links, and
-  they're static text and links, with no backend:
+  slideshow, no Tracks or Explore rows, three new sections**). They go above Links, and
+  they're static text and links, with no backend. The **Explore disciplines**
+  rail comes off Home at the same time; Discover stays the way in. The three:
   - **About the app**: what the app does: build your schedule, check in with
     your QR pass, get announcements, explore the verses.
   - **Support EAF**: what the Emerald High School Academic Foundation does,
@@ -1702,10 +1703,12 @@ have it yet; see the to-do below.
   January, whether a project needs to be perfect, and why there are no awards
   (every participant gets a certificate of participation). Add them to
   Archie's knowledge if Archie should answer them.
-- [ ] **Home: smaller slideshow, no Tracks row, three new sections.** The
+- [ ] **Home: smaller slideshow, no Tracks or Explore rows, three new sections.** The
   website's dashboard slideshow is now 2:1 (was 16:9) and takes less of the
   row beside the quote card. The Tracks strip under Your day, with its
-  Browse sessions button, is gone (Explore the verses stays). New sections
+  Browse sessions button, is gone, and so is the **Explore the verses** row
+  of verse cards (the app's **Explore disciplines** rail on Home: remove it;
+  Discover stays the way into the disciplines). New sections
   after Quick access, all static text and links, no backend
   (`src/components/home/AboutSections.tsx`):
   - **About the app**: what the portal does (schedule, QR pass,
