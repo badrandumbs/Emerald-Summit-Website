@@ -1733,6 +1733,11 @@ have it yet; see the to-do below.
     Builder $10,000+), **Become a sponsor** (mailto:contact.ehsaf@gmail.com)
     and **Sponsorship details**. When sponsors sign on, their logos could
     come from a `sponsors` bucket like `gallery_photos`.
+- [ ] **"Room TBD" in session lists** (website, Nov 14, 2026). While rooms
+  are locked (`SESSION_ROOMS_ENABLED` is false), the website's session lists
+  (discipline pages, My Schedule, Home, search results) show "Room TBD"
+  instead of the stored room. The session page still hides the room. The
+  app's lists still show the stored room.
 - [ ] **Report a bug or send feedback** (website, Nov 14, 2026). Two
   categories of ticket, from two rows on Profile: **Report a bug** and
   **Send feedback**. Each opens the same form, titled for its category (a
