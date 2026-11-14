@@ -1487,8 +1487,8 @@ one go. Backend: `preview_manager_assignment` and
 (run on the dev project Nov 13, 2026). The app still refuses every clash; see
 the to-do below.
 Admins also see which volunteers are already signed up for a session (in
-the Volunteers tab and tagged in the Assign picker) and can **Make manager**
-in one click, which takes them off the roster; same RPCs, no new SQL.
+the Volunteers tab and tagged in the Assign picker) and can **Assign to be a
+manager instead** in one click, which takes them off the roster; same RPCs, no new SQL.
 
 **Latest (Nov 13, 2026), website only:** a bell note from today still says
 "5m ago" / "3h ago", but once it's from an earlier calendar day it shows the
@@ -1667,29 +1667,38 @@ have it yet; see the to-do below.
     dialog in the second person ("Replace what you're doing?") with
     **Manage instead**, calling the RPC with the admin's own id.
 - [ ] **See and convert signed-up volunteers.** On the website, an admin
-  sees which volunteers are already signed up for a session and can make one
-  its manager in a click. No new backend: it uses the two RPCs from
+  sees which volunteers are already signed up for a session and can assign one
+  to manage it in a click. No new backend: it uses the two RPCs from
   **Managing replaces a clash** above (do that first) plus
   `fetch_session_roster`.
   - Volunteers tab, admins only: under the managers, a **Volunteers signed up
     for this session** list, from `fetch_session_roster` filtered to
     `role = 'volunteer'` and minus anyone already managing. Each row: name,
-    "Signed up as participant" / "spectator" / "expert", email, and a **Make
-    manager** button. Hidden when empty; don't fetch the roster for
+    "Signed up as participant" / "spectator" / "expert", email, and an **Assign
+    to be a manager instead** button. Hidden when empty; don't fetch the roster for
     non-admins.
   - Assign picker: those volunteers sort first with the same "Signed up as …"
     tag, and tapping one opens the dialog below instead of calling
     `assign_volunteer_to_session`.
-  - Dialog: call `preview_manager_assignment`, then show **Make Sam Lee a
-    manager?** with "This will make them a manager of this session, and they
+  - Dialog: call `preview_manager_assignment`, then show **Assign Sam Lee to be a
+    manager instead?** with "This will make them a manager of this session, and they
     will no longer be a participant of this session." ("a spectator" / "an
     expert" for those types), the team line for the `registered_this` item
     if they're on a team, and "It also takes these off their day, since they
     overlap:" with any other items, then "They'll get a notice about the
-    change." **Cancel** / **Make manager**, which calls
+    change." **Cancel** / **Assign to be a manager instead**, which calls
     `assign_manager_replacing_conflicts`. Toast: "Sam Lee now manages this
     session and is off its roster. They've been told." Website code:
     `src/components/session/MakeManagerDialog.tsx`.
+  - Volunteers tab wording (the app's session_volunteers_screen.dart): "The
+    people managing this session.", **Assign a volunteer to manage** (button
+    and picker title), empty state "No volunteers assigned yet. Assign
+    volunteers so they can manage this session." (non-admins: "No one has
+    been assigned to manage this session yet."), and for admins a note:
+    "Managers can see everyone signed up for this session (participants,
+    spectators and experts) with their contact details, mark attendance, and
+    remove someone from the session. They can't edit the session's details,
+    like its description, time, room or photos."
 - [ ] **Registration closed message.** While `website_registration_open` is
   off, the website says "Registration will open on November 21st" for the
   `registration_closed` error; the app shows its generic error (see
