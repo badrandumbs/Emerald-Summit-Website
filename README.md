@@ -1497,7 +1497,7 @@ Open items, in the order below: 8th graders in sessions · Remove someone
 from a session · Dates on older bell notes · Rename the News tab to
 Announcements · Managing replaces a clash · See and convert signed-up
 volunteers · Registration closed message · Universe subtitles · Archie and
-the FAQ. Checked against the website on Nov 13, 2026: everything else the
+the FAQ · Report a bug or send feedback. Checked against the website on Nov 13, 2026: everything else the
 website does, the app does too, apart from the website-only list at the end.
 Updated Nov 13, 2026. These shipped on the website and the app doesn't have
 them yet. The app isn't public yet, so none of them is urgent, but do them
@@ -1721,6 +1721,36 @@ have it yet; see the to-do below.
     Builder $10,000+), **Become a sponsor** (mailto:contact.ehsaf@gmail.com)
     and **Sponsorship details**. When sponsors sign on, their logos could
     come from a `sponsors` bucket like `gallery_photos`.
+- [ ] **Report a bug or send feedback** (website, Nov 14, 2026). Profile has
+  a **Report a bug or send feedback** row that opens a form: Bug or
+  Feedback, name (filled in, required), description (required), up to 5
+  screenshots (10 MB each, images only) and **Email me a copy** (on by
+  default). A "What else is sent with your report" list says what's
+  attached, and that phone number and student ID aren't. After sending it
+  shows the ticket number. Admins get **Bug reports and feedback**
+  (`/admin/reports` on the website): open / resolved, screenshots, the
+  attached data, and **Copy as Markdown** for pasting a ticket to whoever
+  fixes it.
+  - Backend: [bug_reports_setup.sql](supabase/bug_reports_setup.sql) (not
+    run yet) and the
+    [bug-report-email](supabase/functions/bug-report-email/index.ts) Edge
+    Function (not deployed yet); SUPABASE.md step 63. Upload screenshots to
+    the private `bug_report_screenshots` bucket at
+    `<user_id>/<report_id>/<n>.<ext>` (the app picks `report_id`, a UUID),
+    then call `submit_bug_report(p_id, p_kind, p_name, p_description,
+    p_screenshots, p_client, p_email_copy)`, then invoke
+    `bug-report-email` with `{ report_id }`. The server adds the account
+    snapshot itself, so the app only sends `p_client`.
+  - `p_client` from the app: `app: "ios"` or `"android"`, `page` (the
+    current screen), `route_history` (last 15 screens, `{path, at}`),
+    `errors` (last 25 `FlutterError`/zone errors, `{level, message, at}`),
+    `failed_requests` (last 15 failed Supabase calls, `{method, url, status,
+    message, at}`), `build` (`{version, build_number, commit}`), and
+    `device` (model, OS version, locale, timezone, screen size, theme). The
+    website's version is `collectClientContext` in `src/lib/diagnostics.ts`.
+  - Error codes to word: `name_required`, `description_required`,
+    `too_long`, `too_many_reports` (10 an hour), `not_signed_in`. A failed
+    email doesn't fail the report.
 
 Website-only on purpose, no app work: the public landing page (hero, the
 arrival, the Summit figure, the FAQ, the universes orbit), the

@@ -478,6 +478,19 @@ permissions, rooms, session assignments, and attendance). Run these in order,
     `team_leave_notices.sql` and `unassign_notification.sql`. Safe to
     re-run. *(Run on the dev project 2026-11-13.)*
 
+63. `supabase/bug_reports_setup.sql`: **bug reports and feedback.** Adds the
+    `bug_reports` table (read your own; admins read all; no direct writes),
+    the private `bug_report_screenshots` bucket (10 MB images, each person
+    uploads into their own `<user_id>/` folder), `submit_bug_report(...)`,
+    which saves a report with a server-built snapshot of the sender's
+    account (profile minus phone and student id, sessions, teams, managed
+    sessions, removals, check-in, allowlist rows, last 10 notifications and
+    hour logs, summit_settings) and allows 10 an hour, and the admin-only
+    `set_bug_report_status(p_id, p_status)`. Then deploy the
+    `bug-report-email` function (§3d) for the emailed copies; reports save
+    without it. Run after the files it names at the top. Safe to re-run.
+    *(Not run yet.)*
+
 After this, sign in and build a schedule — it should persist across restarts
 and devices. Everyone is a `participant` until the allowlist sync runs.
 
@@ -692,6 +705,42 @@ costs and confirm cache hits (`cache_read` > 0 from the second question on).
 
 **After changing `index.ts`, redeploy** (secrets persist across deploys):
 `supabase functions deploy archie-chat --no-verify-jwt`.
+
+## 3d. Bug report emails (`bug-report-email`)
+Sends the "Email me a copy" copy of a bug report to the sender's own sign-in
+address, and (optionally) every report to a team inbox. Supabase Auth's email
+only sends sign-in messages, so this function sends its own. Run
+`bug_reports_setup.sql` (step 63) first.
+
+Pick one way to send:
+
+- **The Google Workspace account that already sends sign-in codes**
+  (Auth → SMTP Settings). Reuse its address and App Password. Edge
+  Functions can't reach port 587, so it uses 465.
+  ```bash
+  supabase secrets set SMTP_USER="<the Workspace address>" SMTP_PASS="<its App Password, no spaces>"
+  ```
+- **Resend.** Verify the org's domain in Resend, create an API key, and set
+  a sender on that domain:
+  ```bash
+  supabase secrets set RESEND_API_KEY="re_..." BUG_REPORT_FROM="Emerald Summit <summit@your-domain>"
+  ```
+  If `RESEND_API_KEY` is set, it wins over SMTP.
+
+Optional: `BUG_REPORT_TO="a@x.org,b@x.org"` emails every report to the team
+(Reply-To is the sender), and `SITE_URL="https://<website>"` adds an
+"Open in Reports" link to those emails.
+
+```bash
+supabase functions deploy bug-report-email   # keep JWT verification on
+```
+
+It only emails the caller's own address and `BUG_REPORT_TO`, once per report
+(`emailed_at` is claimed in one update), so it can't send mail anywhere else.
+If sending fails, the report is still saved and `bug_reports.email_error`
+says why. Without any of these secrets it answers
+`{ ok: false, error: "email_not_configured" }` and the website says the copy
+couldn't be emailed.
 
 ## 4. Verify Realtime
 Dashboard → Database → Replication → ensure `announcements` is in the
