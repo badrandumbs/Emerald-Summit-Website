@@ -73,6 +73,21 @@ Home header** (Uber-style), not a bottom-bar tab.
   ("Good morning") and playful ("What's cooking", "What's building") lines with
   an animated shimmer sweep (echoing the website wordmark); the quote card wipes
   down on first view.
+  **Three more sections are coming to Home** (the website's dashboard has
+  them; building them in the app is on the to-do list under **Home: smaller
+  slideshow, no Tracks row, three new sections**). They go above Links, and
+  they're static text and links, with no backend:
+  - **About the app**: what the app does: build your schedule, check in with
+    your QR pass, get announcements, explore the verses.
+  - **Support EAF**: what the Emerald High School Academic Foundation does,
+    "EAF is a 501(c)(3) nonprofit. Tax ID 33-4810954.", and **Donate** and
+    **Volunteer with EAF** buttons that open the EAF site's donate and
+    volunteer pages.
+  - **Sponsors**: "Sponsors will be listed here as they sign on", the six
+    sponsorship tiers (Cornerstone $500+, Foundation $1,000+, Pillar $1,500+,
+    Keystone $2,000+, Capstone $5,000+, Legacy Builder $10,000+), a **Become a
+    sponsor** button that emails contact.ehsaf@gmail.com, and a link to the
+    EAF site's Sponsorship Details page.
 - **Schedule** — the user's full personal schedule (formerly the "My Day" first
   tab; the in-app header still reads "My Day"). A summary line at the top
   ([day_summary.dart](lib/widgets/day_summary.dart)) gives sessions and time
@@ -1006,7 +1021,7 @@ lib/
   screens/
     splash_screen.dart      Animated launch splash (sun arc + wordmark + haptics)
     root_nav.dart           Bottom navigation shell (Home · Schedule · Discover · News · Archie)
-    dashboard_screen.dart   Home launchpad (greeting, photo slideshow, quote, up-next, action grid, links)
+    dashboard_screen.dart   Home launchpad (greeting, photo slideshow, quote, up-next, action grid, links; About/Support EAF/Sponsors to come)
     auth/                   auth_gate, sign_in_screen, onboarding_screen (+ role gate), phone_required_screen
     schedule_screen.dart    Schedule tab (personal schedule; header reads "My Day")
     discover_screen.dart    Session search and discipline listings (+ admin "New discipline")
