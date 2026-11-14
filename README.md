@@ -1687,6 +1687,22 @@ have it yet; see the to-do below.
   January, whether a project needs to be perfect, and why there are no awards
   (every participant gets a certificate of participation). Add them to
   Archie's knowledge if Archie should answer them.
+- [ ] **Home: smaller slideshow, no Tracks row, three new sections.** The
+  website's dashboard slideshow is now 2:1 (was 16:9) and takes less of the
+  row beside the quote card. The Tracks strip under Your day, with its
+  Browse sessions button, is gone (Explore the verses stays). New sections
+  after Quick access, all static text and links, no backend
+  (`src/components/home/AboutSections.tsx`):
+  - **About the app**: what the portal does (schedule, QR pass,
+    announcements, verses). In the app, reword it to describe the app.
+  - **Support EAF**: EAF's mission, "501(c)(3) nonprofit. Tax ID
+    33-4810954.", and **Donate** / **Volunteer with EAF** links to the EAF
+    site's donate and volunteer pages.
+  - **Sponsors**: "Sponsors will be listed here as they sign on", the six
+    tiers from the EAF Sponsorship Details page (Cornerstone $500+ to Legacy
+    Builder $10,000+), **Become a sponsor** (mailto:contact.ehsaf@gmail.com)
+    and **Sponsorship details**. When sponsors sign on, their logos could
+    come from a `sponsors` bucket like `gallery_photos`.
 
 Website-only on purpose, no app work: the public landing page (hero, the
 arrival, the Summit figure, the FAQ, the universes orbit), the
