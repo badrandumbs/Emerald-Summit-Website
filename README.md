@@ -1775,8 +1775,14 @@ have it yet; see the to-do below.
 Website-only on purpose, no app work: the public landing page (hero, the
 arrival, the Summit figure, the FAQ, the universes orbit), the
 `website_show_session_times` switch, the header search jumping to pages, the
-browser's 15-minute pause after five wrong test passwords, and the "your QR
-pass is also in the mobile app" note.
+browser's 15-minute pause after five wrong test passwords, the "your QR
+pass is also in the mobile app" note, and the "Better in the app" banner
+phones see on the website (Nov 14, 2026). **At launch:** that banner stays
+hidden until the website knows the store links, so when the app goes live,
+paste its App Store and Google Play links into the website's
+`src/lib/appStores.ts` and push. The Play link is
+`https://play.google.com/store/apps/details?id=com.emeraldsummit.emerald_summit`;
+the App Store one has the numeric id from App Store Connect.
 
 **Shipping the website.** Every push to the website repo's `main` deploys to
 production on Vercel (a free plan run by a teammate, Production environment
