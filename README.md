@@ -174,7 +174,7 @@ Home header** (Uber-style), not a bottom-bar tab.
     signed-in role — participants & volunteers pick **Participate** or
     **Spectate**; experts pick **Serve as expert** or **Spectate**; admins also
     get **Manage** (a self-assignment into `session_volunteers`, with a "Stop
-    managing" toggle); and the **Parent / Spectator** role skips the chooser and
+    managing" toggle); and the **Spectator** role skips the chooser and
     auto-joins as **Spectating**. Volunteers see a note that an admin will assign
     them if they're to *manage* a session. Choosing **Participate** opens a
     full-screen **registration form** ([session_registration_screen.dart](lib/screens/session_registration_screen.dart))
@@ -373,9 +373,9 @@ Home header** (Uber-style), not a bottom-bar tab.
   go to the bell, not News (see **Notifications** below); their in-app banner
   opens Notifications. Until the bell's table has loaded once, News still
   shows them to their recipient. Filtering is applied to both the feed and the
-  banner. **Per-user read state (two-tier, Instagram-style):** opening the News
-  tab marks the feed **seen**. The News tab and the Home "What's new" tile no
-  longer show a count: the bell counts new posts, so a post isn't counted
+  banner. **Per-user read state (two-tier, Instagram-style):** opening the
+  Announcements tab marks the feed **seen**. The Announcements tab no
+  longer shows a count: the bell counts new posts, so a post isn't counted
   twice. Independently, each feed card keeps a green **unread dot**
   until the user taps (opens) that specific card — so dots persist after the red
   badge is gone. Both tiers are private per user, tracked in the
@@ -1074,7 +1074,7 @@ test/widget_test.dart       Widget tests
   [service_locator.dart](lib/backend/service_locator.dart). See **Swapping
   backends** below.
 - **Live now:**
-  - The `announcements` table feeds the News tab (broadcast rows behind a
+  - The `announcements` table feeds the Announcements tab (broadcast rows behind a
     public-read RLS policy). Schema in
     [supabase/announcements_setup.sql](supabase/announcements_setup.sql).
   - **Auth + `profiles` table.** Email OTP via Supabase Auth; each account gets
@@ -1292,7 +1292,7 @@ test/widget_test.dart       Widget tests
   admin's approval: `profiles.expert_status` is `pending` / `approved` /
   `declined`, owned by the same enforcement trigger, so only `review_expert()`
   can approve; see [expert_approval.sql](supabase/expert_approval.sql)),
-  `parentSpectator` (open — the "Parent / Spectator" role, which auto-spectates
+  `parentSpectator` (open — the "Spectator" role, which auto-spectates
   any session it adds), `volunteer`, `admin` (gated). *(The `parentSpectator`
   stored value was renamed from `parent` — see
   [rename_parent_to_parent_spectator.sql](supabase/rename_parent_to_parent_spectator.sql).)*
@@ -1435,7 +1435,7 @@ Done on the website, against this backend:
   expertise and bio), the phone and grade prompts after sign-in, and Change
   role checking the allowlist before saving.
 - **Look:** nav named and ordered like the app (Home · Schedule · Discover ·
-  News · Archie), role labels Parent / Spectator and Expert / Speaker, Phosphor duotone
+  Announcements · Ask Archie), role labels Spectator and Expert, Phosphor duotone
   icons, discipline palettes copied exactly.
 
 Not on the website yet: Archie and Archie insights (phase 8; the website's
@@ -2028,7 +2028,7 @@ replaced, not adapted.
 | `profile_setup_complete` | `onboarded` |
 | `phone`, `bio`, school, grade… | `details` jsonb. The keys per role are the `RoleQuestion` lists in [user_profile.dart](lib/models/user_profile.dart) (`school`, `grade`, `phone`, `student_id`, `expertise`, `bio`). |
 | `org`, `directory_visible`, `*_visible` | Don't exist. Drop them. |
-| Roles `participant`, `attendee`, `volunteer`, `expert`, `ambassador`, `admin` | Stored ids `participant`, `expert`, `parentSpectator`, `volunteer`, `admin`. Labels: Participant, Expert / Speaker, Parent / Spectator, Volunteer, Admin. |
+| Roles `participant`, `attendee`, `volunteer`, `expert`, `ambassador`, `admin` | Stored ids `participant`, `expert`, `parentSpectator`, `volunteer`, `admin`. Labels: Participant, Expert, Spectator, Volunteer, Admin. |
 | `attendee` | `parentSpectator` (adding a session always spectates). |
 | `ambassador` | Not a role. A `volunteer` whose `volunteer_subtype` is `eaf_ambassador` (others: `parent_volunteer`, `student_volunteer`), set from the sheet. Nobody picks it. |
 | Expert signs in and is an expert | Picking Expert makes `expert_status = pending` until an admin approves (`review_expert`). Handle pending and declined the way the app does. |
