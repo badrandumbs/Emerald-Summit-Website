@@ -753,7 +753,7 @@ caller's own sign-in address and `BUG_REPORT_TO`, once per report
 A failed send is kept in `bug_reports.email_error`. To redeploy after a code
 change: `supabase functions deploy bug-report-email --no-verify-jwt`.
 
-**3. Sign-in codes** (switched 2026-11-14). Dashboard → **Authentication → Emails → SMTP
+**3. Sign-in codes** (switched 2026-11-14, sender name set the same day). Dashboard → **Authentication → Emails → SMTP
 Settings** (keep Custom SMTP on), replace the Workspace values with:
 - Host `smtp.resend.com`, port `465`
 - Username `resend`, password: the Resend API key (a separate key just for

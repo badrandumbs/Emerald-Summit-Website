@@ -1117,7 +1117,9 @@ test/widget_test.dart       Widget tests
     - **Custom SMTP is required** for OTP and is **configured** through
       **Resend** (`smtp.resend.com`, switched 2026-11-14 from Google
       Workspace), the same service that sends bug report emails. Every
-      Resend email comes from `app@ehsacademics.org`; steps in
+      Resend email, sign-in codes included, comes from **Emerald Summit '27
+      App** <`app@ehsacademics.org`> (set in the SMTP settings and the
+      `BUG_REPORT_FROM` secret, 2026-11-14); steps in
       [SUPABASE.md §3d](SUPABASE.md). The Workspace notes below are kept for
       history. Hard-won setup notes:
       - New free-tier projects can only edit email templates once custom SMTP
@@ -1945,8 +1947,9 @@ has it too since Nov 14, 2026; see below.
   - Backend: [bug_reports_setup.sql](supabase/bug_reports_setup.sql) (run
     Nov 14, 2026) and the
     [bug-report-email](supabase/functions/bug-report-email/index.ts) Edge
-    Function (deployed Nov 14, 2026; sends through Resend from
-    `app@ehsacademics.org`); SUPABASE.md step 63 and §3d. Upload screenshots to
+    Function (deployed Nov 14, 2026; sends through Resend as
+    Emerald Summit '27 App <`app@ehsacademics.org`>, every ticket to
+    `support@ehsacademics.org`); SUPABASE.md step 63 and §3d. Upload screenshots to
     the private `bug_report_screenshots` bucket at
     `<user_id>/<report_id>/<n>.<ext>` (the app picks `report_id`, a UUID),
     then call `submit_bug_report(p_id, p_kind, p_name, p_description,
