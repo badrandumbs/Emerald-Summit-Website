@@ -1562,8 +1562,8 @@ from a session, e.g. an account that looks fake. On the website the
 Participants and Experts tabs have **Remove** on every row and a **Removed**
 list with **Allow back**, through the new RPCs in
 [session_participant_removal.sql](supabase/session_participant_removal.sql)
-(run on the dev project Nov 13, 2026, so it's live on the website). The app doesn't
-have it yet; see the to-do below.
+(run on the dev project Nov 13, 2026, so it's live on the website). The app
+has it too since Nov 14, 2026; see below.
 
 - [x] **Remove someone from a session.** Anyone who can see a session's
   roster (admins, the volunteers assigned to it, and session editors for its
@@ -1742,7 +1742,7 @@ have it yet; see the to-do below.
   can edit a discipline (the app's editor only creates one), so run
   [universe_subtitles.sql](supabase/universe_subtitles.sql) in the SQL Editor
   (not run yet). No code change.
-- [x] **Archie and the FAQ.** The website's FAQ added why the Summit is in
+- [ ] **Archie and the FAQ.** The website's FAQ added why the Summit is in
   January, whether a project needs to be perfect, and why there are no awards
   (every participant gets a certificate of participation). Add them to
   Archie's knowledge if Archie should answer them.
