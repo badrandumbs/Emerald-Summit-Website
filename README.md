@@ -51,6 +51,16 @@ Five-tab app (**Home · Schedule · Discover · News · Archie**) matching the
 spec's core participant features. **Profile is reached from the avatar in the
 Home header** (Uber-style), not a bottom-bar tab.
 
+The bottom bar is an Uber-style **floating capsule**
+([floating_tab_bar.dart](lib/widgets/floating_tab_bar.dart)): inset from the
+sides, just above the home indicator, with a pill behind the selected tab.
+Pages scroll behind it, so any scrolling list inside a tab pads its end by
+`MediaQuery.paddingOf(context).bottom`. It slides away while you scroll down
+and comes back when you scroll up (a quick flick brings it back sooner), and it
+always shows at the top of a page and on a tab switch
+([scroll_aware_bottom_bar.dart](lib/widgets/scroll_aware_bottom_bar.dart)). It
+stays put on Ask Archie and for screen-reader users.
+
 - **Home** — the launchpad ([lib/screens/dashboard_screen.dart](lib/screens/dashboard_screen.dart)).
   A greeting + tappable avatar → Profile, a live **countdown** in the header
   (days, hours, minutes, seconds to the Summit's first session; it appears
@@ -1656,6 +1666,11 @@ has it too since Nov 14, 2026; see below.
   Announcements. No backend change.
   Done in the app, along with Home's "Latest announcements" and Archie's
   wording.
+  **Changed Nov 14, 2026:** the app's bottom bar label is **News** again
+  (user's call). In the floating capsule bar every tab gets a fifth of the
+  width, and "Announcements" only fits at about 9pt, far smaller than the
+  other labels. Everything else (page title, Home shortcut, warnings) still
+  says Announcements. The website's bottom bar still says "Announcements".
 - [x] **Managing replaces a clash.** A person does one thing at a time, and
   managing wins. On the website an admin can assign someone who's busy at
   that time, and what they were doing comes off their day.
