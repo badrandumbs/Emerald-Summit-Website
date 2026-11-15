@@ -1744,11 +1744,71 @@ have it yet; see the to-do below.
   top of this README and in **Home sections and wording, Nov 14** below.
   When sponsors sign on, their logos could come from a `sponsors` bucket
   like `gallery_photos`.
+- [ ] **New "How are you joining the Summit?" sign-in screen** (website,
+  Nov 14, 2026). One screen replaces the role list: the Summit logo in a
+  large white circle, "Organized by EHS Academic Foundation" with the EAF
+  seal (website `public/brand/eaf-logo.png`), and role cards grouped under
+  **Attending the Summit** (Participant "Build your schedule and follow your
+  Summit day.", Spectator "Attend tracks and stay in the loop. Curious minds
+  of all ages are welcome.", Expert "Evaluate tracks and join panel
+  discussions to share insights with attendees.") and **Helping run the
+  Summit** (Volunteer "Parent and student volunteers."). Each card has
+  **Sign in** and **Sign up** (see the next item). Admin has no card: **Organizer sign in** at the
+  bottom is for admins and test accounts, and **Not sure? Contact the EAF
+  team** emails contact@ehsacademics.org. No backend change.
+- [ ] **Sign in and Sign up are different paths** (website, Nov 14, 2026).
+  Sign up creates the account and runs the sign-up steps (profile
+  questions, then the code of conduct) before the app opens. Sign in checks
+  who you are and goes straight in: an email code goes only to an email
+  that already has an account (`shouldCreateUser: false`). A new email
+  gets "Let's create you an account! There's no account for … yet. Press
+  Continue to enter some information and create your … account." and
+  **Continue** switches to sign-up and emails the code. A new
+  Google account from Sign in is treated as a sign-up. An existing account
+  that taps Sign up just signs in and skips the steps it has done. The
+  screens link to each other ("New to the Summit? Sign up" / "Already have
+  an account? Sign in").
+- [ ] **Code of conduct (waiting on the text).** The Summit team still has
+  to provide it. It will be a sign-up step after the profile questions,
+  agreed once per account, on the website and in the app. Nothing is built
+  yet on either.
+- [ ] **Role names: Spectator and Expert.** The website renamed "Parent /
+  Spectator" to **Spectator** and "Expert / Speaker" to **Expert**
+  everywhere, and every role's blurb is now the sign-in screen's (see the
+  first item). Update `SummitRole` labels and blurbs in `user_profile.dart`.
+  Stored role values don't change.
+- [ ] **Phone numbers are digits only.** On the website the mobile number
+  field drops anything that isn't a digit as you type or paste ("(925)
+  555-0100" becomes 9255550100), keeps at most 15 digits, and opens the
+  number pad. Do the same in the app's phone fields (sign-up and the
+  add-your-number gate).
+- [ ] **Change role in a popup.** Signed in, Change role (Profile, the
+  pending expert's "Sign up as something else") opens a sheet listing the
+  four roles with the current one marked; picking one shows the existing
+  preview-and-confirm step in the sheet, then the new role's profile
+  questions. It no longer sends people to the sign-in role list.
 - [ ] **"Room TBD" in session lists** (website, Nov 14, 2026). While rooms
   are locked (`SESSION_ROOMS_ENABLED` is false), the website's session lists
   (discipline pages, My Schedule, Home, search results) show "Room TBD"
   instead of the stored room. The session page still hides the room. The
   app's lists still show the stored room.
+- [ ] **Tracks are sessions** (website, Nov 14, 2026). A discipline page
+  lists its sessions under a **Tracks** heading (was "Sessions") with no row
+  of track chips, and there are no separate track pages (Format, What you
+  can do, More in this discipline). Track chips on Discover use each
+  session's exact title. Schedule cards have no track tag. A session opens
+  inside its discipline's world without reloading it: the list swaps for
+  the session, which grows out of the tap point while the background, motif
+  and flowing border carry on, and Back returns to the list. Opened from
+  anywhere else, the session page is its own full screen in its
+  discipline's world (no tab bar or app bar), growing in like the
+  discipline portal.
+- [ ] **No grey square behind +, −, ✓ and ×** (website, Nov 14, 2026).
+  Phosphor's duotone draws a faint square or rectangle behind bare marks
+  (plus, minus, check, double check, x, three dots, left-right arrows,
+  list/menu, download, scan, terminal, math operations). The website draws
+  those at the regular weight instead; check `duotone_icon.dart` for the
+  same box.
 - [ ] **Report a bug or send feedback** (website, Nov 14, 2026). Two
   categories of ticket, from two rows on Profile: **Report a bug** and
   **Send feedback**. Each opens the same form, titled for its category (a
@@ -1767,23 +1827,6 @@ have it yet; see the to-do below.
     Function (deployed Nov 14, 2026; sends through Resend once its key is
     set); SUPABASE.md step 63 and §3d. Upload screenshots to
     the private `bug_report_screenshots` bucket at
-- [ ] **Tracks are sessions** (website, Nov 14, 2026). A discipline page
-  lists its sessions under a **Tracks** heading (was "Sessions") with no row
-  of track chips, and there are no separate track pages (Format, What you
-  can do, More in this discipline). Track chips on Discover use each
-  session's exact title. Schedule cards have no track tag. A session opens
-  inside its discipline's world without reloading it: the list swaps for
-  the session, which grows out of the tap point while the background, motif
-  and flowing border carry on, and Back returns to the list. Opened from
-  anywhere else, the session page is its own full screen in its
-  discipline's world (no tab bar or app bar), growing in like the
-  discipline portal.
-- [ ] **No grey square behind +, −, ✓ and ×** (website, Nov 14, 2026).
-  Phosphor's duotone draws a faint square or rectangle behind bare marks
-  (plus, minus, check, double check, x, three dots, left-right arrows,
-  list/menu, download, scan, terminal, math operations). The website draws
-  those at the regular weight instead; check `duotone_icon.dart` for the
-  same box.
     `<user_id>/<report_id>/<n>.<ext>` (the app picks `report_id`, a UUID),
     then call `submit_bug_report(p_id, p_kind, p_name, p_description,
     p_screenshots, p_client, p_email_copy)`, then invoke
