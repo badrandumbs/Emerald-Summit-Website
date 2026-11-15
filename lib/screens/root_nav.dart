@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_navigation.dart';
 import '../app_state.dart';
+import '../widgets/scroll_aware_bottom_bar.dart';
 import 'dashboard_screen.dart';
 import 'schedule_screen.dart';
 import 'discover_screen.dart';
@@ -13,6 +14,10 @@ import 'notifications_screen.dart';
 /// Schedule · Discover · News · Archie). Profile lives behind the avatar in
 /// the [DashboardScreen] header (Uber-style), so it isn't a bottom-bar
 /// destination.
+///
+/// The bar slides away while you scroll down a tab and comes back when you
+/// scroll up (see [ScrollAwareBottomBar]). It stays put on Ask Archie, where
+/// the message box sits right above it.
 class RootNav extends StatefulWidget {
   const RootNav({super.key});
 
@@ -20,11 +25,15 @@ class RootNav extends StatefulWidget {
   State<RootNav> createState() => _RootNavState();
 }
 
-class _RootNavState extends State<RootNav> with WidgetsBindingObserver {
+class _RootNavState extends State<RootNav>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+  late final _bar = ScrollAwareBottomBarController(vsync: this);
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    rootTab.addListener(_onTabChanged);
     // The in-app banner for a personal notice opens the bell's list.
     openNotifications = () {
       if (mounted) openNotificationsScreen(context);
@@ -34,8 +43,28 @@ class _RootNavState extends State<RootNav> with WidgetsBindingObserver {
   @override
   void dispose() {
     openNotifications = null;
+    rootTab.removeListener(_onTabChanged);
+    _bar.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  bool _screenReader = false;
+
+  /// A new tab always opens with the bar showing.
+  void _onTabChanged() {
+    _bar
+      // Screen-reader users get a bar that never moves out from under them.
+      ..enabled = !_screenReader && rootTab.value != kArchieTabIndex
+      ..show();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _bar.reduceMotion = MediaQuery.disableAnimationsOf(context);
+    _screenReader = MediaQuery.accessibleNavigationOf(context);
+    _onTabChanged();
   }
 
   /// Re-checks the summit status each time the app comes back to the
@@ -65,47 +94,53 @@ class _RootNavState extends State<RootNav> with WidgetsBindingObserver {
     return ValueListenableBuilder<int>(
       valueListenable: rootTab,
       builder: (context, index, _) => Scaffold(
-        body: IndexedStack(index: index, children: _screens),
+        body: NotificationListener<ScrollNotification>(
+          onNotification: _bar.handle,
+          child: IndexedStack(index: index, children: _screens),
+        ),
         // Inner builder so the Announcements unread badge repaints on feed/read changes.
-        bottomNavigationBar: ListenableBuilder(
-          listenable: appState,
-          builder: (context, _) => Theme(
-            // Archie's tab has its own backdrop; match the bar to it.
-            data: index == kArchieTabIndex
-                ? ArchieScreen.navBarTheme(Theme.of(context))
-                : Theme.of(context),
-            child: NavigationBar(
-              selectedIndex: index,
-              onDestinationSelected: (i) => rootTab.value = i,
-              destinations: [
-                const NavigationDestination(
-                  icon: Icon(Icons.home_outlined),
-                  selectedIcon: Icon(Icons.home),
-                  label: 'Home',
-                ),
-                const NavigationDestination(
-                  icon: Icon(Icons.event_note_outlined),
-                  selectedIcon: Icon(Icons.event_note),
-                  label: 'Schedule',
-                ),
-                const NavigationDestination(
-                  icon: Icon(Icons.explore_outlined),
-                  selectedIcon: Icon(Icons.explore),
-                  label: 'Discover',
-                ),
-                // No count here: the bell on Home counts new posts, so a post
-                // isn't counted twice. Each post keeps its own dot in Announcements.
-                const NavigationDestination(
-                  icon: Icon(Icons.campaign_outlined),
-                  selectedIcon: Icon(Icons.campaign),
-                  label: 'Announcements',
-                ),
-                const NavigationDestination(
-                  icon: ArchieNavIcon(selected: false),
-                  selectedIcon: ArchieNavIcon(selected: true),
-                  label: 'Ask Archie',
-                ),
-              ],
+        bottomNavigationBar: ScrollAwareBottomBar(
+          controller: _bar,
+          child: ListenableBuilder(
+            listenable: appState,
+            builder: (context, _) => Theme(
+              // Archie's tab has its own backdrop; match the bar to it.
+              data: index == kArchieTabIndex
+                  ? ArchieScreen.navBarTheme(Theme.of(context))
+                  : Theme.of(context),
+              child: NavigationBar(
+                selectedIndex: index,
+                onDestinationSelected: (i) => rootTab.value = i,
+                destinations: [
+                  const NavigationDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home),
+                    label: 'Home',
+                  ),
+                  const NavigationDestination(
+                    icon: Icon(Icons.event_note_outlined),
+                    selectedIcon: Icon(Icons.event_note),
+                    label: 'Schedule',
+                  ),
+                  const NavigationDestination(
+                    icon: Icon(Icons.explore_outlined),
+                    selectedIcon: Icon(Icons.explore),
+                    label: 'Discover',
+                  ),
+                  // No count here: the bell on Home counts new posts, so a post
+                  // isn't counted twice. Each post keeps its own dot in Announcements.
+                  const NavigationDestination(
+                    icon: Icon(Icons.campaign_outlined),
+                    selectedIcon: Icon(Icons.campaign),
+                    label: 'Announcements',
+                  ),
+                  const NavigationDestination(
+                    icon: ArchieNavIcon(selected: false),
+                    selectedIcon: ArchieNavIcon(selected: true),
+                    label: 'Ask Archie',
+                  ),
+                ],
+              ),
             ),
           ),
         ),
