@@ -62,7 +62,14 @@ const QUICK_ACTIONS: Record<string, QuickAction[]> = {
       icon: Gavel,
     },
   ],
-  attendee: [],
+  attendee: [
+    {
+      to: '/disciplines',
+      label: 'Browse sessions',
+      sub: 'Add the sessions you want to watch',
+      icon: CalendarDays,
+    },
+  ],
   volunteer: [
     {
       to: '/schedule',
@@ -87,8 +94,7 @@ const QUICK_ACTIONS: Record<string, QuickAction[]> = {
   ],
 };
 
-/** 'Session' is a plain listing for roles with no schedule of their own. */
-type AgendaKind = 'Participating' | 'Expert' | 'Volunteering' | 'Spectating' | 'Session';
+type AgendaKind = 'Participating' | 'Expert' | 'Volunteering' | 'Spectating';
 
 interface AgendaItem {
   session: Session;
@@ -197,7 +203,7 @@ function AgendaRow({ item, first }: { item: AgendaItem; first: boolean }) {
       <div className="min-w-0 flex-1">
         <div className="truncate text-[16px] font-semibold">{s.title}</div>
         <div className="mt-0.5 truncate text-[13px] text-muted-foreground">
-          {joinParts(sessionPlace(s), kind === 'Session' ? (showTimes ? s.duration : undefined) : kind)}
+          {joinParts(sessionPlace(s), kind)}
         </div>
       </div>
       <span
@@ -267,7 +273,9 @@ export default function HomePage() {
   const roleName = (profile?.role as string | undefined) ?? 'participant';
   const ownKind = ownScheduleKind(roleName);
   const showYourDay = roleName !== 'admin';
-  const canSchedule = ownKind != null;
+  // Spectators have no reservation kind of their own, but every session they
+  // add is a spectating seat, so their day is their spectating list.
+  const canSchedule = ownKind != null || roleName === 'attendee';
   const isQrEligible = roleName === 'participant' || roleName === 'ambassador';
   const checkedInAt = profile?.checked_in_at as string | undefined;
 
@@ -456,14 +464,8 @@ export default function HomePage() {
                 </div>
               ) : (
                 <div className="space-y-1.5">
-                  {(canSchedule
-                    ? agenda
-                    : MOCK_SESSIONS.slice(0, 5).map((s) => ({
-                        session: s,
-                        kind: 'Session' as AgendaKind,
-                      }))
-                  ).map((item, i) => (
-                    <AgendaRow key={item.session.id} item={item} first={canSchedule && i === 0} />
+                  {agenda.map((item, i) => (
+                    <AgendaRow key={item.session.id} item={item} first={i === 0} />
                   ))}
                 </div>
               )}
