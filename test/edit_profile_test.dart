@@ -89,15 +89,19 @@ void main() {
     expect(find.text('Alex Rivera'), findsOneWidget);
     // The old typed "Emerald High" opens on the listed school.
     expect(find.text('Emerald High School'), findsOneWidget);
-    expect(find.text('11'), findsOneWidget);
+    expect(find.text('11th grade'), findsOneWidget);
     expect(find.text('alex@example.com'), findsOneWidget);
   });
 
   testWidgets('saves edits and keeps answers from other roles', (tester) async {
     await pumpEditor(tester);
     await tester.enterText(field('Full name'), 'Alex R.');
-    await tester.enterText(field('Grade'), '12');
-    await tester.enterText(field('Mobile number (optional)'), '925 555 0123');
+    await tester.tap(find.text('11th grade'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('12th grade').last);
+    await tester.pumpAndSettle();
+    // Digits only, at most 10.
+    await tester.enterText(field('Mobile number (optional)'), '(925) 555-01234');
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
@@ -113,13 +117,15 @@ void main() {
     expect(find.text('Profile saved.'), findsOneWidget);
   });
 
-  testWidgets('a required answer cannot be cleared', (tester) async {
+  testWidgets('a grade outside 8th to 12th has to be picked again', (
+    tester,
+  ) async {
+    appState.profile!.details['grade'] = '7';
     await pumpEditor(tester);
-    await tester.enterText(field('Grade'), '');
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
     expect(find.text('Grade is required.'), findsOneWidget);
-    expect(appState.profile!.details['grade'], '11');
+    expect(appState.profile!.details['grade'], '7');
   });
 
   testWidgets('Other opens a box for a school that is not listed', (

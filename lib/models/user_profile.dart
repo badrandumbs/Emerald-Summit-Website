@@ -78,6 +78,7 @@ class ProfileField {
     this.keyboardType = TextInputType.text,
     this.digitsOnly = false,
     this.schoolPicker = false,
+    this.gradePicker = false,
   });
 
   final String key;
@@ -104,6 +105,10 @@ class ProfileField {
   /// (`schools.dart`) with an "Other" choice that opens a text box.
   final bool schoolPicker;
 
+  /// True for a participant's grade: a dropdown of 8th to 12th grade, saved
+  /// as "8" to "12".
+  final bool gradePicker;
+
   /// True for a mobile number field.
   bool get isPhone => keyboardType == TextInputType.phone;
 
@@ -111,7 +116,7 @@ class ProfileField {
   TextInputType get keyboard => isPhone ? TextInputType.number : keyboardType;
 
   /// What the field lets through as you type or paste: phone numbers keep
-  /// digits only, at most 15 ("(925) 555-0100" becomes 9255550100), like the
+  /// digits only, at most 10 ("(925) 555-0100" becomes 9255550100), like the
   /// website.
   List<TextInputFormatter>? get inputFormatters => isPhone
       ? phoneFormatters
@@ -122,7 +127,7 @@ class ProfileField {
   /// The formatters every mobile number field uses.
   static final phoneFormatters = <TextInputFormatter>[
     FilteringTextInputFormatter.digitsOnly,
-    LengthLimitingTextInputFormatter(15),
+    LengthLimitingTextInputFormatter(10),
   ];
 }
 
@@ -233,8 +238,8 @@ extension SummitRoleX on SummitRole {
                 key: 'grade',
                 label: 'Grade',
                 required: true,
-                hint: 'e.g. 11',
-                helper: _studentGradeNote),
+                helper: _studentGradeNote,
+                gradePicker: true),
             ProfileField(
                 key: 'phone',
                 label: 'Mobile number (optional)',
@@ -337,6 +342,8 @@ class UserProfile {
     this.canCheckInFrontDesk = false,
     this.expertStatus,
     this.expertQueueSeenAt,
+    this.codeOfConductVersion,
+    this.tracksCodeOfConduct = false,
     List<String>? managedDisciplines,
     Map<String, dynamic>? details,
   })  : managedDisciplines = managedDisciplines ?? const [],
@@ -373,6 +380,14 @@ class UserProfile {
   /// Admins: when they last opened Profile. The red badge on the Home avatar
   /// shows while an expert has been waiting for approval since then.
   DateTime? expertQueueSeenAt;
+
+  /// The Code of Conduct version this account agreed to, or null if it
+  /// hasn't (code_of_conduct.sql).
+  String? codeOfConductVersion;
+
+  /// False when the profile row has no Code of Conduct columns yet (the SQL
+  /// not run), so nobody is asked to agree to something that can't be saved.
+  final bool tracksCodeOfConduct;
 
   /// Discipline ids a volunteer may manage, or `['*']` for a volunteer who
   /// manages every discipline. Set by the server (the allowlist enforcement
@@ -436,6 +451,8 @@ class UserProfile {
         managedDisciplines:
             (row['managed_disciplines'] as List?)?.cast<String>() ?? const [],
         details: (row['details'] as Map?)?.cast<String, dynamic>() ?? {},
+        codeOfConductVersion: row['code_of_conduct_version'] as String?,
+        tracksCodeOfConduct: row.containsKey('code_of_conduct_version'),
       );
 
   /// Columns the app writes back. Deliberately omits per-user state that has its

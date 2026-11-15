@@ -412,6 +412,9 @@ abstract interface class ProfileRepository {
   /// What switching to [role] would do to the user's sessions. Nothing is
   /// changed; the database applies the same rules when the role is saved.
   Future<List<RoleChangeItem>> previewRoleChange(SummitRole role);
+
+  /// Records that the signed-in account agreed to Code of Conduct [version].
+  Future<void> agreeToCodeOfConduct(String version);
 }
 
 /// The announcements feed, plus an optional live event stream.

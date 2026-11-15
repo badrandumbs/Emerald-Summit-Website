@@ -4,6 +4,7 @@ import '../../app_state.dart';
 import '../../backend/service_locator.dart';
 import '../root_nav.dart';
 import '../summit_followup_screen.dart';
+import 'code_of_conduct_screen.dart';
 import 'expert_pending_screen.dart';
 import 'grade_required_screen.dart';
 import 'onboarding_screen.dart';
@@ -14,6 +15,7 @@ import 'welcome_screen.dart';
 ///
 ///   no session          → [WelcomeScreen] (pick a role, then sign in)
 ///   session, no profile → [OnboardingScreen]
+///   Code of Conduct not agreed yet → [CodeOfConductScreen]
 ///   expert not yet approved by an admin → [ExpertPendingScreen]
 ///   volunteer/admin with no mobile number → [PhoneRequiredScreen]
 ///   student volunteer / ambassador with no grade → [GradeRequiredScreen]
@@ -90,6 +92,11 @@ class _ProfileLoaderState extends State<_ProfileLoader> {
         }
         if (!appState.isOnboarded) {
           return const OnboardingScreen();
+        }
+        // Every role agrees to the Code of Conduct once: right after the
+        // sign-up questions, or now for an account made before it existed.
+        if (appState.needsCodeOfConduct) {
+          return const CodeOfConductScreen();
         }
         // Expert accounts wait for an admin's approval before using the app.
         if (appState.needsExpertApproval) {

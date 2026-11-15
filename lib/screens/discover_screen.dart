@@ -5,6 +5,7 @@ import '../app_state.dart';
 import '../models/models.dart';
 import '../widgets/discipline_effects.dart';
 import '../widgets/discipline_vibe.dart';
+import '../widgets/eighth_grade_badge.dart';
 import 'discipline_editor_screen.dart';
 import 'discipline_screen.dart';
 import 'session_detail_screen.dart';
@@ -397,6 +398,11 @@ class _ResultTile extends StatelessWidget {
                       '${discipline.name} · ${s.timeLabel} · ${s.roomLabel}',
                       style: theme.textTheme.bodySmall,
                     ),
+                    if (appState.isEighthGradeParticipant &&
+                        s.allowEighthGraders) ...[
+                      const SizedBox(height: 6),
+                      const EighthGradeBadge(),
+                    ],
                   ],
                 ),
               ),

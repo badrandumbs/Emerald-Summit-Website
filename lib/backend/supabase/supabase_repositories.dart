@@ -350,6 +350,12 @@ class SupabaseProfileRepository implements ProfileRepository {
   }
 
   @override
+  Future<void> agreeToCodeOfConduct(String version) async {
+    await _client
+        .rpc('agree_to_code_of_conduct', params: {'p_version': version});
+  }
+
+  @override
   Future<List<RoleChangeItem>> previewRoleChange(SummitRole role) async {
     final res = await _client.rpc(
       'preview_role_change',

@@ -10,6 +10,7 @@ import '../models/models.dart';
 import '../models/user_profile.dart';
 import '../widgets/discipline_effects.dart';
 import '../widgets/discipline_vibe.dart';
+import '../widgets/eighth_grade_badge.dart';
 import '../widgets/manager_replace_dialogs.dart';
 import '../widgets/session_metrics_view.dart';
 import 'session_editor_screen.dart';
@@ -995,6 +996,21 @@ class _SessionAboutTabState extends State<_SessionAboutTab> {
                     ? 'Full (${current.enrolled}/${current.capacity})'
                     : '${current.seatsLeft} of ${current.capacity} seats left',
               ),
+              // An 8th-grade participant sees whether they can participate.
+              if (appState.isEighthGradeParticipant)
+                current.allowEighthGraders
+                    ? const Padding(
+                        padding: EdgeInsets.only(top: 4, bottom: 6),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: EighthGradeBadge(),
+                        ),
+                      )
+                    : const _InfoRow(
+                        icon: Icons.info_outline,
+                        text: "Not open to 8th graders for participating. "
+                            'You can spectate it.',
+                      ),
               if (current.participantDeadline != null || widget.canEdit) ...[
                 const SizedBox(height: 12),
                 _ParticipantDeadlineCard(

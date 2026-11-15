@@ -6,6 +6,7 @@ import '../models/models.dart';
 import '../widgets/discipline_effects.dart';
 import '../widgets/discipline_vibe.dart';
 import '../widgets/duotone_icon.dart';
+import '../widgets/eighth_grade_badge.dart';
 import 'session_detail_screen.dart';
 import 'session_editor_screen.dart';
 
@@ -223,13 +224,31 @@ class _DisciplineScreenState extends State<DisciplineScreen>
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
-                  child: Text(
-                    'TRACKS',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: _vibe.textDim,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.6,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'TRACKS',
+                        style:
+                            Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  color: _vibe.textDim,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.6,
+                                ),
+                      ),
+                      if (appState.isEighthGradeParticipant) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          'Tracks marked "${EighthGradeBadge.label}" are '
+                          'the ones you can participate in. You can spectate '
+                          'any of them.',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: _vibe.textDim),
                         ),
+                      ],
+                    ],
                   ),
                 ),
               ),
@@ -635,6 +654,11 @@ class _SessionCardState extends State<_SessionCard> {
                   style:
                       theme.textTheme.bodySmall?.copyWith(color: vibe.textDim),
                 ),
+                if (appState.isEighthGradeParticipant &&
+                    s.allowEighthGraders) ...[
+                  const SizedBox(height: 8),
+                  EighthGradeBadge(color: vibe.accent),
+                ],
                 const SizedBox(height: 10),
                 Padding(
                   padding: const EdgeInsets.only(right: 8),

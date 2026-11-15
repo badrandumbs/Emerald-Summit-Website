@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_state.dart';
 import '../models/user_profile.dart';
+import '../widgets/grade_picker.dart';
 import '../widgets/school_picker.dart';
 
 /// Profile → Edit profile: change the name and the role's sign-up answers
@@ -116,7 +117,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   const SizedBox(height: 14),
                   for (final f in _fields) ...[
-                    if (f.schoolPicker)
+                    if (f.gradePicker)
+                      GradePicker(
+                        field: f,
+                        controller: _fieldControllers[f.key]!,
+                        enabled: !_busy,
+                      )
+                    else if (f.schoolPicker)
                       SchoolPicker(
                         field: f,
                         controller: _fieldControllers[f.key]!,

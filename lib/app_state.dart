@@ -6,6 +6,8 @@ import 'app_navigation.dart';
 import 'backend/backend.dart';
 import 'backend/service_locator.dart';
 import 'models/models.dart';
+import 'models/code_of_conduct.dart';
+import 'models/metrics.dart';
 import 'models/user_profile.dart';
 import 'widgets/in_app_banner.dart';
 
@@ -980,6 +982,33 @@ class AppState extends ChangeNotifier {
     final p = profile;
     if (p == null || !p.onboarded || !p.needsGrade) return false;
     return '${p.details['grade'] ?? ''}'.trim().isEmpty;
+  }
+
+  /// True for a participant whose grade is 8: they can participate only in
+  /// sessions that allow 8th graders, which the session lists mark for them.
+  bool get isEighthGradeParticipant {
+    final p = profile;
+    return p != null &&
+        p.role == SummitRole.participant &&
+        gradeLabel(p.details['grade']?.toString()) == '8';
+  }
+
+  /// True when this account hasn't agreed to the current Code of Conduct.
+  /// Every role agrees once; the auth gate asks right after sign-up, or on
+  /// the next launch for an account that signed up before it existed.
+  bool get needsCodeOfConduct {
+    final p = profile;
+    return p != null &&
+        p.onboarded &&
+        p.tracksCodeOfConduct &&
+        p.codeOfConductVersion != codeOfConductVersion;
+  }
+
+  /// Records the agreement and refreshes the profile.
+  Future<void> agreeToCodeOfConduct() async {
+    await profileRepository.agreeToCodeOfConduct(codeOfConductVersion);
+    profile?.codeOfConductVersion = codeOfConductVersion;
+    notifyListeners();
   }
 
   /// True when the account picked Expert and no admin has approved it yet.

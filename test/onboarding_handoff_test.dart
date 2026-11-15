@@ -84,7 +84,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Emerald High School').last);
     await tester.pumpAndSettle();
-    await tester.enterText(find.widgetWithText(TextField, 'Grade'), '11');
+    await tester.ensureVisible(find.text('Grade'));
+    await tester.tap(find.text('Grade'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('11th grade').last);
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Finish & enter the app'));
     await tester.tap(find.text('Finish & enter the app'));
     await tester.pump();
