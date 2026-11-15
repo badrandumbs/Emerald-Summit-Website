@@ -1536,8 +1536,8 @@ date ("Thu, Nov 12", or "Nov 12, 2025" for another year) instead of "2d ago". Th
 Both are on the to-do list below.
 
 ### Website changes to bring into the app (to-do)
-Still open: Code of conduct (waiting on the text) · Universe subtitles
-(the SQL hasn't been run) · uploading Archie's edited knowledge file and
+Still open: running [code_of_conduct.sql](supabase/code_of_conduct.sql)
+(see **Code of Conduct**) · uploading Archie's edited knowledge file and
 redeploying `archie-chat` (see **Archie and the FAQ**). Everything else
 below landed in the app on Nov 14, 2026 and is ticked, with a note where the
 app does it differently from the website. Checked against the website on
@@ -1767,14 +1767,14 @@ has it too since Nov 14, 2026; see below.
   `registration_closed` error; the app shows its generic error (see
   **Registration lock and hidden session times**).
   Done in the app (`registrationRefusalMessage` in repositories.dart).
-- [ ] **Universe subtitles.** The website renamed four: ImagineX "Arts,
+- [x] **Universe subtitles.** The website renamed four: ImagineX "Arts,
   Literature, Music, Drama & Improv", NovaSphere "Core Sciences, Climate
   Change & Sustainability", VentureVerse "Entrepreneurship & Marketing",
   CivicVerse "Mock Trial, Government Policy & Rights". The app and now the
   website show each discipline's `tagline` from the database. Neither client
   can edit a discipline (the app's editor only creates one), so run
   [universe_subtitles.sql](supabase/universe_subtitles.sql) in the SQL Editor
-  (not run yet). No code change.
+  (run Nov 14, 2026). No code change.
 - [ ] **Archie and the FAQ.** The website's FAQ added why the Summit is in
   January, whether a project needs to be perfect, and why there are no awards
   (every participant gets a certificate of participation). Add them to
@@ -1826,10 +1826,40 @@ has it too since Nov 14, 2026; see below.
   `appState.pendingSignUpRole`, which onboarding starts on ("Signing up as
   …" with a Change link). Google sign-in from either mode makes the account
   if it's new and onboarding runs, as on the website.
-- [ ] **Code of conduct (waiting on the text).** The Summit team still has
-  to provide it. It will be a sign-up step after the profile questions,
-  agreed once per account, on the website and in the app. Nothing is built
-  yet on either.
+- [ ] **Code of Conduct** (app and website, Nov 14, 2026; built, waiting on
+  the SQL). Every role (participant, spectator, expert, volunteer, admin)
+  agrees once by ticking a box; no signatures. The text is EAF's "Emerald
+  Summit 2026 Code of Conduct" form rewritten for everyone who attends
+  (conduct, liability and insurance, photos and video with an email
+  opt-out, what the checkbox means), in
+  [code_of_conduct.dart](lib/models/code_of_conduct.dart) and the website's
+  `src/models/codeOfConduct.ts`, with a version string (`2026-11-14`).
+  Change the text in both and bump the version to have everyone agree again.
+  - It shows in a scrollable window with **Expand** (full screen in the app,
+    a large popup on the website), then the checkbox "I've read the Code of
+    Conduct and agree to follow it."
+  - New accounts: the app's auth gate shows it right after the sign-up
+    questions; the website puts it under the questions on the profile page.
+    Existing accounts get it ("One last step") the next time they open
+    either, before anything else.
+  - Backend: [code_of_conduct.sql](supabase/code_of_conduct.sql) adds
+    `profiles.code_of_conduct_version` and `code_of_conduct_agreed_at` and
+    `agree_to_code_of_conduct(p_version)`. **Not run yet.** Until it is, the
+    profile row has no such column and neither client asks anyone.
+- [x] **Grade is a dropdown for participants** (app and website, Nov 14,
+  2026). 8th grade to 12th grade, saved as "8" to "12", on sign-up and Edit
+  profile ([grade_picker.dart](lib/widgets/grade_picker.dart), the website's
+  `GradePicker` in ProfileFieldInput.tsx). An older typed answer ("11th",
+  "Junior") opens on its grade; anything else has to be picked again.
+  Volunteer and admin grades stay typed.
+- [x] **8th graders see which tracks they can participate in** (app and
+  website, Nov 14, 2026). For a participant whose grade is 8, tracks with
+  `allow_eighth_graders` carry an **Open to 8th grade** badge on the
+  discipline page (with a note under **Tracks**), in the app's Discover
+  search, and on the session page; the session page of any other track says
+  "Not open to 8th graders for participating. You can spectate it."
+  (`AppState.isEighthGradeParticipant`, the website's
+  `isEighthGradeParticipant` in registration.ts).
 - [x] **Role names: Spectator and Expert.** The website renamed "Parent /
   Spectator" to **Spectator** and "Expert / Speaker" to **Expert**
   everywhere, and every role's blurb is now the sign-in screen's (see the
@@ -1838,7 +1868,8 @@ has it too since Nov 14, 2026; see below.
   Done in the app.
 - [x] **Phone numbers are digits only.** On the website the mobile number
   field drops anything that isn't a digit as you type or paste ("(925)
-  555-0100" becomes 9255550100), keeps at most 15 digits, and opens the
+  555-0100" becomes 9255550100), keeps at most 10 digits (was 15 until
+  Nov 14, 2026, on both), and opens the
   number pad. Do the same in the app's phone fields (sign-up and the
   add-your-number gate).
   Done in the app (`ProfileField.phoneFormatters`).
