@@ -102,7 +102,9 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     return ListView.separated(
       physics:
           alwaysScrollable ? const AlwaysScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.all(16),
+      // Room at the end for the floating tab bar.
+      padding: EdgeInsets.fromLTRB(
+          16, 16, 16, 16 + MediaQuery.paddingOf(context).bottom),
       itemCount: items.length,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, i) => _AnnouncementCard(item: items[i]),

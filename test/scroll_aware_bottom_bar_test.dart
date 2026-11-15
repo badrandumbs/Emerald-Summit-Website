@@ -20,6 +20,7 @@ class _HostState extends State<_Host> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) => Scaffold(
+    extendBody: true,
     body: NotificationListener<ScrollNotification>(
       onNotification: bar.handle,
       child: ListView(
@@ -37,8 +38,15 @@ class _HostState extends State<_Host> with SingleTickerProviderStateMixin {
 }
 
 void main() {
-  double barHeight(WidgetTester t) =>
-      t.getSize(find.byType(ScrollAwareBottomBar)).height;
+  // The test screen is 600 tall and the bar 80, so a shown bar's top is at
+  // 520 and a hidden one is pushed past the bottom edge. Report 80 for shown
+  // and 0 for hidden.
+  double barHeight(WidgetTester t) {
+    final top = t.getTopLeft(find.byKey(const Key('bar'))).dy;
+    if (top == 520) return 80;
+    if (top >= 600) return 0;
+    return -1; // mid-slide
+  }
 
   Future<void> pumpHost(WidgetTester t) async {
     await t.pumpWidget(const MaterialApp(home: _Host()));

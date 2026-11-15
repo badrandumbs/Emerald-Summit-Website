@@ -4,10 +4,8 @@ import 'package:flutter/rendering.dart';
 /// Slides the bottom bar away while the user scrolls down and brings it back
 /// when they scroll up, the way Uber's tab bar behaves.
 ///
-/// Put [listener] around the tabs' content so it hears their scrolls, and
-/// [bar] in the Scaffold's `bottomNavigationBar` slot. The bar shrinks out of
-/// that slot (rather than floating over the page), so nothing on a tab ever
-/// sits under it.
+/// Feed [handle] from a NotificationListener around the tabs' content, and put
+/// [ScrollAwareBottomBar] in the Scaffold's `bottomNavigationBar` slot.
 class ScrollAwareBottomBarController {
   ScrollAwareBottomBarController({required TickerProvider vsync})
     : _anim = AnimationController(
@@ -135,8 +133,10 @@ class ScrollAwareBottomBarController {
   }
 }
 
-/// The bar itself: slides down out of view as [controller] hides it, and
-/// gives its space back to the page as it goes.
+/// The bar itself: slides down off the screen as [controller] hides it.
+///
+/// It keeps its size while it moves, so the page under it never re-lays out
+/// mid-scroll. Use it with `Scaffold.extendBody` so the page runs behind it.
 class ScrollAwareBottomBar extends StatelessWidget {
   const ScrollAwareBottomBar({
     super.key,
@@ -149,17 +149,13 @@ class ScrollAwareBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final curved = controller.visibility;
+    final shown = controller.visibility;
     return AnimatedBuilder(
-      animation: curved,
-      // Top-aligned in a shrinking box, so the bar slides down past the
-      // screen edge instead of getting squashed.
-      builder: (context, bar) => ClipRect(
-        child: Align(
-          alignment: Alignment.topCenter,
-          heightFactor: curved.value,
-          child: bar,
-        ),
+      animation: shown,
+      builder: (context, bar) => FractionalTranslation(
+        // A little past its own height so the shadow leaves too.
+        translation: Offset(0, (1 - shown.value) * 1.15),
+        child: bar,
       ),
       child: child,
     );

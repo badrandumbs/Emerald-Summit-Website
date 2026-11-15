@@ -77,7 +77,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           return RefreshIndicator(
             onRefresh: appState.loadCatalog,
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+              // Room for the admin button, which sits above the floating
+              // tab bar.
+              padding: EdgeInsets.fromLTRB(
+                  16, 16, 16, 96 + MediaQuery.paddingOf(context).bottom),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               children: [
                 TextField(

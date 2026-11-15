@@ -46,7 +46,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           return RefreshIndicator(
             onRefresh: _refresh,
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              // Room at the end for the floating tab bar.
+              padding: EdgeInsets.fromLTRB(
+                  16, 16, 16, 24 + MediaQuery.paddingOf(context).bottom),
               children: _timeline(context, entries),
             ),
           );

@@ -559,8 +559,9 @@ class _ArchieScreenState extends State<ArchieScreen>
           body: Stack(
             children: [
               const Positioned.fill(child: _GlowBackground()),
+              // The bottom inset is the floating tab bar's height, so the
+              // composer sits just above it (and above the keyboard).
               SafeArea(
-                bottom: false,
                 child: Column(
                   children: [
                     _Header(

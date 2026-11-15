@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_navigation.dart';
 import '../app_state.dart';
+import '../widgets/floating_tab_bar.dart';
 import '../widgets/scroll_aware_bottom_bar.dart';
 import 'dashboard_screen.dart';
 import 'schedule_screen.dart';
@@ -87,6 +88,37 @@ class _RootNavState extends State<RootNav>
     ArchieScreen(),
   ];
 
+  static const _tabs = [
+    FloatingTab(
+      icon: Icon(Icons.home_outlined),
+      selectedIcon: Icon(Icons.home),
+      label: 'Home',
+    ),
+    FloatingTab(
+      icon: Icon(Icons.event_note_outlined),
+      selectedIcon: Icon(Icons.event_note),
+      label: 'Schedule',
+    ),
+    FloatingTab(
+      icon: Icon(Icons.explore_outlined),
+      selectedIcon: Icon(Icons.explore),
+      label: 'Discover',
+    ),
+    // "News" so every label fits one line at the same size; the screen itself
+    // is still titled Announcements. No count here: the bell on Home counts
+    // new posts, so a post isn't counted twice.
+    FloatingTab(
+      icon: Icon(Icons.campaign_outlined),
+      selectedIcon: Icon(Icons.campaign),
+      label: 'News',
+    ),
+    FloatingTab(
+      icon: ArchieNavIcon(selected: false),
+      selectedIcon: ArchieNavIcon(selected: true),
+      label: 'Ask Archie',
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
     // Driven by the global [rootTab] so code outside the widget tree (the in-app
@@ -94,53 +126,25 @@ class _RootNavState extends State<RootNav>
     return ValueListenableBuilder<int>(
       valueListenable: rootTab,
       builder: (context, index, _) => Scaffold(
+        // The bar floats over the page, so pages scroll behind it. Each tab
+        // pads its list's end by MediaQuery's bottom padding (the bar's
+        // height) so the last item can scroll clear of it.
+        extendBody: true,
         body: NotificationListener<ScrollNotification>(
           onNotification: _bar.handle,
           child: IndexedStack(index: index, children: _screens),
         ),
-        // Inner builder so the Announcements unread badge repaints on feed/read changes.
         bottomNavigationBar: ScrollAwareBottomBar(
           controller: _bar,
-          child: ListenableBuilder(
-            listenable: appState,
-            builder: (context, _) => Theme(
-              // Archie's tab has its own backdrop; match the bar to it.
-              data: index == kArchieTabIndex
-                  ? ArchieScreen.navBarTheme(Theme.of(context))
-                  : Theme.of(context),
-              child: NavigationBar(
-                selectedIndex: index,
-                onDestinationSelected: (i) => rootTab.value = i,
-                destinations: [
-                  const NavigationDestination(
-                    icon: Icon(Icons.home_outlined),
-                    selectedIcon: Icon(Icons.home),
-                    label: 'Home',
-                  ),
-                  const NavigationDestination(
-                    icon: Icon(Icons.event_note_outlined),
-                    selectedIcon: Icon(Icons.event_note),
-                    label: 'Schedule',
-                  ),
-                  const NavigationDestination(
-                    icon: Icon(Icons.explore_outlined),
-                    selectedIcon: Icon(Icons.explore),
-                    label: 'Discover',
-                  ),
-                  // No count here: the bell on Home counts new posts, so a post
-                  // isn't counted twice. Each post keeps its own dot in Announcements.
-                  const NavigationDestination(
-                    icon: Icon(Icons.campaign_outlined),
-                    selectedIcon: Icon(Icons.campaign),
-                    label: 'Announcements',
-                  ),
-                  const NavigationDestination(
-                    icon: ArchieNavIcon(selected: false),
-                    selectedIcon: ArchieNavIcon(selected: true),
-                    label: 'Ask Archie',
-                  ),
-                ],
-              ),
+          child: Theme(
+            // Archie's tab has its own backdrop; match the bar to it.
+            data: index == kArchieTabIndex
+                ? ArchieScreen.navBarTheme(Theme.of(context))
+                : Theme.of(context),
+            child: FloatingTabBar(
+              tabs: _tabs,
+              selectedIndex: index,
+              onSelected: (i) => rootTab.value = i,
             ),
           ),
         ),

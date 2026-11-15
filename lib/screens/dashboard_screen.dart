@@ -39,7 +39,9 @@ class DashboardScreen extends StatelessWidget {
           await appState.loadGallery();
         },
         child: ListView(
-          padding: EdgeInsets.zero,
+          // Room at the end for the floating tab bar.
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
           children: const [
             _Header(),
             SizedBox(height: 16),
