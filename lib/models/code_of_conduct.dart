@@ -1,27 +1,40 @@
 /// What each account agrees to once, by ticking a box (code_of_conduct.sql):
-/// experts agree to the [speakerPolicy], every other role to the
-/// [codeOfConduct]. Both are rewritten from EAF's forms (the "Emerald Summit
-/// 2026 Code of Conduct" field trip waiver, version 11.02.2025.1, and the
-/// "Emerald Summit '26 Speaker Policy Document" v1.0, Jan 28, 2026). The
-/// website has the same text in src/models/codeOfConduct.ts: change both
+/// experts agree to the [guestExpertPolicy], every other role to the
+/// [codeOfConduct]. The text is word for word from EAF's documents, nothing
+/// summarized: "Emerald Summit 2026 Code of Conduct" (EAF Field Trip Waiver
+/// Form Version 11.02.2025.1) and "Guest Expert Policy: Emerald Summit '27"
+/// (Nov 14, 2026). The only changes: the signature lines are replaced by the
+/// checkbox, and the Code of Conduct's two media options say "of me" instead
+/// of "of my child", because the account holder picks one, not a parent.
+/// The website has the same text in src/models/codeOfConduct.ts: change both
 /// together and bump the version, which asks everyone who agreed to agree
 /// again.
 library;
 
 import 'user_profile.dart';
 
-/// One titled part of an agreement.
-class ConductSection {
-  const ConductSection(this.title, this.points);
-  final String title;
-  final List<ConductPoint> points;
+/// One piece of an agreement: a paragraph or a bullet, optionally led by a
+/// bold label ("General Conduct") or an italic one ("Exemptions"). A label
+/// with no [text] is a small heading ("Behavior Expectations").
+class AgreementBlock {
+  const AgreementBlock(
+    this.text, {
+    this.lead,
+    this.bullet = false,
+    this.italicLead = false,
+  });
+
+  final String text;
+  final String? lead;
+  final bool bullet;
+  final bool italicLead;
 }
 
-/// A rule: a short bold lead and what it means.
-class ConductPoint {
-  const ConductPoint(this.lead, this.text);
-  final String lead;
-  final String text;
+/// One titled part of an agreement.
+class ConductSection {
+  const ConductSection(this.title, this.blocks);
+  final String title;
+  final List<AgreementBlock> blocks;
 }
 
 /// A document an account agrees to.
@@ -30,168 +43,299 @@ class SummitAgreement {
     required this.version,
     required this.name,
     required this.title,
-    required this.intro,
+    required this.preamble,
     required this.sections,
     required this.checkbox,
     required this.whoAgrees,
+    this.footer,
+    this.mediaChoice,
   });
 
   /// Stored in `profiles.code_of_conduct_version`; prefixed so the two
   /// documents never share one.
   final String version;
 
-  /// "Code of Conduct" / "Speaker Policy".
+  /// "Code of Conduct" / "Guest Expert Policy".
   final String name;
   final String title;
-  final String intro;
+
+  /// The lines under the title, before the first section.
+  final List<String> preamble;
   final List<ConductSection> sections;
 
   /// The checkbox under it.
   final String checkbox;
 
-  /// The sentence above the window, e.g. "Everyone at the Summit agrees to
-  /// the Code of Conduct."
+  /// The sentence above the window.
   final String whoAgrees;
+
+  /// The document's footer line, if it has one.
+  final String? footer;
+
+  /// The "Please check one" photo permission question, answered with a
+  /// radio button (`profiles.photo_consent`), or null when there is none.
+  final MediaChoice? mediaChoice;
 }
 
-/// The agreement for [role]: the Speaker Policy for experts, the Code of
+/// A grant / do-not-grant question.
+class MediaChoice {
+  const MediaChoice({
+    required this.section,
+    required this.prompt,
+    required this.grant,
+    required this.doNotGrant,
+  });
+
+  /// The section the question belongs to; it shows right after it.
+  final String section;
+  final String prompt;
+  final String grant;
+  final String doNotGrant;
+}
+
+/// The agreement for [role]: the Guest Expert Policy for experts, the Code of
 /// Conduct for everyone else.
 SummitAgreement agreementFor(SummitRole role) =>
-    role == SummitRole.expert ? speakerPolicy : codeOfConduct;
+    role == SummitRole.expert ? guestExpertPolicy : codeOfConduct;
 
 const codeOfConduct = SummitAgreement(
-  version: 'conduct-2026-11-14',
+  version: 'conduct-2026-11-15',
   name: 'Code of Conduct',
-  title: "Emerald Summit '27 Code of Conduct",
+  title: 'Emerald Summit 2026 Code of Conduct',
   whoAgrees: 'Everyone at the Summit agrees to the Code of Conduct.',
-  intro: 'Emerald Summit is an EHS Academic Foundation (EAF) event. It is not '
-      'a school or Dublin Unified School District (DUSD) event. Everyone who '
-      'attends agrees to this code: participants, spectators, volunteers and '
-      'organizers. Experts agree to the Speaker Policy instead.',
-  checkbox: "I've read the Code of Conduct and agree to follow it.",
+  preamble: [
+    'This is an EAF event. It is NOT a school/DUSD-sponsored event.',
+    'IMPORTANT: PLEASE REVIEW ALL SECTIONS OF THIS FORM CAREFULLY.',
+  ],
+  checkbox: 'I have read the Code of Conduct and agree to it.',
+  footer: 'EAF Field Trip Waiver Form Version 11.02.2025.1',
   sections: [
-    ConductSection('How everyone is expected to act', [
-      ConductPoint('Be respectful and responsible',
-          'Act in a way that reflects well on Emerald High School, your '
-              'family and yourself.'),
-      ConductPoint('No alcohol, tobacco, drugs or vaping',
-          'These are not allowed anywhere at the event, the same as under '
-              'DUSD policy.'),
-      ConductPoint('Treat people well',
-          'No inappropriate language, bullying, harassment or disruptive '
-              'behavior.'),
-      ConductPoint('No violence', 'Fighting and threats are not tolerated.'),
-      ConductPoint('Respect the building',
-          'Take care of the school and everything in it. Damage, littering '
-              'and vandalism break this code.'),
-      ConductPoint('Chaperones and organizers can step in',
-          'They keep the event safe and respectful, and may step in whenever '
-              'someone breaks these rules.'),
+    ConductSection('Student Code of Conduct', [
+      AgreementBlock(
+          'As ambassadors for Emerald High School, all students must conduct '
+          'themselves respectfully, responsibly, and in a manner that '
+          'reflects positively on the school, their families, and '
+          'themselves.',
+          lead: 'General Conduct'),
+      AgreementBlock('', lead: 'Behavior Expectations'),
+      AgreementBlock('Strictly prohibited, as per DUSD policy.',
+          lead: 'No Alcohol, Tobacco, Drugs, or Vaping Devices'),
+      AgreementBlock(
+          'No inappropriate language, bullying, harassment, or disruptive '
+          'behavior.',
+          lead: 'Respectful Behavior'),
+      AgreementBlock(
+          'Physical altercations or threats will not be tolerated.',
+          lead: 'Violence and Aggression'),
+      AgreementBlock(
+          'Students are expected to respect all property and event venues. '
+          'Any damage, littering or vandalism is a violation of policy.',
+          lead: 'Property Respect'),
+      AgreementBlock(
+          'Chaperones are empowered to maintain a safe and respectful '
+          'environment. They may intervene if any student behavior violates '
+          'the event guidelines.',
+          lead: 'Chaperones'),
     ]),
-    ConductSection('Liability and insurance', [
-      ConductPoint('Not a district event',
-          'DUSD does not sponsor the Summit and is not liable for any injury, '
-              'loss or property damage during it. By attending, you (and, for '
-              'students, your parents or guardians) accept this '
-              'responsibility.'),
-      ConductPoint('District staff and chaperones',
-          'DUSD staff who attend are not covered by district insurance for '
-              'this event. Chaperones and sponsors are not acting for DUSD and '
-              'are not covered by its liability insurance.'),
-      ConductPoint('Hold harmless',
-          'By attending, you agree to hold harmless and indemnify Emerald '
-              'High School, EAF, and the event staff and chaperones for any '
-              'personal injury, loss or property damage during the event.'),
-      ConductPoint('Insurance',
-          'Neither DUSD nor EAF provides insurance for the Summit. Your own '
-              "insurance, or your parents' or guardians', applies."),
+    ConductSection('Liability & Legal Disclaimer', [
+      AgreementBlock(
+          'This event is not sponsored by DUSD. As such, the district will '
+          'not be liable for any injuries, loss, or property damage that may '
+          'occur during the event. By attending, all students and parents '
+          'acknowledge and accept this responsibility.',
+          lead: 'Non-School Event'),
+      AgreementBlock(
+          'DUSD staff, if present, will not be covered by district insurance '
+          'for this event. Chaperones and sponsors are not acting as agents '
+          'of DUSD, and therefore, they are not covered by district liability '
+          'insurance.',
+          lead: 'Individual Liability'),
+      AgreementBlock(
+          'By attending this event, students and parents agree to hold '
+          'harmless and indemnify Emerald High School, EAF, and any event '
+          'staff or chaperones from any personal injury, loss, or damage to '
+          'property that may occur during the event.',
+          lead: 'Hold Harmless'),
+      AgreementBlock(
+          'DUSD does not provide insurance for non-school sponsored events. '
+          'Insurance coverage must be provided by parents/guardians or '
+          'through the travel agency. Students will not be covered by '
+          'district or EAF insurance during this trip.',
+          lead: 'Insurance'),
     ]),
-    ConductSection('Photos and video', [
-      ConductPoint('The Summit is photographed',
-          'EHS and EAF take photos, video and audio during the event and may '
-              'share them to promote it on social media, websites, '
-              'newsletters and other materials, without payment.'),
-      ConductPoint('Opting out',
-          "If you don't want to appear in them, email "
-              'contact@ehsacademics.org before the Summit or tell the front '
-              'desk when you arrive.'),
-    ]),
-    ConductSection('Agreeing', [
-      ConductPoint('What the checkbox means',
-          "By ticking the box, you confirm you've read this code, agree to "
-              'follow it, and accept the liability and insurance terms above. '
-              "If you're under 18, read it with a parent or guardian."),
+    ConductSection('Media Rights and Consent', []),
+    ConductSection('Acknowledgment and Signature', [
+      AgreementBlock(
+          'By signing this form, I acknowledge that I have read and '
+          'understood the details of this waiver, including the event '
+          'guidelines, the code of conduct, and the liability and insurance '
+          'information. I agree to abide by the conduct expectations and '
+          'acknowledge that Emerald High School, the EHS PFSO, and any event '
+          'staff are not responsible for any injuries, loss, or damage that '
+          'may occur during this event.'),
     ]),
   ],
+  mediaChoice: MediaChoice(
+    section: 'Media Rights and Consent',
+    prompt: 'Please check one:',
+    grant: 'I GRANT permission for Emerald High School (EHS) and the EAF to '
+        'take photos, videos, and audio recordings of me during the event. '
+        'These may be used to share and promote the event on social media, '
+        'websites, newsletters, or other materials. I waive the right to '
+        'inspect and understand that these photos and videos may be shared '
+        'publicly without any payment or consent for further approval.',
+    doNotGrant: 'I DO NOT GRANT permission for Emerald High School (EHS) and '
+        'the EAF to take photos, videos, and audio recordings of me during '
+        'the event.',
+  ),
 );
 
-const speakerPolicy = SummitAgreement(
-  version: 'speaker-2026-11-14',
-  name: 'Speaker Policy',
-  title: "Emerald Summit '27 Speaker Policy",
-  whoAgrees: 'Every expert agrees to the Speaker Policy.',
-  intro: 'Thank you for sharing your time and expertise with Emerald High '
-      "School students. Experts give students a real look at careers and "
-      'industries and feedback on their work. This policy keeps the Summit '
-      'productive and respectful for everyone, and every expert agrees to it.',
-  checkbox: "I've read the Speaker Policy and agree to follow it.",
+const guestExpertPolicy = SummitAgreement(
+  version: 'guest-expert-2026-11-14',
+  name: 'Guest Expert Policy',
+  title: 'Guest Expert Policy: Emerald Summit ’27',
+  whoAgrees: 'Every expert agrees to the Guest Expert Policy.',
+  preamble: ['Nov 14, 2026'],
+  checkbox: 'I have read the Guest Expert Policy and agree to it.',
   sections: [
-    ConductSection('Working with students', [
-      ConductPoint('Dress professionally', 'Please wear professional attire.'),
-      ConductPoint('Stay professional',
-          'Engage with students professionally and respectfully. Avoid '
-              'personal questions and comments.'),
-      ConductPoint('Respect student privacy',
-          "Don't ask for or share any personal information about students."),
-      ConductPoint('Get materials approved',
-          'EAF has to approve any slides, videos, handouts or other materials '
-              'before the event.'),
-      ConductPoint('Keep language right for high schoolers',
-          'Everything you say and show should suit a high school audience: '
-              'clear, engaging and free of jargon. No crude humor, '
-              'inappropriate pop culture references or slang.'),
+    ConductSection('The short version', [
+      AgreementBlock('Dress professionally and keep conversations respectful.',
+          bullet: true),
+      AgreementBlock(
+          'Do not ask for or share personal information about students.',
+          bullet: true),
+      AgreementBlock(
+          'Avoid politics, religion and culture, equity and social justice, '
+          'and gender and race. CivicVerse tracks may cover civics, law and '
+          'rights in an educational, nonpartisan way.',
+          bullet: true),
+      AgreementBlock(
+          'Share any slides or handouts with EAF before the event for review.',
+          bullet: true),
+      AgreementBlock('Sessions may be recorded and photographed.',
+          bullet: true),
+    ]),
+    ConductSection('Purpose and scope', [
+      AgreementBlock(
+          'This policy sets out what Emerald Summit ’27 expects of Experts, '
+          'the invited guests who share their time and expertise with '
+          'students at Emerald High School (EHS). Your participation '
+          'enriches our students’ educational experience and gives them '
+          'valuable insights into careers and industries.'),
+      AgreementBlock(
+          'It applies to every Expert, before and during the Summit. To keep '
+          'the event productive and respectful for everyone, all Experts are '
+          'asked to follow the guidelines below.'),
+    ]),
+    ConductSection('Conduct and interaction with students', [
+      AgreementBlock(
+          'To keep a focus on professional development and a positive '
+          'experience for everyone, Experts are expected to follow these '
+          'guidelines:'),
+      AgreementBlock('professional attire.', lead: 'Dress code', bullet: true),
+      AgreementBlock(
+          'Always engage with students in a professional and respectful '
+          'manner. Avoid personal questions and/or comments.',
+          lead: 'Maintain professionalism',
+          bullet: true),
+      AgreementBlock(
+          'Do not request or share any personal information about students.',
+          lead: 'Respect student privacy',
+          bullet: true),
+      AgreementBlock(
+          'Experts typically do not need materials. If you plan to use a '
+          'presentation, handouts or other resources, please share them with '
+          'EAF before the event for review.',
+          lead: 'Materials',
+          bullet: true),
+      AgreementBlock(
+          'All spoken and written content must be suitable for a high school '
+          'audience. Please keep language clear, engaging, and free from '
+          'jargon or complex terminology. Crude humor, inappropriate pop '
+          'culture references, and slang are not permitted.',
+          lead: 'Appropriate language',
+          bullet: true),
     ]),
     ConductSection('Topics to avoid', [
-      ConductPoint('Why',
-          'The Summit focuses on careers and learning, and its students come '
-              'from many backgrounds. Please leave these topics out.'),
-      ConductPoint('Politics',
-          'Political parties, affiliations or current political events.'),
-      ConductPoint('Religion and culture',
-          'Religious beliefs or cultural practices.'),
-      ConductPoint('Equity and social justice',
-          'Equity, social justice movements or advocacy initiatives.'),
-      ConductPoint('Gender and race',
-          'Gender identity, gender roles or related issues.'),
-      ConductPoint('Exceptions',
-          'If one of these topics is part of your field (a career in '
-              'politics, for example), email contact@ehsacademics.org before '
-              'the Summit to ask for an exception. It needs a signed agreement '
-              'with the organizing committee.'),
+      AgreementBlock(
+          'The Summit stays focused on career development and respects the '
+          'diverse backgrounds of participants, so Experts should avoid these '
+          'topics:'),
+      AgreementBlock(
+          'Discussions of political parties, affiliations, or current '
+          'political events are prohibited.',
+          lead: 'Politics',
+          bullet: true),
+      AgreementBlock(
+          'Conversations regarding religious beliefs or cultural practices '
+          'should be avoided.',
+          lead: 'Religion and culture',
+          bullet: true),
+      AgreementBlock(
+          'Topics related to equity, social justice movements, or advocacy '
+          'initiatives should not be discussed.',
+          lead: 'Equity and social justice',
+          bullet: true),
+      AgreementBlock(
+          'Discussions surrounding gender identity, roles, or related issues '
+          'should be avoided.',
+          lead: 'Gender and race',
+          bullet: true),
+      AgreementBlock(
+          'Experts in the CivicVerse tracks (mock trial, Law and Rights '
+          'Seminar, Civic Engagement) may discuss how law, rights and civic '
+          'participation work. Please keep it educational and nonpartisan. '
+          'Do not promote or oppose political parties, candidates or specific '
+          'causes.',
+          lead: 'CivicVerse tracks'),
+      AgreementBlock(
+          'If an Expert plans to discuss any of these topics for valid '
+          'educational purposes (for example, a political career), please '
+          'reach out to the organizers to discuss.',
+          lead: 'Exemptions',
+          italicLead: true),
     ]),
-    ConductSection('Recording and photos', [
-      ConductPoint('Recording',
-          'Sessions may be recorded for educational purposes, and the '
-              'recordings may be shared with students and affiliated school '
-              'organizations.'),
-      ConductPoint('Photos',
-          'Photos taken during the event may be used to promote it on social '
-              'media run by Emerald High School and affiliated school '
-              'organizations.'),
+    ConductSection('Recording, photography and your Expert profile', [
+      AgreementBlock(
+          'Sessions may be recorded for educational purposes. By '
+          'participating, Experts consent to being recorded and understand '
+          'that recordings may be shared with students and affiliated school '
+          'organizations.',
+          lead: 'Recording',
+          bullet: true),
+      AgreementBlock(
+          'Photographs may be taken during the event and used for promotional '
+          'purposes on social media platforms managed by Emerald High School '
+          'and affiliated school organizations.',
+          lead: 'Photography',
+          bullet: true),
+      AgreementBlock(
+          'When signing up, Experts add the details for their profile. Name, '
+          'title and organization, area of expertise, short bio, LinkedIn '
+          'link (optional) and headshot appear on the Summit experts page. '
+          'Email address and mobile number stay private. The mobile number is '
+          'only used to reach an Expert on the day of the Summit if '
+          'necessary.',
+          lead: 'Public profile',
+          bullet: true),
     ]),
-    ConductSection('If the policy is broken', [
-      ConductPoint('EAF can cancel',
-          'EAF may cancel the event at its discretion for unforeseen '
-              'situations, including a speaker breaking this policy before or '
-              'during the event.'),
-      ConductPoint('Questions',
-          'Email contact@ehsacademics.org about anything in this policy.'),
+    ConductSection('Enforcement and contact', [
+      AgreementBlock(
+          'EAF reserves the right to end an Expert’s participation, before or '
+          'during the event, if the Expert violates these rules of engagement '
+          'or in other unforeseen situations, at its discretion. We '
+          'appreciate your cooperation in following these guidelines. Your '
+          'support helps create a constructive and enriching experience for '
+          'our students.'),
+      AgreementBlock('For any questions or concerns about this policy, '
+          'contact contact@ehsacademics.org.'),
     ]),
-    ConductSection('Agreeing', [
-      ConductPoint('What the checkbox means',
-          "By ticking the box, you confirm you've read this policy, agree to "
-              'follow it, and agree to being recorded and photographed as '
-              'described above.'),
+    ConductSection('Expert acknowledgment', [
+      AgreementBlock(
+          'You are reading this policy as a step in the sign-up wizard. '
+          'Continue once you have read it; no signature is needed. Thank you '
+          'for your understanding and commitment to fostering an inclusive '
+          'educational environment.'),
     ]),
   ],
 );

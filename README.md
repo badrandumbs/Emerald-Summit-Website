@@ -1543,7 +1543,7 @@ Both are on the to-do list below.
 
 ### Website changes to bring into the app (to-do)
 Still open: running [code_of_conduct.sql](supabase/code_of_conduct.sql)
-and two decisions on it (see **Code of Conduct and Speaker Policy**) · uploading Archie's edited knowledge file and
+(see **Code of Conduct and Guest Expert Policy**) · uploading Archie's edited knowledge file and
 redeploying `archie-chat` (see **Archie and the FAQ**). Everything else
 below landed in the app on Nov 14, 2026 and is ticked, with a note where the
 app does it differently from the website. Checked against the website on
@@ -1832,38 +1832,45 @@ has it too since Nov 14, 2026; see below.
   `appState.pendingSignUpRole`, which onboarding starts on ("Signing up as
   …" with a Change link). Google sign-in from either mode makes the account
   if it's new and onboarding runs, as on the website.
-- [ ] **Code of Conduct and Speaker Policy** (app and website, Nov 14,
-  2026; built, waiting on the SQL). Every account agrees once by ticking a
-  box; no signatures. **Experts agree to the Speaker Policy**; participants,
-  spectators, volunteers and admins agree to the **Code of Conduct**
-  (`agreementFor(role)`). Both texts are EAF's forms rewritten: the "Emerald
-  Summit 2026 Code of Conduct" waiver for everyone who attends (conduct,
-  liability and insurance, photos and video with an email opt-out, what the
-  checkbox means) and the "Emerald Summit '26 Speaker Policy Document" v1.0
-  (working with students, topics to avoid with exceptions by email,
-  recording and photos, EAF can cancel). They live in
-  [code_of_conduct.dart](lib/models/code_of_conduct.dart) and the website's
-  `src/models/codeOfConduct.ts`, each with a version (`conduct-2026-11-14`,
-  `speaker-2026-11-14`) stored in `profiles.code_of_conduct_version`. Change
-  a text in both and bump its version to have everyone agree again. Someone
-  who changes role to or from Expert is asked to agree to the other one.
-  - **Open decisions (Nov 14, 2026):** (1) the original waiver asks people
-    to grant or not grant photo and video permission; the rewrite says the
-    Summit is photographed and offers an email opt-out instead of a choice.
-    (2) The waiver had parent/guardian and student signatures; the rewrite
-    has only the account holder's checkbox and "If you're under 18, read it
-    with a parent or guardian." The user is deciding both.
+- [ ] **Code of Conduct and Guest Expert Policy** (app and website, Nov
+  14-15, 2026; built, waiting on the SQL). Every account agrees once by
+  ticking a box; no signatures. **Experts agree to the Guest Expert
+  Policy**; participants, spectators, volunteers and admins agree to the
+  **Code of Conduct** (`agreementFor(role)`). Someone who changes role to or
+  from Expert is asked to agree to the other one.
+  - **Word for word, nothing summarized** (the user's rule, Nov 15, 2026):
+    the Code of Conduct is EAF's "Emerald Summit 2026 Code of Conduct" (EAF
+    Field Trip Waiver Form Version 11.02.2025.1) and the expert one is
+    "Guest Expert Policy: Emerald Summit '27" (Nov 14, 2026), both as
+    written, titles and footer included. The only changes: the signature
+    lines are replaced by the checkbox, and the two media options say "of
+    me" instead of "of my child", because the account holder answers, not
+    a parent. No parent or guardian consent (the user's call). They live in
+    [code_of_conduct.dart](lib/models/code_of_conduct.dart) and the
+    website's `src/models/codeOfConduct.ts`, each with a version
+    (`conduct-2026-11-15`, `guest-expert-2026-11-14`) stored in
+    `profiles.code_of_conduct_version`. Change a text in both and bump its
+    version to have everyone agree again.
+  - **Photo permission is a radio button** on the Code of Conduct: "I
+    GRANT permission…" or "I DO NOT GRANT permission…", required, chosen by
+    the account holder and saved as `profiles.photo_consent`. Experts have
+    no such question; their policy covers recording and photos.
   - It shows in a scrollable window with **Expand** (full screen in the app,
-    a large popup on the website), then the checkbox "I've read the Code of
-    Conduct and agree to follow it."
+    a large popup on the website), then the photo question (Code of Conduct
+    only) and the checkbox.
   - New accounts: the app's auth gate shows it right after the sign-up
     questions; the website puts it under the questions on the profile page.
     Existing accounts get it ("One last step") the next time they open
     either, before anything else.
   - Backend: [code_of_conduct.sql](supabase/code_of_conduct.sql) adds
-    `profiles.code_of_conduct_version` and `code_of_conduct_agreed_at` and
-    `agree_to_code_of_conduct(p_version)`. **Not run yet.** Until it is, the
-    profile row has no such column and neither client asks anyone.
+    `profiles.code_of_conduct_version`, `code_of_conduct_agreed_at` and
+    `photo_consent`, and `agree_to_code_of_conduct(p_version,
+    p_photo_consent)`. **Not run yet.** Until it is, the profile row has no
+    such column and neither client asks anyone.
+  - Not built yet: the Guest Expert Policy says expert profiles show title
+    and organization, a LinkedIn link and a headshot on a Summit experts
+    page. The app's expert sign-up asks for area of expertise, a bio and a
+    phone number only, and there is no experts page.
 - [x] **Grade is a dropdown for participants** (app and website, Nov 14,
   2026). 8th grade to 12th grade, saved as "8" to "12", on sign-up and Edit
   profile ([grade_picker.dart](lib/widgets/grade_picker.dart), the website's

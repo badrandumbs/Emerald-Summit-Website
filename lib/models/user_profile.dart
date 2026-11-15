@@ -343,6 +343,7 @@ class UserProfile {
     this.expertStatus,
     this.expertQueueSeenAt,
     this.codeOfConductVersion,
+    this.photoConsent,
     this.tracksCodeOfConduct = false,
     List<String>? managedDisciplines,
     Map<String, dynamic>? details,
@@ -384,6 +385,10 @@ class UserProfile {
   /// The Code of Conduct version this account agreed to, or null if it
   /// hasn't (code_of_conduct.sql).
   String? codeOfConductVersion;
+
+  /// The Code of Conduct's photo permission answer: true grants, false does
+  /// not, null if not answered (or an expert, whose policy has no question).
+  bool? photoConsent;
 
   /// False when the profile row has no Code of Conduct columns yet (the SQL
   /// not run), so nobody is asked to agree to something that can't be saved.
@@ -452,6 +457,7 @@ class UserProfile {
             (row['managed_disciplines'] as List?)?.cast<String>() ?? const [],
         details: (row['details'] as Map?)?.cast<String, dynamic>() ?? {},
         codeOfConductVersion: row['code_of_conduct_version'] as String?,
+        photoConsent: row['photo_consent'] as bool?,
         tracksCodeOfConduct: row.containsKey('code_of_conduct_version'),
       );
 

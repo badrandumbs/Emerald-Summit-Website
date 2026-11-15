@@ -5,10 +5,11 @@ import '../../models/code_of_conduct.dart';
 import '../../models/user_profile.dart';
 
 /// The last sign-up step, and a one-time step for accounts that signed up
-/// before it existed: read the role's agreement ([agreementFor]: the Speaker
-/// Policy for experts, the Code of Conduct for everyone else) in a window
-/// (Expand opens it full screen) and tick the box. Shown by the auth gate
-/// while [AppState.needsCodeOfConduct].
+/// before it existed: read the role's agreement ([agreementFor]: the Guest
+/// Expert Policy for experts, the Code of Conduct for everyone else) in a
+/// window (Expand opens it full screen), answer the photo permission
+/// question when the agreement has one, and tick the box. Shown by the auth
+/// gate while [AppState.needsCodeOfConduct].
 class CodeOfConductScreen extends StatefulWidget {
   const CodeOfConductScreen({super.key});
 
@@ -18,6 +19,10 @@ class CodeOfConductScreen extends StatefulWidget {
 
 class _CodeOfConductScreenState extends State<CodeOfConductScreen> {
   bool _agreed = false;
+
+  /// The photo permission answer: true grants, false does not; null until
+  /// one is picked.
+  bool? _photoConsent;
   bool _busy = false;
   String? _error;
 
@@ -27,13 +32,13 @@ class _CodeOfConductScreenState extends State<CodeOfConductScreen> {
       _error = null;
     });
     try {
-      await appState.agreeToCodeOfConduct();
-      // The auth gate moves on once the profile says it's agreed.
+      await appState.agreeToCodeOfConduct(photoConsent: _photoConsent);
+      // The auth gate moves on once the profile says it is agreed.
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = "Couldn't save that. Check your connection and try again.";
+        _error = 'Could not save that. Check your connection and try again.';
       });
     }
   }
@@ -43,6 +48,8 @@ class _CodeOfConductScreenState extends State<CodeOfConductScreen> {
     final theme = Theme.of(context);
     final agreement =
         agreementFor(appState.profile?.role ?? SummitRole.participant);
+    final media = agreement.mediaChoice;
+    final ready = _agreed && (media == null || _photoConsent != null);
     return Scaffold(
       appBar: AppBar(
         title: Text(agreement.name),
@@ -68,6 +75,36 @@ class _CodeOfConductScreenState extends State<CodeOfConductScreen> {
                 ),
                 const SizedBox(height: 16),
                 CodeOfConductWindow(agreement: agreement),
+                if (media != null) ...[
+                  const SizedBox(height: 20),
+                  Text(media.section, style: theme.textTheme.titleSmall),
+                  const SizedBox(height: 4),
+                  Text(media.prompt,
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(fontWeight: FontWeight.w700)),
+                  RadioGroup<bool>(
+                    groupValue: _photoConsent,
+                    onChanged: (v) {
+                      if (!_busy) setState(() => _photoConsent = v);
+                    },
+                    child: Column(
+                      children: [
+                        RadioListTile<bool>(
+                          value: true,
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(media.grant,
+                              style: theme.textTheme.bodyMedium),
+                        ),
+                        RadioListTile<bool>(
+                          value: false,
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(media.doNotGrant,
+                              style: theme.textTheme.bodyMedium),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 CheckboxListTile(
                   value: _agreed,
@@ -86,7 +123,7 @@ class _CodeOfConductScreenState extends State<CodeOfConductScreen> {
                 ],
                 const SizedBox(height: 12),
                 FilledButton(
-                  onPressed: _agreed && !_busy ? _continue : null,
+                  onPressed: ready && !_busy ? _continue : null,
                   child: _busy
                       ? const SizedBox(
                           width: 20,
@@ -182,7 +219,9 @@ class _CodeOfConductWindowState extends State<CodeOfConductWindow> {
   }
 }
 
-/// A whole agreement: title, intro, and each section's rules.
+/// A whole agreement as the document lays it out: title, the lines under it,
+/// each section's paragraphs and bullets, the photo question's two options,
+/// and the footer.
 class CodeOfConductText extends StatelessWidget {
   const CodeOfConductText({super.key, required this.agreement});
 
@@ -191,31 +230,69 @@ class CodeOfConductText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final body = theme.textTheme.bodyMedium?.copyWith(height: 1.45);
+    final media = agreement.mediaChoice;
+
+    Widget block(AgreementBlock b) {
+      final lead = b.lead;
+      final text = Text.rich(
+        TextSpan(children: [
+          if (lead != null)
+            TextSpan(
+              text: b.text.isEmpty ? '$lead:' : '$lead: ',
+              style: b.italicLead
+                  ? const TextStyle(fontStyle: FontStyle.italic)
+                  : const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          TextSpan(text: b.text),
+        ]),
+        style: body,
+      );
+      return Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: b.bullet
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('•  ', style: body),
+                  Expanded(child: text),
+                ],
+              )
+            : text,
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(agreement.title, style: theme.textTheme.titleMedium),
-        const SizedBox(height: 8),
-        Text(agreement.intro, style: body),
+        for (final line in agreement.preamble) ...[
+          const SizedBox(height: 6),
+          Text(line,
+              style: body?.copyWith(color: scheme.onSurfaceVariant)),
+        ],
         for (final section in agreement.sections) ...[
           const SizedBox(height: 16),
           Text(section.title,
               style: theme.textTheme.titleSmall
-                  ?.copyWith(color: theme.colorScheme.primary)),
-          for (final point in section.points)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Text.rich(
-                TextSpan(children: [
-                  TextSpan(
-                      text: '${point.lead}. ',
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
-                  TextSpan(text: point.text),
-                ]),
-                style: body,
-              ),
-            ),
+                  ?.copyWith(color: scheme.primary)),
+          for (final b in section.blocks) block(b),
+          if (media != null && media.section == section.title) ...[
+            const SizedBox(height: 6),
+            Text(media.prompt,
+                style: body?.copyWith(fontWeight: FontWeight.w700)),
+            for (final option in [media.grant, media.doNotGrant]) ...[
+              const SizedBox(height: 6),
+              Text('___ $option', style: body),
+            ],
+          ],
+        ],
+        if (agreement.footer != null) ...[
+          const SizedBox(height: 16),
+          Text(agreement.footer!,
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: scheme.onSurfaceVariant)),
         ],
       ],
     );

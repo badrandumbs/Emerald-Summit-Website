@@ -1005,13 +1005,17 @@ class AppState extends ChangeNotifier {
         p.codeOfConductVersion != agreementFor(p.role).version;
   }
 
-  /// Records the agreement and refreshes the profile.
-  Future<void> agreeToCodeOfConduct() async {
+  /// Records the agreement, and the Code of Conduct's photo permission
+  /// answer ([photoConsent]; null for the Guest Expert Policy, which has no
+  /// such question).
+  Future<void> agreeToCodeOfConduct({bool? photoConsent}) async {
     final p = profile;
     if (p == null) return;
     final version = agreementFor(p.role).version;
-    await profileRepository.agreeToCodeOfConduct(version);
+    await profileRepository.agreeToCodeOfConduct(version,
+        photoConsent: photoConsent);
     p.codeOfConductVersion = version;
+    if (photoConsent != null) p.photoConsent = photoConsent;
     notifyListeners();
   }
 

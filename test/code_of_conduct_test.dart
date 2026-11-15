@@ -41,12 +41,12 @@ void main() {
     }
     appState.profile = _profile(version: codeOfConduct.version);
     expect(appState.needsCodeOfConduct, isFalse);
-    // Experts agree to the Speaker Policy, not the Code of Conduct.
+    // Experts agree to the Guest Expert Policy, not the Code of Conduct.
     appState.profile =
         _profile(role: SummitRole.expert, version: codeOfConduct.version);
     expect(appState.needsCodeOfConduct, isTrue);
     appState.profile =
-        _profile(role: SummitRole.expert, version: speakerPolicy.version);
+        _profile(role: SummitRole.expert, version: guestExpertPolicy.version);
     expect(appState.needsCodeOfConduct, isFalse);
     appState.profile = _profile(version: 'an-older-version');
     expect(appState.needsCodeOfConduct, isTrue);
@@ -67,7 +67,7 @@ void main() {
   });
 
   testWidgets('the box has to be ticked before continuing', (tester) async {
-    tester.view.physicalSize = const Size(402 * 3, 874 * 3);
+    tester.view.physicalSize = const Size(402 * 3, 2000 * 3);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
     appState.profile = _profile();
@@ -81,10 +81,17 @@ void main() {
 
     await tester.tap(find.text(codeOfConduct.checkbox));
     await tester.pump();
+    // The photo question has to be answered too.
+    expect(tester.widget<FilledButton>(button).onPressed, isNull);
+    await tester.ensureVisible(find.text(codeOfConduct.mediaChoice!.doNotGrant));
+    await tester.tap(find.text(codeOfConduct.mediaChoice!.doNotGrant));
+    await tester.pump();
     expect(tester.widget<FilledButton>(button).onPressed, isNotNull);
+    await tester.ensureVisible(button);
     await tester.tap(button);
     await tester.pump();
     expect(appState.profile!.codeOfConductVersion, codeOfConduct.version);
+    expect(appState.profile!.photoConsent, isFalse);
     expect(appState.needsCodeOfConduct, isFalse);
   });
 
@@ -94,7 +101,7 @@ void main() {
         const MaterialApp(home: CodeOfConductScreen()));
     await tester.tap(find.text('Expand'));
     await tester.pumpAndSettle();
-    expect(find.text('Liability and insurance'), findsOneWidget);
+    expect(find.text('Liability & Legal Disclaimer'), findsOneWidget);
     expect(find.text(codeOfConduct.checkbox), findsNothing);
   });
 
@@ -138,11 +145,34 @@ void main() {
     });
   });
 
-  testWidgets('experts see the Speaker Policy', (tester) async {
+  testWidgets('experts see the Guest Expert Policy, with no photo question', (tester) async {
     appState.profile = _profile(role: SummitRole.expert);
     await tester.pumpWidget(const MaterialApp(home: CodeOfConductScreen()));
-    expect(find.text(speakerPolicy.title), findsOneWidget);
-    expect(find.text(speakerPolicy.checkbox), findsOneWidget);
+    expect(find.text(guestExpertPolicy.title), findsOneWidget);
+    expect(find.text(guestExpertPolicy.checkbox), findsOneWidget);
     expect(find.text(codeOfConduct.title), findsNothing);
+    expect(find.byType(RadioListTile<bool>), findsNothing);
+  });
+
+  test('the texts are the documents, not summaries', () {
+    String all(SummitAgreement a) => [
+          a.title,
+          ...a.preamble,
+          for (final s in a.sections) ...[
+            s.title,
+            for (final b in s.blocks) '${b.lead ?? ''} ${b.text}',
+          ],
+          ?a.mediaChoice?.grant,
+        ].join(' ');
+    final conduct = all(codeOfConduct);
+    expect(conduct, contains('It is NOT a school/DUSD-sponsored event.'));
+    expect(conduct, contains('through the travel agency'));
+    expect(conduct, contains('the EHS PFSO'));
+    expect(codeOfConduct.mediaChoice!.grant,
+        contains('I waive the right to inspect'));
+    final expert = all(guestExpertPolicy);
+    expect(expert, contains('CivicVerse tracks may cover civics'));
+    expect(expert, contains('LinkedIn link (optional) and headshot'));
+    expect(expert, contains('no signature is needed'));
   });
 }

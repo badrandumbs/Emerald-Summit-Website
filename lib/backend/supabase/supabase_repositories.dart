@@ -350,9 +350,12 @@ class SupabaseProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<void> agreeToCodeOfConduct(String version) async {
-    await _client
-        .rpc('agree_to_code_of_conduct', params: {'p_version': version});
+  Future<void> agreeToCodeOfConduct(String version,
+      {bool? photoConsent}) async {
+    await _client.rpc('agree_to_code_of_conduct', params: {
+      'p_version': version,
+      'p_photo_consent': photoConsent,
+    });
   }
 
   @override

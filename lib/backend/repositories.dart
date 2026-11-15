@@ -413,8 +413,9 @@ abstract interface class ProfileRepository {
   /// changed; the database applies the same rules when the role is saved.
   Future<List<RoleChangeItem>> previewRoleChange(SummitRole role);
 
-  /// Records that the signed-in account agreed to Code of Conduct [version].
-  Future<void> agreeToCodeOfConduct(String version);
+  /// Records that the signed-in account agreed to agreement [version], with
+  /// its photo permission answer when the agreement asks one.
+  Future<void> agreeToCodeOfConduct(String version, {bool? photoConsent});
 }
 
 /// The announcements feed, plus an optional live event stream.

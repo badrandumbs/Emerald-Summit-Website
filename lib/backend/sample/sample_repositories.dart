@@ -446,13 +446,18 @@ class SampleProfileRepository implements ProfileRepository {
             expertQueueSeenAt: old.expertQueueSeenAt,
             managedDisciplines: old.managedDisciplines,
             codeOfConductVersion: old.codeOfConductVersion,
+            photoConsent: old.photoConsent,
             tracksCodeOfConduct: old.tracksCodeOfConduct,
           );
   }
 
   @override
-  Future<void> agreeToCodeOfConduct(String version) async {
-    _store.profile?.codeOfConductVersion = version;
+  Future<void> agreeToCodeOfConduct(String version,
+      {bool? photoConsent}) async {
+    final p = _store.profile;
+    if (p == null) return;
+    p.codeOfConductVersion = version;
+    if (photoConsent != null) p.photoConsent = photoConsent;
   }
 
   @override
