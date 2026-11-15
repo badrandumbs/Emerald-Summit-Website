@@ -599,6 +599,24 @@ every registration with its discipline. The counting happens in the app
 ("11th" and "Junior" both count as 11), Other, or blank. *(Run on the dev
 project 2026-10-20.)*
 
+**Activity log** ([activity_log_setup.sql](supabase/activity_log_setup.sql),
+admin only). Database triggers write one `activity_log` row per action, so the
+app and the website are both covered and no client can skip it. Recorded:
+`account_created`, `signed_up` (onboarding finished, with role, school and
+grade), `role_changed`, `profile_edited` (field names only, not values),
+`agreed_to_code_of_conduct`, `registered`, `unregistered`,
+`removed_from_session` (someone else dropped them), `participation_changed`,
+`joined_team` / `left_team` / `switched_team`, `project_edited`,
+`answers_edited`, `checked_in` / `check_in_undone`, `summit_checked_in` /
+`summit_check_in_undone`, and `volunteer_assigned` / `volunteer_unassigned`.
+Each row has who did it (`actor_id`), whose record it is (`user_id`), the
+session, and a snapshot of the session title so it still reads after the
+session is deleted. A logging error never blocks the real action. Deleting an
+account deletes that person's rows. Screen views and taps are **not** logged
+yet. There is no in-app viewer yet: read the `activity_feed` view (names
+joined in) in the Supabase Table Editor or SQL editor. *(Run on the dev project
+2026-11-14.)*
+
 **Volunteer hours** ([lib/screens/volunteer_hours_screen.dart](lib/screens/volunteer_hours_screen.dart)),
 opened from Profile → Settings → **Track volunteer hours**, for volunteers and
 admins only. The total adds up two sources:
@@ -2456,6 +2474,11 @@ See [TESTFLIGHT.md](TESTFLIGHT.md). Bundle ID: `com.emeraldsummit.emeraldSummit`
   when the app is closed (see Roadmap for the planned pipeline).
 
 ## Roadmap (later, from the spec)
+- **Activity log, next steps.** The log itself is built (see Metrics). Still to
+  do: an admin screen to browse it, optional screen-view events from the app,
+  and, **before release**, saying we log activity in the privacy policy, the
+  App Store privacy label and the Google Play data safety form (many users are
+  minors).
 - **OS push notifications (deferred — designed, not built).** Announcements are
   already "instant" while the app is open (Realtime + in-app banner); this adds
   delivery when the app is **closed/backgrounded**. Planned pipeline:

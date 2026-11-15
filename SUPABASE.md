@@ -490,6 +490,14 @@ permissions, rooms, session assignments, and attendance). Run these in order,
     `bug-report-email` function (§3d) for the emailed copies; reports save
     without it. Run after the files it names at the top. Safe to re-run.
     *(Run on the dev project 2026-11-14; a test report saved as Bug #1.)*
+64. `supabase/activity_log_setup.sql`: **activity log.** Adds the
+    `activity_log` table (admins read; nobody writes directly) and triggers on
+    `profiles`, `registrations`, `summit_checkins` and `session_volunteers`
+    that record sign-ups, schedule picks and drops, participation and team
+    changes, check-ins and volunteer assignments, plus the admin-only
+    `activity_feed` view with names joined in. A person's rows are deleted
+    with their account. Run after the files it names at the top. Safe to
+    re-run. *(Run on the dev project 2026-11-14.)*
 
 After this, sign in and build a schedule — it should persist across restarts
 and devices. Everyone is a `participant` until the allowlist sync runs.
