@@ -20,7 +20,10 @@ Some shared names still use the older words, such as the schedule kinds
 
 > **Status: role-driven backend live.** All screens and interactions work, and
 > the backend is wired up and verified end-to-end on the dev project (two-device
-> testing). **Auth (passwordless email OTP, plus native Google sign-in)** is
+> testing). **The "dev" project (`dgrskmykbkvphnaasfzl`) is in practice
+> production now:** real users are on it through the app and website. The
+> plan is to rename it as prod and copy it into a separate test project, so
+> treat every write to it as a write to live data. **Auth (passwordless email OTP, plus native Google sign-in)** is
 > live. The **catalog
 > (disciplines + sessions), the personal schedule, the News feed, and per-user
 > settings are all Supabase-backed**, with the schema shipped as SQL migrations
@@ -937,9 +940,9 @@ Setting the constant to `true` restores both the dropdown and the room row.
 
 **Status: set to Saturday, January 23, 2027** (confirmed by the organizers;
 `summit_date = '2027-01-23'` on dev since Nov 14, 2026). Steps 1 to 4 below
-are done on dev. The hours of the day are still not announced. When the prod
-project is set up, run step 2 there too and upload the same knowledge.md.
-This section stays as the reference for what the date drives.
+are done on dev. Archie gives the hours as 9 AM to 5 PM (a placeholder set
+Nov 14, 2026; change knowledge.md if they move). This section stays as the
+reference for what the date drives.
 
 **1. Check session times.** `start_time` / `end_time` are plain text and
 everything that compares them assumes 24-hour time (`14:00`, not `2:00`). The
@@ -984,9 +987,9 @@ the app to see it.
   Home does (either needs an app release).
 - The sample-mode Archie reply in
   [sample_archie_repository.dart](lib/backend/sample/sample_archie_repository.dart),
-  this README's intro line, and the website (a separate project; its
-  countdown and date line read `fetch_summit_status()`, so they turn on by
-  themselves, but check its own copy for "January 2027").
+  this README's intro line. The website (a separate project) reads
+  `fetch_summit_status()` for its countdown and date line, and its
+  "January 2027" copy is still correct, so it needs nothing.
 
 **Not tied to the summit date:** per-session participant deadlines
 (`sessions.participant_deadline`, their own timestamps) and front-desk
