@@ -16,7 +16,7 @@
 // messages). Secrets:
 //   RESEND_API_KEY   an API key from resend.com (Sending access is enough)
 //   BUG_REPORT_FROM  the sender, on a domain verified in Resend, e.g.
-//                    "Emerald Summit <app@ehsacademics.org>"
+//                    "Emerald Summit '27 App <app@ehsacademics.org>"
 //   BUG_REPORT_TO    optional: where every ticket goes (comma-separated)
 //   SITE_URL         optional: the website's address, for an "Open in
 //                    Reports" link in the team email

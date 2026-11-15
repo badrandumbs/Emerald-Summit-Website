@@ -737,13 +737,13 @@ and `BUG_REPORT_TO` (the team inbox that gets every ticket:
 `support@ehsacademics.org` since 2026-11-14) and `SITE_URL`
 (`https://emerald-summit.vercel.app`, for the "Open in Reports" link) are
 set. **Done 2026-11-14:** `RESEND_API_KEY` and `BUG_REPORT_FROM`
-(`Emerald Summit <app@ehsacademics.org>`) are set, and test Bug #2 sent its
+(`Emerald Summit '27 App <app@ehsacademics.org>`) are set, and test Bug #2 sent its
 team email. All Resend mail, sign-in codes included, comes from
 `app@ehsacademics.org`. To change either secret:
 ```bash
 supabase secrets set --project-ref dgrskmykbkvphnaasfzl \
   RESEND_API_KEY="re_..." \
-  BUG_REPORT_FROM="Emerald Summit <app@ehsacademics.org>"
+  "BUG_REPORT_FROM=Emerald Summit '27 App <app@ehsacademics.org>"
 ```
 No redeploy needed. Until both are set the function answers
 `{ ok: false, error: "email_not_configured" }`, the report is still saved,
@@ -759,7 +759,7 @@ Settings** (keep Custom SMTP on), replace the Workspace values with:
 - Username `resend`, password: the Resend API key (a separate key just for
   Auth is fine)
 - Sender email `app@ehsacademics.org` (any address on the verified
-  domain), sender name `Emerald Summit`
+  domain), sender name `Emerald Summit '27 App` (the same name the bug-report emails use)
 
 Then sign in with a real email once to check the code arrives. The email
 templates (both with `{{ .Token }}`) don't change.
