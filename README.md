@@ -80,18 +80,26 @@ Home header** (Uber-style), not a bottom-bar tab.
   links, with no backend. The **Explore disciplines** rail comes off Home at
   the same time; Discover stays the way in. In the website's order: Support
   EAF and Sponsors above Links, About the app at the very bottom:
-  - **Support EAF**: "This Emerald Summit App is brought to you 100% built by
+  - **Support EAF** (the Emerald Summit logo beside the text): "This Emerald Summit App is brought to you 100% built by
     students and free for all to use." then EAF's support for
     student-initiated projects, "Please consider supporting EAF and its
-    mission.", and **Donate** (EAF's Zeffy donation form, the one its
-    Summit page links) and **Volunteer with EAF**
+    mission.", and **Donate** and **Volunteer with EAF**
     (https://www.ehsacademics.org/get-involved/parent-volunteering)
-    buttons.
+    buttons. Donate goes to EAF's Zeffy form,
+    https://www.zeffy.com/en-US/donation-form/be-the-catalyst-for-learning-and-discovery.
+    The website embeds it in a popup on computers; in the app, open that
+    page in the phone's browser (`url_launcher`, external mode) rather than
+    a WebView, which is what the website does on phones too.
   - **Sponsors**: the five sponsorship tiers from ehsacademics.org's
     Emerald Summit '27 → Sponsor page, ranked highest first as a stepped
     peak (Capstone $5,000, Keystone $2,000, Pillar $1,500, Foundation
-    $1,000, Cornerstone $500, each with its perks), each sponsor's name
-    inside its tier, a note that sponsorships go through EAF and are fully
+    $1,000, Cornerstone $500, each with its perks), each sponsor's logo
+    inside its tier linking to their website (Brightfox at Keystone;
+    Prepaze Academy, YoungWonks and Praan Health at Cornerstone; logos and
+    URLs in the website's `SPONSORS` and `public/sponsors/`), open
+    spots filling out the rest of each tier's row: the first says **Your
+    company logo could go here**, the rest are faint empty slots with a +
+    (all email contact@ehsacademics.org with the tier as the subject), a note that sponsorships go through EAF and are fully
     tax-deductible, a **Become a sponsor** button that emails
     contact@ehsacademics.org, and a **Sponsorship details** link to
     https://www.ehsacademics.org/initiatives/emerald-summit-27/sponsor.
@@ -1803,6 +1811,11 @@ have it yet; see the to-do below.
   - Support EAF, Sponsors and About the app use the new text and layout
     described under Home above (tiered sponsors, credits in About, About at
     the bottom).
+  - **Donate opens Zeffy outside the app**: the Zeffy page above, in the
+    browser, not embedded.
+  - **No Resources tab**: the website took Resources out of its sidebar
+    (the page still exists, unlinked). Decide whether the app's Resources
+    entry goes too.
   - Never "universes" either: the website's landing page now says
     Disciplines, "Which discipline is yours?" and "What are the six
     disciplines?".
