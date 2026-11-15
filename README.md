@@ -1114,11 +1114,12 @@ test/widget_test.dart       Widget tests
     row to `auth.uid()` so users only ever touch their own profile; a trigger
     auto-creates the row on sign-up. Schema + required dashboard steps in
     [supabase/profiles_setup.sql](supabase/profiles_setup.sql).
-    - **Custom SMTP is required** for OTP and is **configured** (Google
-      Workspace, sending from the org address). Decided 2026-11-14: move it
-      to **Resend** (`smtp.resend.com`), the same service that sends bug
-      report emails; steps in [SUPABASE.md §3d](SUPABASE.md). Until that's
-      done, the Workspace notes below still apply. Hard-won setup notes:
+    - **Custom SMTP is required** for OTP and is **configured** through
+      **Resend** (`smtp.resend.com`, switched 2026-11-14 from Google
+      Workspace), the same service that sends bug report emails. Every
+      Resend email comes from `app@ehsacademics.org`; steps in
+      [SUPABASE.md §3d](SUPABASE.md). The Workspace notes below are kept for
+      history. Hard-won setup notes:
       - New free-tier projects can only edit email templates once custom SMTP
         is on (also needed for production — the built-in email service is
         test-only and rate-limited).
@@ -1931,8 +1932,8 @@ has it too since Nov 14, 2026; see below.
   - Backend: [bug_reports_setup.sql](supabase/bug_reports_setup.sql) (run
     Nov 14, 2026) and the
     [bug-report-email](supabase/functions/bug-report-email/index.ts) Edge
-    Function (deployed Nov 14, 2026; sends through Resend once its key is
-    set); SUPABASE.md step 63 and §3d. Upload screenshots to
+    Function (deployed Nov 14, 2026; sends through Resend from
+    `app@ehsacademics.org`); SUPABASE.md step 63 and §3d. Upload screenshots to
     the private `bug_report_screenshots` bucket at
     `<user_id>/<report_id>/<n>.<ext>` (the app picks `report_id`, a UUID),
     then call `submit_bug_report(p_id, p_kind, p_name, p_description,

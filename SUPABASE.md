@@ -734,11 +734,14 @@ Auth's own email only covers sign-in messages, so bug reports go through the
 `--no-verify-jwt` like the other functions; it checks the session itself),
 and `BUG_REPORT_TO` (the team inbox that gets every ticket) and `SITE_URL`
 (`https://emerald-summit.vercel.app`, for the "Open in Reports" link) are
-set. What's left is the key and the sender:
+set. **Done 2026-11-14:** `RESEND_API_KEY` and `BUG_REPORT_FROM`
+(`Emerald Summit <app@ehsacademics.org>`) are set, and test Bug #2 sent its
+team email. All Resend mail, sign-in codes included, comes from
+`app@ehsacademics.org`. To change either secret:
 ```bash
 supabase secrets set --project-ref dgrskmykbkvphnaasfzl \
   RESEND_API_KEY="re_..." \
-  BUG_REPORT_FROM="Emerald Summit <summit@ehsacademics.org>"
+  BUG_REPORT_FROM="Emerald Summit <app@ehsacademics.org>"
 ```
 No redeploy needed. Until both are set the function answers
 `{ ok: false, error: "email_not_configured" }`, the report is still saved,
@@ -748,12 +751,12 @@ caller's own sign-in address and `BUG_REPORT_TO`, once per report
 A failed send is kept in `bug_reports.email_error`. To redeploy after a code
 change: `supabase functions deploy bug-report-email --no-verify-jwt`.
 
-**3. Sign-in codes.** Dashboard → **Authentication → Emails → SMTP
+**3. Sign-in codes** (switched 2026-11-14). Dashboard → **Authentication → Emails → SMTP
 Settings** (keep Custom SMTP on), replace the Workspace values with:
 - Host `smtp.resend.com`, port `465`
 - Username `resend`, password: the Resend API key (a separate key just for
   Auth is fine)
-- Sender email `summit@ehsacademics.org` (any address on the verified
+- Sender email `app@ehsacademics.org` (any address on the verified
   domain), sender name `Emerald Summit`
 
 Then sign in with a real email once to check the code arrives. The email
