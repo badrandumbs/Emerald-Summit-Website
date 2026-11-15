@@ -17,3 +17,13 @@ const int kArchieTabIndex = 4;
 /// Opens the bell's Notifications list from code outside the widget tree (the
 /// in-app banner for a personal notice). [RootNav] sets it; null before then.
 VoidCallback? openNotifications;
+
+/// A tab's name for diagnostics ("Home", "Schedule", …).
+String tabName(int index) => switch (index) {
+      kHomeTabIndex => 'Home',
+      kScheduleTabIndex => 'Schedule',
+      kDiscoverTabIndex => 'Discover',
+      kNewsTabIndex => 'Announcements',
+      kArchieTabIndex => 'Ask Archie',
+      _ => '$index',
+    };

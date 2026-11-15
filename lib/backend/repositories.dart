@@ -13,6 +13,8 @@
 /// backend-agnostic.
 library;
 
+import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import '../models/metrics.dart';
@@ -986,4 +988,215 @@ abstract interface class MetricsRepository {
   /// Every onboarded account (role, school, grade; no names) and every
   /// registration. Admins only; anyone else gets an error.
   Future<SummitMetrics> fetchSummitMetrics();
+}
+
+// ---- Bug reports and feedback ---------------------------------------------
+
+/// The two ticket categories (`bug_reports.kind`).
+enum ReportKind {
+  bug,
+  feedback;
+
+  /// "Bug" / "Feedback", as in "Bug #12".
+  String get ticketLabel => this == bug ? 'Bug' : 'Feedback';
+}
+
+/// One screenshot picked for a report.
+class ReportScreenshot {
+  const ReportScreenshot({
+    required this.bytes,
+    required this.mimeType,
+    required this.name,
+  });
+
+  final Uint8List bytes;
+  final String mimeType;
+  final String name;
+}
+
+/// What the person filled in, plus [client] (the app's diagnostics).
+class BugReportInput {
+  const BugReportInput({
+    required this.kind,
+    required this.name,
+    required this.description,
+    required this.screenshots,
+    required this.emailCopy,
+    required this.client,
+  });
+
+  final ReportKind kind;
+  final String name;
+  final String description;
+  final List<ReportScreenshot> screenshots;
+  final bool emailCopy;
+  final Map<String, Object?> client;
+}
+
+/// A sent report's ticket number, and whether the emailed copy went
+/// (null when no copy was asked for).
+class ReportSubmitResult {
+  const ReportSubmitResult({required this.ticketNo, this.emailed});
+  final int ticketNo;
+  final bool? emailed;
+}
+
+/// One `bug_reports` row, for the admins' list.
+class BugReport {
+  const BugReport({
+    required this.id,
+    required this.ticketNo,
+    required this.kind,
+    required this.reporterName,
+    required this.description,
+    required this.screenshots,
+    required this.client,
+    required this.snapshot,
+    required this.resolved,
+    required this.createdAt,
+    this.emailError,
+  });
+
+  factory BugReport.fromMap(Map<String, dynamic> m) => BugReport(
+        id: m['id'].toString(),
+        ticketNo: (m['ticket_no'] as num?)?.toInt() ?? 0,
+        kind: m['kind'] == 'feedback' ? ReportKind.feedback : ReportKind.bug,
+        reporterName: (m['reporter_name'] as String?) ?? '',
+        description: (m['description'] as String?) ?? '',
+        screenshots: [
+          for (final s in (m['screenshots'] as List?) ?? const []) '$s',
+        ],
+        client: (m['client'] as Map?)?.cast<String, dynamic>() ?? const {},
+        snapshot: (m['snapshot'] as Map?)?.cast<String, dynamic>() ?? const {},
+        resolved: m['status'] == 'resolved',
+        createdAt:
+            DateTime.tryParse('${m['created_at']}')?.toLocal() ?? DateTime.now(),
+        emailError: m['email_error'] as String?,
+      );
+
+  final String id;
+  final int ticketNo;
+  final ReportKind kind;
+  final String reporterName;
+  final String description;
+  final List<String> screenshots;
+  final Map<String, dynamic> client;
+  final Map<String, dynamic> snapshot;
+  final bool resolved;
+  final DateTime createdAt;
+  final String? emailError;
+
+  BugReport withResolved(bool value) => BugReport(
+        id: id,
+        ticketNo: ticketNo,
+        kind: kind,
+        reporterName: reporterName,
+        description: description,
+        screenshots: screenshots,
+        client: client,
+        snapshot: snapshot,
+        resolved: value,
+        createdAt: createdAt,
+        emailError: emailError,
+      );
+}
+
+/// Bug reports and feedback (bug_reports_setup.sql and the bug-report-email
+/// Edge Function).
+abstract interface class BugReportsRepository {
+  /// Uploads the screenshots, saves the report (the server adds its own
+  /// snapshot of the account), then asks for the emails. A failed email
+  /// doesn't fail the report.
+  Future<ReportSubmitResult> submit(BugReportInput input);
+
+  /// Every report, newest first (admins; anyone else gets their own).
+  Future<List<BugReport>> fetchAll();
+
+  /// Admins: marks a report open or resolved.
+  Future<void> setResolved(String id, bool resolved);
+
+  /// Short-lived links to a report's screenshots.
+  Future<List<String>> screenshotUrls(List<String> paths);
+}
+
+const maxReportScreenshots = 5;
+const maxScreenshotBytes = 10 * 1024 * 1024;
+const maxReportDescription = 5000;
+const maxReporterName = 120;
+const reportScreenshotTypes = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/heic': 'heic',
+  'image/heif': 'heif',
+  'image/gif': 'gif',
+};
+
+/// The server's refusals, in words; anything else is a generic failure.
+String reportErrorMessage(Object error) {
+  final text = '$error';
+  const refusals = {
+    'not_signed_in': 'Please sign in again, then send the report.',
+    'name_required': 'Please add your name.',
+    'description_required': 'Please describe the bug or your feedback.',
+    'too_long': 'That description is too long. Please shorten it.',
+    'too_many_reports':
+        "You've sent a lot of reports in the last hour. Please try again "
+            'later.',
+  };
+  for (final e in refusals.entries) {
+    if (text.contains(e.key)) return e.value;
+  }
+  return "We couldn't send your report. Please try again.";
+}
+
+/// The whole report as Markdown, for pasting to whoever fixes it: what the
+/// person wrote, then everything attached, as JSON. Same layout as the
+/// website's `reportAsMarkdown`.
+String reportAsMarkdown(BugReport r, {List<String> links = const []}) {
+  const encoder = JsonEncoder.withIndent('  ');
+  final label = r.kind == ReportKind.feedback ? 'Feedback' : 'Bug report';
+  return [
+    '# $label #${r.ticketNo}',
+    '',
+    '- From: ${r.reporterName}',
+    '- Sent: ${r.createdAt.toUtc().toIso8601String()}',
+    '- Status: ${r.resolved ? 'resolved' : 'open'}',
+    '',
+    '## Description',
+    '',
+    r.description,
+    if (links.isNotEmpty) ...[
+      '',
+      '## Screenshots',
+      '',
+      for (var i = 0; i < links.length; i++)
+        '- [Screenshot ${i + 1}](${links[i]})',
+    ],
+    '',
+    '## Device, pages and errors (from the app)',
+    '',
+    '```json',
+    encoder.convert(r.client),
+    '```',
+    '',
+    '## Account (from the server)',
+    '',
+    '```json',
+    encoder.convert(r.snapshot),
+    '```',
+  ].join('\n');
+}
+
+/// A random (version 4) UUID, for a report's id.
+String newUuid() {
+  final rnd = Random.secure();
+  final b = List<int>.generate(16, (_) => rnd.nextInt(256));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  String hex(int from, int to) => b
+      .sublist(from, to)
+      .map((x) => x.toRadixString(16).padLeft(2, '0'))
+      .join();
+  return '${hex(0, 4)}-${hex(4, 6)}-${hex(6, 8)}-${hex(8, 10)}-${hex(10, 16)}';
 }

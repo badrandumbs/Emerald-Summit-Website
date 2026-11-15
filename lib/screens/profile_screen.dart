@@ -2,15 +2,17 @@ import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 
 import '../app_state.dart';
+import '../backend/repositories.dart';
 import '../backend/service_locator.dart';
 import '../theme_setting.dart';
 import '../widgets/change_role_sheet.dart';
 import '../widgets/checkin_pass_card.dart';
 import 'archie_insights_screen.dart';
-import 'auth/onboarding_screen.dart';
+import 'bug_reports_screen.dart';
 import 'edit_profile_screen.dart';
 import 'expert_approvals_screen.dart';
 import 'metrics_screen.dart';
+import 'report_screen.dart';
 import 'front_desk_screen.dart';
 import 'my_assignments_screen.dart';
 import 'rooms_manager_screen.dart';
@@ -341,6 +343,42 @@ class _VisibilityCard extends StatelessWidget {
                           builder: (_) => const ArchieInsightsScreen()),
                     ),
                   ),
+                if (appState.isAdmin)
+                  ListTile(
+                    leading: Icon(Icons.inbox_outlined,
+                        color: theme.colorScheme.primary),
+                    title: const Text('Bug reports and feedback'),
+                    subtitle: const Text('What people reported from the app '
+                        'and the website'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                          builder: (_) => const BugReportsScreen()),
+                    ),
+                  ),
+                ListTile(
+                  leading: Icon(Icons.bug_report_outlined,
+                      color: theme.colorScheme.primary),
+                  title: const Text('Report a bug'),
+                  subtitle: const Text('Something broken? Tell us, with screenshots'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                        builder: (_) => const ReportScreen()),
+                  ),
+                ),
+                ListTile(
+                  leading: Icon(Icons.chat_bubble_outline,
+                      color: theme.colorScheme.primary),
+                  title: const Text('Send feedback'),
+                  subtitle: const Text('Ideas, likes, or something confusing'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                        builder: (_) =>
+                            const ReportScreen(kind: ReportKind.feedback)),
+                  ),
+                ),
                 if (backendInfo.isLive)
                   ListTile(
                     leading: Icon(Icons.badge_outlined,

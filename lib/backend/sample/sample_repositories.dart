@@ -1182,3 +1182,47 @@ class SampleMetricsRepository implements MetricsRepository {
         people: people.values.toList(), registrations: registrations);
   }
 }
+
+/// In-memory bug reports for demo mode.
+class SampleBugReportsRepository implements BugReportsRepository {
+  final _reports = <BugReport>[];
+  var _next = 1;
+
+  @override
+  Future<ReportSubmitResult> submit(BugReportInput input) async {
+    if (input.name.trim().isEmpty) throw StateError('name_required');
+    if (input.description.trim().isEmpty) {
+      throw StateError('description_required');
+    }
+    final ticket = _next++;
+    _reports.insert(
+      0,
+      BugReport(
+        id: newUuid(),
+        ticketNo: ticket,
+        kind: input.kind,
+        reporterName: input.name.trim(),
+        description: input.description.trim(),
+        screenshots: const [],
+        client: input.client,
+        snapshot: const {},
+        resolved: false,
+        createdAt: DateTime.now(),
+      ),
+    );
+    return ReportSubmitResult(
+        ticketNo: ticket, emailed: input.emailCopy ? false : null);
+  }
+
+  @override
+  Future<List<BugReport>> fetchAll() async => [..._reports];
+
+  @override
+  Future<void> setResolved(String id, bool resolved) async {
+    final i = _reports.indexWhere((r) => r.id == id);
+    if (i >= 0) _reports[i] = _reports[i].withResolved(resolved);
+  }
+
+  @override
+  Future<List<String>> screenshotUrls(List<String> paths) async => const [];
+}

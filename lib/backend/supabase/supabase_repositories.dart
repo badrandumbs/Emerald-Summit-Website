@@ -1311,3 +1311,101 @@ class SupabaseMetricsRepository implements MetricsRepository {
     return SummitMetrics.fromMap((res as Map).cast<String, dynamic>());
   }
 }
+
+/// Bug reports and feedback: screenshots in the private
+/// `bug_report_screenshots` bucket, then `submit_bug_report`, then the
+/// `bug-report-email` Edge Function.
+class SupabaseBugReportsRepository implements BugReportsRepository {
+  SupabaseBugReportsRepository(this._client);
+
+  final SupabaseClient _client;
+  static const _bucket = 'bug_report_screenshots';
+
+  @override
+  Future<ReportSubmitResult> submit(BugReportInput input) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) throw StateError('not_signed_in');
+    final id = newUuid();
+    final store = _client.storage.from(_bucket);
+    final paths = <String>[];
+    final shots = input.screenshots.take(maxReportScreenshots).toList();
+    for (var i = 0; i < shots.length; i++) {
+      final shot = shots[i];
+      final ext = reportScreenshotTypes[shot.mimeType] ?? 'png';
+      final path = '$userId/$id/${i + 1}.$ext';
+      try {
+        await store.uploadBinary(path, shot.bytes,
+            fileOptions: FileOptions(contentType: shot.mimeType));
+      } catch (_) {
+        throw StateError("Couldn't upload ${shot.name}.");
+      }
+      paths.add(path);
+    }
+
+    final Object? rows;
+    try {
+      rows = await _client.rpc('submit_bug_report', params: {
+        'p_id': id,
+        'p_kind': input.kind.name,
+        'p_name': input.name.trim(),
+        'p_description': input.description.trim(),
+        'p_screenshots': paths,
+        'p_client': input.client,
+        'p_email_copy': input.emailCopy,
+      });
+    } catch (_) {
+      if (paths.isNotEmpty) {
+        try {
+          await store.remove(paths);
+        } catch (_) {}
+      }
+      rethrow;
+    }
+    final row = rows is List && rows.isNotEmpty ? rows.first : rows;
+    final ticketNo = ((row as Map?)?['ticket_no'] as num?)?.toInt() ?? 0;
+
+    bool? emailed;
+    try {
+      final res = await _client.functions
+          .invoke('bug-report-email', body: {'report_id': id});
+      if (input.emailCopy) {
+        emailed = (res.data as Map?)?['sent_copy'] == true;
+      }
+    } catch (_) {
+      emailed = input.emailCopy ? false : null;
+    }
+    return ReportSubmitResult(ticketNo: ticketNo, emailed: emailed);
+  }
+
+  @override
+  Future<List<BugReport>> fetchAll() async {
+    final rows = await _client
+        .from('bug_reports')
+        .select()
+        .order('created_at', ascending: false)
+        .limit(500);
+    return [for (final r in rows) BugReport.fromMap(r)];
+  }
+
+  @override
+  Future<void> setResolved(String id, bool resolved) async {
+    await _client.rpc('set_bug_report_status',
+        params: {'p_id': id, 'p_status': resolved ? 'resolved' : 'open'});
+  }
+
+  @override
+  Future<List<String>> screenshotUrls(List<String> paths) async {
+    if (paths.isEmpty) return const [];
+    try {
+      final signed = await _client.storage
+          .from(_bucket)
+          .createSignedUrlsResult(paths, 3600);
+      return [
+        for (final s in signed)
+          if (s is SignedUrlSuccess) s.signedUrl,
+      ];
+    } catch (_) {
+      return const [];
+    }
+  }
+}

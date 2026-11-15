@@ -53,59 +53,52 @@ Home header** (Uber-style), not a bottom-bar tab.
 
 - **Home** — the launchpad ([lib/screens/dashboard_screen.dart](lib/screens/dashboard_screen.dart)).
   A greeting + tappable avatar → Profile, a live **countdown** in the header
-  (days, hours, minutes, seconds to the summit's first session; it appears
-  once `summit_settings.summit_date` is set and disappears when the summit
-  starts), a **photo slideshow** (a 16:9 band of
-  event photos that auto-advances every 5s with a cross-fade + page dots, in a
-  fresh random order each load; hidden when there are no photos), a
-  daily-rotating quote card with brand
+  (days, hours, minutes, seconds to the Summit's first session; it appears
+  once `summit_settings.summit_date` is set and disappears when the Summit
+  starts), a **photo slideshow** (a 2:1 band of event photos that
+  auto-advances every 5s with page dots, in a fresh random order each load;
+  hidden when there are no photos), a daily-rotating quote card with brand
   art, an **Up next** card (the next session in your schedule, or a "plan your
-  day" nudge when it's empty), a grid of Uber-style **Jump to** action tiles
-  with two-tone Phosphor icons
-  (schedule, browse, news with an unread badge, **Volunteer hub** for
-  volunteers and admins, profile),
-  a horizontal **Explore disciplines** rail into the catalog (opens each one
-  with its portal transition), a **Latest news**
-  peek, and outbound **Links** (website, Instagram, contact) opened via
-  `url_launcher`. Exists so the app has an interesting home even before anything
-  is added to the schedule. **Touches:** the greeting is a random mix of standard
-  ("Good morning") and playful ("What's cooking", "What's building") lines with
-  an animated shimmer sweep (echoing the website wordmark); the quote card wipes
-  down on first view.
-  **Three more sections are coming to Home** (the website's dashboard has
-  them; building them in the app is on the to-do list under **Home: smaller
-  slideshow, no Tracks or Explore rows, three new sections**, with the wording
-  in **Home sections and wording, Nov 14** below). They're static text and
-  links, with no backend. The **Explore disciplines** rail comes off Home at
-  the same time; Discover stays the way in. In the website's order: Support
-  EAF and Sponsors above Links, About the app at the very bottom:
-  - **Support EAF** (the Emerald Summit logo beside the text): "This Emerald Summit App is brought to you 100% built by
-    students and free for all to use." then EAF's support for
-    student-initiated projects, "Please consider supporting EAF and its
-    mission.", and **Donate** and **Volunteer with EAF**
-    (https://www.ehsacademics.org/get-involved/parent-volunteering)
-    buttons. Donate goes to EAF's Zeffy form,
-    https://www.zeffy.com/en-US/donation-form/be-the-catalyst-for-learning-and-discovery.
-    The website embeds it in a popup on computers; in the app, open that
-    page in the phone's browser (`url_launcher`, external mode) rather than
-    a WebView, which is what the website does on phones too.
-  - **Sponsors**: the five sponsorship tiers from ehsacademics.org's
-    Emerald Summit '27 → Sponsor page, ranked highest first as a stepped
-    peak (Capstone $5,000, Keystone $2,000, Pillar $1,500, Foundation
-    $1,000, Cornerstone $500, each with its perks), each sponsor's logo
-    inside its tier linking to their website (Brightfox at Keystone;
-    Prepaze Academy, YoungWonks and Praan Health at Cornerstone; logos and
-    URLs in the website's `SPONSORS` and `public/sponsors/`), open
-    spots filling out the rest of each tier's row: the first says **Your
-    company logo could go here**, the rest are faint empty slots with a +
-    (all email contact@ehsacademics.org with the tier as the subject), a note that sponsorships go through EAF and are fully
-    tax-deductible, a **Become a sponsor** button that emails
-    contact@ehsacademics.org, and a **Sponsorship details** link to
-    https://www.ehsacademics.org/initiatives/emerald-summit-27/sponsor.
+  day" nudge when it's empty), a **Latest announcements** peek, then the
+  website's sections in its order: **Support EAF**, **Sponsors**, outbound
+  **Links** (Summit website emeraldsummit.ehsacademics.org, Instagram,
+  contact) and **About the app** at the very bottom. No Jump to grid and no
+  Explore disciplines rail (both gone Nov 14, 2026, like the website's Quick
+  access and Explore rows); Discover is the way into the disciplines and
+  Profile holds the rest. **Touches:** the greeting is a random mix of
+  standard ("Good morning") and playful ("What's cooking", "What's building")
+  lines with an animated shimmer sweep; the quote card wipes down on first
+  view.
+  The three website sections are static text and links, no backend
+  ([lib/widgets/home_about_sections.dart](lib/widgets/home_about_sections.dart),
+  matching the website's `src/components/home/AboutSections.tsx`):
+  - **Support EAF** (the Summit logo beside the text): "This Emerald Summit
+    App is brought to you 100% built by students and free for all to use.",
+    EAF's support for student-initiated projects, "Please consider
+    supporting EAF and its mission.", and **Donate** (EAF's Zeffy form,
+    https://www.zeffy.com/en-US/donation-form/be-the-catalyst-for-learning-and-discovery,
+    opened in the phone's browser, not embedded) and **Volunteer with EAF**
+    (https://www.ehsacademics.org/get-involved/parent-volunteering).
+  - **Sponsors**: the five tiers from ehsacademics.org's Emerald Summit '27
+    → Sponsor page as a stepped peak, highest first (Capstone $5,000,
+    Keystone $2,000, Pillar $1,500, Foundation $1,000, Cornerstone $500,
+    each with its perks). Each sponsor's logo sits in its tier and opens
+    their website (Brightfox at Keystone; Prepaze Academy, YoungWonks and
+    Praan Health at Cornerstone; logos in `assets/sponsors/`, list in
+    `sponsors` in home_about_sections.dart, the same as the website's
+    `SPONSORS`). Open spots fill out each tier's row: the first says **Your
+    company logo could go here**, the rest are faint dashed slots with a +,
+    and all email contact@ehsacademics.org with the tier in the subject.
+    Then a note that sponsorships go through EAF and are fully
+    tax-deductible, **Become a sponsor** (emails contact@ehsacademics.org)
+    and **Sponsorship details**
+    (https://www.ehsacademics.org/initiatives/emerald-summit-27/sponsor).
+    To add a sponsor, add its logo to `assets/sponsors/` and a line to
+    `sponsors`, on both the app and the website.
   - **About the app**: "This app has been 100% built by Emerald High School
     students." with credits: lead developers Arjun Mahajan and Akhil
     Muthyala; developers and testers Nithali Anand, Arush Singh, Guhan Bala
-    and Deep Shah. No feature list.
+    and Deep Shah.
 - **Schedule** — the user's full personal schedule (formerly the "My Day" first
   tab; the in-app header still reads "My Day"). A summary line at the top
   ([day_summary.dart](lib/widgets/day_summary.dart)) gives sessions and time
@@ -1515,17 +1508,15 @@ date ("Thu, Nov 12", or "Nov 12, 2025" for another year) instead of "2d ago". Th
 Both are on the to-do list below.
 
 ### Website changes to bring into the app (to-do)
-Open items, in the order below: 8th graders in sessions · Remove someone
-from a session · Dates on older bell notes · Rename the News tab to
-Announcements · Managing replaces a clash · See and convert signed-up
-volunteers · Registration closed message · Universe subtitles · Archie and
-the FAQ · Report a bug or send feedback · Home sections and wording, Nov 14. Checked against the website on Nov 13, 2026: everything else the
-website does, the app does too, apart from the website-only list at the end.
-Updated Nov 13, 2026. These shipped on the website and the app doesn't have
-them yet. The app isn't public yet, so none of them is urgent, but do them
-before it launches. Tick an item off here when it lands.
+Still open: Code of conduct (waiting on the text) · Universe subtitles
+(the SQL hasn't been run) · uploading Archie's edited knowledge file and
+redeploying `archie-chat` (see **Archie and the FAQ**). Everything else
+below landed in the app on Nov 14, 2026 and is ticked, with a note where the
+app does it differently from the website. Checked against the website on
+Nov 14, 2026: everything else the website does, the app does too, apart from
+the website-only list at the end. Tick an item off here when it lands.
 
-- [ ] **8th graders in sessions.** Participating is for high schoolers; an
+- [x] **8th graders in sessions.** Participating is for high schoolers; an
   8th grader can participate only in sessions whose editors ticked **Let 8th
   graders participate**, and anyone can spectate any session.
   - Backend: [eighth_grade_participation.sql](supabase/eighth_grade_participation.sql)
@@ -1561,6 +1552,11 @@ before it launches. Tick an item off here when it lands.
   - Archie: [knowledge.md](supabase/archie/knowledge.md) still says only high
     schoolers can participate ("Who can attend", the roles table, the FAQ
     answer). Update those lines and re-upload the knowledge file.
+  Done in the app: `Session.allowEighthGraders`, the editor's checkbox and
+  helper text, Participate greyed out in Add to my day
+  (`participationGradeBlock` in metrics.dart), the two error messages,
+  `gradeLabel` reads "eighth", and the sign-up notes. Archie's knowledge.md
+  is updated but not uploaded yet.
 **Latest (Nov 13, 2026), website + backend:** organizers can remove someone
 from a session, e.g. an account that looks fake. On the website the
 Participants and Experts tabs have **Remove** on every row and a **Removed**
@@ -1569,7 +1565,7 @@ list with **Allow back**, through the new RPCs in
 (run on the dev project Nov 13, 2026, so it's live on the website). The app doesn't
 have it yet; see the to-do below.
 
-- [ ] **Remove someone from a session.** Anyone who can see a session's
+- [x] **Remove someone from a session.** Anyone who can see a session's
   roster (admins, the volunteers assigned to it, and session editors for its
   discipline) can take a participant, spectator or expert off it.
   - Backend: [session_participant_removal.sql](supabase/session_participant_removal.sql)
@@ -1607,7 +1603,12 @@ have it yet; see the to-do below.
     from this session, so you can't sign up for it again. If you think this
     was a mistake, contact the summit team." (today the app shows its generic
     error).
-- [ ] **Dates on older bell notes.** On the website, a note from today keeps
+  Done in the app: **Remove from this session** is a button in the person
+  sheet a roster row opens (rows already carry the attendance switch), with
+  the confirm and team lines above; the **Removed** list with **Allow back**
+  sits at the bottom of the Participants and Experts tabs, filtered to that
+  tab's types; both hide while `fetch_session_removals` fails.
+- [x] **Dates on older bell notes.** On the website, a note from today keeps
   the app's relative stamp, and anything older shows its date. The stamp sits
   right-aligned on the title row, in the phone's time zone:
   - today, under a minute: **just now**; under an hour: **5m ago**; earlier
@@ -1641,7 +1642,10 @@ have it yet; see the to-do below.
     title, like the website, and drop it from the subtitle.
   - Add tests for each case, including 11 PM yesterday and 12:05 AM today.
   - Only the bell changes; the News feed's own `timeAgo` stays.
-- [ ] **Rename the News tab to Announcements.** The website calls it
+  Done in the app: `notificationStamp` / `notificationFullTime` in
+  models.dart (no `intl`), the stamp sits right of the title and the full
+  time shows on long-press. Tests in test/notification_stamp_test.dart.
+- [x] **Rename the News tab to Announcements.** The website calls it
   Announcements everywhere (sidebar, bottom bar, page title, Home shortcut,
   composer hints, remove-from-feed warning). In the app: the tab `label:
   'News'` in [root_nav.dart](lib/screens/root_nav.dart) (it fits; the website's
@@ -1650,7 +1654,9 @@ have it yet; see the to-do below.
   [announcement_detail_screen.dart](lib/screens/announcement_detail_screen.dart),
   and the comments that say "News tab". The feed screen's title already reads
   Announcements. No backend change.
-- [ ] **Managing replaces a clash.** A person does one thing at a time, and
+  Done in the app, along with Home's "Latest announcements" and Archie's
+  wording.
+- [x] **Managing replaces a clash.** A person does one thing at a time, and
   managing wins. On the website an admin can assign someone who's busy at
   that time, and what they were doing comes off their day.
   - Backend: [volunteer_conflict_override.sql](supabase/volunteer_conflict_override.sql)
@@ -1685,7 +1691,11 @@ have it yet; see the to-do below.
   - Add to my day → Manage: on a `set_session_manage` conflict, the same
     dialog in the second person ("Replace what you're doing?") with
     **Manage instead**, calling the RPC with the admin's own id.
-- [ ] **See and convert signed-up volunteers.** On the website, an admin
+  Done in the app: `previewManagerAssignment` /
+  `assignManagerReplacingConflicts` on `AssignmentRepository`, the dialogs
+  in lib/widgets/manager_replace_dialogs.dart (`describeReplacement` matches
+  the website), and **Manage instead** from the session page.
+- [x] **See and convert signed-up volunteers.** On the website, an admin
   sees which volunteers are already signed up for a session and can assign one
   to manage it in a click. No new backend: it uses the two RPCs from
   **Managing replaces a clash** above (do that first) plus
@@ -1718,10 +1728,12 @@ have it yet; see the to-do below.
     spectators and experts) with their contact details, mark attendance, and
     remove someone from the session. They can't edit the session's details,
     like its description, time, room or photos."
-- [ ] **Registration closed message.** While `website_registration_open` is
+  Done in the app, with the Volunteers tab wording below.
+- [x] **Registration closed message.** While `website_registration_open` is
   off, the website says "Registration will open on November 21st" for the
   `registration_closed` error; the app shows its generic error (see
   **Registration lock and hidden session times**).
+  Done in the app (`registrationRefusalMessage` in repositories.dart).
 - [ ] **Universe subtitles.** The website renamed four: ImagineX "Arts,
   Literature, Music, Drama & Improv", NovaSphere "Core Sciences, Climate
   Change & Sustainability", VentureVerse "Entrepreneurship & Marketing",
@@ -1730,11 +1742,15 @@ have it yet; see the to-do below.
   can edit a discipline (the app's editor only creates one), so run
   [universe_subtitles.sql](supabase/universe_subtitles.sql) in the SQL Editor
   (not run yet). No code change.
-- [ ] **Archie and the FAQ.** The website's FAQ added why the Summit is in
+- [x] **Archie and the FAQ.** The website's FAQ added why the Summit is in
   January, whether a project needs to be perfect, and why there are no awards
   (every participant gets a certificate of participation). Add them to
   Archie's knowledge if Archie should answer them.
-- [ ] **Home: smaller slideshow, no Tracks or Explore rows, three new sections.** The
+  knowledge.md now has the three FAQ answers, 8th graders, the sponsor tiers
+  and ehsacademics.org links, and the `archie-chat` persona and `web_fetch`
+  domains point at ehsacademics.org. **Not live yet:** upload the knowledge
+  file and redeploy `archie-chat`.
+- [x] **Home: smaller slideshow, no Tracks or Explore rows, three new sections.** The
   website's dashboard slideshow is now 2:1 (was 16:9) and takes less of the
   row beside the quote card. The Tracks strip under Your day, with its
   Browse sessions button, is gone, and so is the **Explore the verses** row
@@ -1745,7 +1761,8 @@ have it yet; see the to-do below.
   top of this README and in **Home sections and wording, Nov 14** below.
   When sponsors sign on, their logos could come from a `sponsors` bucket
   like `gallery_photos`.
-- [ ] **New "How are you joining the Summit?" sign-in screen** (website,
+  Done in the app; see **Home** near the top of this README.
+- [x] **New "How are you joining the Summit?" sign-in screen** (website,
   Nov 14, 2026). One screen replaces the role list: the Summit logo in a
   large white circle, "Organized by EHS Academic Foundation" with the EAF
   seal (website `public/brand/eaf-logo.png`), and role cards grouped under
@@ -1757,7 +1774,9 @@ have it yet; see the to-do below.
   **Sign in** and **Sign up** (see the next item). Admin has no card: **Organizer sign in** at the
   bottom is for admins and test accounts, and **Not sure? Contact the EAF
   team** emails contact@ehsacademics.org. No backend change.
-- [ ] **Sign in and Sign up are different paths** (website, Nov 14, 2026).
+  Done in the app: lib/screens/auth/welcome_screen.dart, which opens the
+  sign-in screen in place for the picked role.
+- [x] **Sign in and Sign up are different paths** (website, Nov 14, 2026).
   Sign up creates the account and runs the sign-up steps (profile
   questions, then the code of conduct) before the app opens. Sign in checks
   who you are and goes straight in: an email code goes only to an email
@@ -1769,31 +1788,42 @@ have it yet; see the to-do below.
   that taps Sign up just signs in and skips the steps it has done. The
   screens link to each other ("New to the Summit? Sign up" / "Already have
   an account? Sign in").
+  Done in the app: `sendEmailOtp(createAccount:)` throws `NoAccountFailure`
+  for a new email on Sign in; the picked role is
+  `appState.pendingSignUpRole`, which onboarding starts on ("Signing up as
+  …" with a Change link). Google sign-in from either mode makes the account
+  if it's new and onboarding runs, as on the website.
 - [ ] **Code of conduct (waiting on the text).** The Summit team still has
   to provide it. It will be a sign-up step after the profile questions,
   agreed once per account, on the website and in the app. Nothing is built
   yet on either.
-- [ ] **Role names: Spectator and Expert.** The website renamed "Parent /
+- [x] **Role names: Spectator and Expert.** The website renamed "Parent /
   Spectator" to **Spectator** and "Expert / Speaker" to **Expert**
   everywhere, and every role's blurb is now the sign-in screen's (see the
   first item). Update `SummitRole` labels and blurbs in `user_profile.dart`.
   Stored role values don't change.
-- [ ] **Phone numbers are digits only.** On the website the mobile number
+  Done in the app.
+- [x] **Phone numbers are digits only.** On the website the mobile number
   field drops anything that isn't a digit as you type or paste ("(925)
   555-0100" becomes 9255550100), keeps at most 15 digits, and opens the
   number pad. Do the same in the app's phone fields (sign-up and the
   add-your-number gate).
-- [ ] **Change role in a popup.** Signed in, Change role (Profile, the
+  Done in the app (`ProfileField.phoneFormatters`).
+- [x] **Change role in a popup.** Signed in, Change role (Profile, the
   pending expert's "Sign up as something else") opens a sheet listing the
   four roles with the current one marked; picking one shows the existing
   preview-and-confirm step in the sheet, then the new role's profile
   questions. It no longer sends people to the sign-in role list.
-- [ ] **"Room TBD" in session lists** (website, Nov 14, 2026). While rooms
+  Done in the app: lib/widgets/change_role_sheet.dart; Confirm opens the new
+  role's questions (`OnboardingScreen(startOnDetails: true)`), which save
+  the change.
+- [x] **"Room TBD" in session lists** (website, Nov 14, 2026). While rooms
   are locked (`SESSION_ROOMS_ENABLED` is false), the website's session lists
   (discipline pages, My Schedule, Home, search results) show "Room TBD"
   instead of the stored room. The session page still hides the room. The
   app's lists still show the stored room.
-- [ ] **Tracks are sessions** (website, Nov 14, 2026). A discipline page
+  Done in the app (`Session.roomLabel`).
+- [x] **Tracks are sessions** (website, Nov 14, 2026). A discipline page
   lists its sessions under a **Tracks** heading (was "Sessions") with no row
   of track chips, and there are no separate track pages (Format, What you
   can do, More in this discipline). Track chips on Discover use each
@@ -1804,13 +1834,22 @@ have it yet; see the to-do below.
   anywhere else, the session page is its own full screen in its
   discipline's world (no tab bar or app bar), growing in like the
   discipline portal.
-- [ ] **No grey square behind +, −, ✓ and ×** (website, Nov 14, 2026).
+  Done in the app: the discipline page lists sessions under **TRACKS** with
+  no track chips or track text (its All / Open seats / Morning / Afternoon
+  filters stay). The session page is drawn in its discipline's world (theme,
+  `AmbientMotif`, `FlowingBorder`) and every place that opens a session uses
+  `openSession`, which grows it out of the tapped card with the discipline
+  portal route. From the discipline page that reads as the list swapping for
+  the session; it is a new route, not the same page.
+- [x] **No grey square behind +, −, ✓ and ×** (website, Nov 14, 2026).
   Phosphor's duotone draws a faint square or rectangle behind bare marks
   (plus, minus, check, double check, x, three dots, left-right arrows,
   list/menu, download, scan, terminal, math operations). The website draws
   those at the regular weight instead; check `duotone_icon.dart` for the
   same box.
-- [ ] **Report a bug or send feedback** (website, Nov 14, 2026). Two
+  Checked: the app's duotone set (duotone_icon.dart) has no bare marks; +,
+  ✓, × and the rest are Material icons. Nothing to change.
+- [x] **Report a bug or send feedback** (website, Nov 14, 2026). Two
   categories of ticket, from two rows on Profile: **Report a bug** and
   **Send feedback**. Each opens the same form, titled for its category (a
   switch at the top moves it to the other one): name (filled in,
@@ -1843,7 +1882,13 @@ have it yet; see the to-do below.
   - Error codes to word: `name_required`, `description_required`,
     `too_long`, `too_many_reports` (10 an hour), `not_signed_in`. A failed
     email doesn't fail the report.
-- [ ] **Home sections and wording, Nov 14** (website, Nov 14, 2026).
+  Done in the app: lib/screens/report_screen.dart (Profile → Report a bug /
+  Send feedback), lib/screens/bug_reports_screen.dart (admins),
+  `BugReportsRepository`, and lib/backend/diagnostics.dart, which records
+  screens, Flutter errors and failed Supabase requests (through
+  `RecordingHttpClient`) and reads the build (`package_info_plus`, plus
+  `--dart-define=GIT_COMMIT=…` when given) and device (`device_info_plus`).
+- [x] **Home sections and wording, Nov 14** (website, Nov 14, 2026).
   - The Archie tab is labeled **Ask Archie** (sidebar and bottom bar; the
     website's `NAV_ITEMS` in `src/components/AppShell.tsx`).
   - "Summit" is always capitalized in app text ("Summit day", "the Summit
@@ -1872,6 +1917,8 @@ have it yet; see the to-do below.
     [sample_archie_repository.dart](lib/backend/sample/sample_archie_repository.dart),
     and three places in [knowledge.md](supabase/archie/knowledge.md) (redeploy
     Archie after editing it). The website switched on Nov 14, 2026.
+  Done in the app. The Jump to grid went with the website's Quick access,
+  and the Resources screen is gone.
 
 Website-only on purpose, no app work: the public landing page (hero, the
 arrival, the Summit figure, the FAQ, the universes orbit), the

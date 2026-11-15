@@ -1,6 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../diagnostics.dart';
+
 import '../backend.dart';
 import 'supabase_archie_repository.dart';
 import 'supabase_auth_service.dart';
@@ -20,6 +22,8 @@ class SupabaseBackend {
     await Supabase.initialize(
       url: SupabaseConfig.supabaseUrl,
       publishableKey: SupabaseConfig.supabasePublishableKey,
+      // Notes failed requests for bug reports; otherwise a plain client.
+      httpClient: RecordingHttpClient(),
     );
     final client = Supabase.instance.client;
 
@@ -58,6 +62,8 @@ class SupabaseBackend {
       ..registerSingleton<ExpertsRepository>(
           SupabaseExpertsRepository(client))
       ..registerSingleton<MetricsRepository>(
-          SupabaseMetricsRepository(client));
+          SupabaseMetricsRepository(client))
+      ..registerSingleton<BugReportsRepository>(
+          SupabaseBugReportsRepository(client));
   }
 }

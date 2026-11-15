@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'app_navigation.dart';
 import 'app_state.dart';
+import 'backend/diagnostics.dart';
 import 'backend/service_locator.dart';
 import 'theme.dart';
 import 'theme_setting.dart';
@@ -11,6 +13,10 @@ import 'screens/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Remember recent errors and screens for bug reports.
+  diagnostics.install();
+  rootTab.addListener(() => diagnostics.visit('tab ${tabName(rootTab.value)}'));
 
   // Pick and initialize the backend (live if configured, else in-memory sample).
   // This is the whole app's single backend touch-point.
@@ -53,6 +59,7 @@ class EmeraldSummitApp extends StatelessWidget {
       theme: EmeraldTheme.light(),
       darkTheme: EmeraldTheme.dark(),
       themeMode: themeMode,
+      navigatorObservers: [DiagnosticsNavigatorObserver()],
       builder: (context, child) {
         final mq = MediaQuery.of(context);
         return MediaQuery(

@@ -53,6 +53,8 @@ SummitRepository get summitRepository => getIt<SummitRepository>();
 ArchieRepository get archieRepository => getIt<ArchieRepository>();
 ExpertsRepository get expertsRepository => getIt<ExpertsRepository>();
 MetricsRepository get metricsRepository => getIt<MetricsRepository>();
+BugReportsRepository get bugReportsRepository =>
+    getIt<BugReportsRepository>();
 
 /// Description of the active backend, for UI copy.
 BackendDescriptor get backendInfo => getIt<BackendDescriptor>();
