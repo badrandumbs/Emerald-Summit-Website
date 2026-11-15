@@ -21,7 +21,7 @@ import {
 interface Shot { file: File; url: string }
 
 const ATTACHED = [
-  'Your sign-in email, role, school and grade',
+  'Your sign-in email and role',
   'The sessions on your day, any team, sessions you manage, and your check-in',
   'Your last 10 notifications',
   'The pages you opened on this site before reporting, and any errors they showed',
@@ -249,7 +249,7 @@ export default function ReportDialog({ open, onOpenChange, kind: initialKind = '
                   <ul className="list-disc space-y-1 pl-5">
                     {ATTACHED.map((item) => <li key={item}>{item}</li>)}
                   </ul>
-                  <p>Not your phone number or student ID. Only the Summit's admins can read reports.</p>
+                  <p>Not your phone number, student ID, school, grade or emergency contact. Only Summit app developers can read reports.</p>
                 </div>
               )}
             </div>

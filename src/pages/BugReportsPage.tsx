@@ -27,7 +27,6 @@ function facts(report: BugReport): [string, string][] {
   const snap = obj(report.snapshot);
   const auth = obj(snap.auth);
   const profile = obj(snap.profile);
-  const details = obj(profile.details);
   const client = obj(report.client);
   const device = obj(client.device);
   const build = obj(client.build);
@@ -35,7 +34,6 @@ function facts(report: BugReport): [string, string][] {
   return [
     ['Email', String(auth.email ?? '')],
     ['Role', [profile.role, profile.volunteer_subtype].filter(Boolean).join(' · ')],
-    ['School / grade', [details.school, details.grade].filter(Boolean).join(' · ')],
     ['Sessions', String(arr(snap.registrations).length)],
     ['Managing', String(arr(snap.managing).length)],
     ['Pages before', pages.join(' → ')],
