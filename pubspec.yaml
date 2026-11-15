@@ -92,6 +92,10 @@ flutter:
     - assets/branding/archie.png
     # The Emerald Summit dragon badge, shown on the sign-in screen.
     - assets/branding/logo.png
+    # The EHS Academic Foundation seal, on the sign-in screen.
+    - assets/branding/eaf_logo.png
+    # Sponsor logos on Home's Sponsors section (lib/widgets/home_about_sections.dart).
+    - assets/sponsors/
 
   fonts:
     # Phosphor duotone icons (phosphoricons.com, MIT; license beside the

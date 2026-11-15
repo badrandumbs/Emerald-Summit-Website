@@ -467,6 +467,7 @@ class Session {
     this.maxTeamSize = kDefaultMaxTeamSize,
     this.customProjectPrompt,
     this.participantDeadline,
+    this.allowEighthGraders = false,
   });
 
   /// Builds a [Session] from a `sessions_with_counts` view row. The view carries
@@ -503,6 +504,7 @@ class Session {
           final String d => DateTime.tryParse(d)?.toLocal(),
           _ => null,
         },
+        allowEighthGraders: row['allow_eighth_graders'] == true,
       );
 
   final String id;
@@ -555,11 +557,20 @@ class Session {
   /// deadline. After it, people can still spectate while seats are left.
   final DateTime? participantDeadline;
 
+  /// True when its editors ticked "Let 8th graders participate"
+  /// (`sessions.allow_eighth_graders`). Otherwise only high schoolers can
+  /// participate; anyone can spectate.
+  final bool allowEighthGraders;
+
   /// True once the participant deadline has passed.
   bool get participationClosed {
     final deadline = participantDeadline;
     return deadline != null && !DateTime.now().isBefore(deadline);
   }
+
+  /// The room as session lists show it: "Room TBD" while rooms are locked
+  /// ([kSessionRoomsEnabled]), like the website.
+  String get roomLabel => kSessionRoomsEnabled ? room : 'Room TBD';
 
   bool get isFull => enrolled >= capacity;
   int get seatsLeft => capacity - enrolled;
@@ -717,16 +728,14 @@ class AppNotification {
 
   bool get isRead => readAt != null;
 
-  /// "just now", "5m ago", "3h ago", "2d ago".
-  String get timeAgo {
-    final then = createdAt;
-    if (then == null) return '';
-    final diff = DateTime.now().difference(then);
-    if (diff.inMinutes < 1) return 'just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
-  }
+  /// The bell's stamp, like the website's `notificationStamp`: "just now",
+  /// "5m ago" or "3h ago" while the note is from today (the calendar day, in
+  /// the phone's time zone), then "Thu, Nov 12" this year and "Nov 12, 2025"
+  /// for another year.
+  String get timeAgo => notificationStamp(createdAt, DateTime.now());
+
+  /// "Thursday, November 12, 2026 at 9:05 AM", shown on long-press.
+  String get fullTime => notificationFullTime(createdAt);
 
   AppNotification markedRead(DateTime at) => AppNotification(
         id: id,
@@ -853,21 +862,6 @@ class GalleryPhoto {
   /// file into this before constructing the model, so app code (and the
   /// [Image.network] that loads it) stays backend-agnostic.
   final String imageUrl;
-}
-
-/// A document in the resources hub (spec section 04 — Resources hub).
-class ResourceDoc {
-  const ResourceDoc({
-    required this.id,
-    required this.title,
-    required this.category,
-    required this.icon,
-  });
-
-  final String id;
-  final String title;
-  final String category;
-  final IconData icon;
 }
 
 /// How a person joined a session (stored on `registrations.participation_type`).
@@ -1396,4 +1390,54 @@ class ExpertFeedback {
     'rating': rating,
     'comment': comment,
   };
+}
+
+const _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const _weekdaysLong = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+];
+const _months = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+const _monthsLong = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+/// A bell note's stamp at [now]; see [AppNotification.timeAgo].
+String notificationStamp(DateTime? createdAt, DateTime now) {
+  if (createdAt == null) return '';
+  final then = createdAt.toLocal();
+  final local = now.toLocal();
+  final sameDay = then.year == local.year &&
+      then.month == local.month &&
+      then.day == local.day;
+  if (sameDay) {
+    final minutes = local.difference(then).inMinutes;
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return '${minutes}m ago';
+    return '${minutes ~/ 60}h ago';
+  }
+  final monthDay = '${_months[then.month - 1]} ${then.day}';
+  return then.year == local.year
+      ? '${_weekdays[then.weekday - 1]}, $monthDay'
+      : '$monthDay, ${then.year}';
+}
+
+/// "Thursday, November 12, 2026 at 9:05 AM" in the phone's time zone.
+String notificationFullTime(DateTime? createdAt) {
+  if (createdAt == null) return '';
+  final t = createdAt.toLocal();
+  final hour = t.hour % 12 == 0 ? 12 : t.hour % 12;
+  final minute = t.minute.toString().padLeft(2, '0');
+  final ampm = t.hour < 12 ? 'AM' : 'PM';
+  return '${_weekdaysLong[t.weekday - 1]}, ${_monthsLong[t.month - 1]} '
+      '${t.day}, ${t.year} at $hour:$minute $ampm';
 }

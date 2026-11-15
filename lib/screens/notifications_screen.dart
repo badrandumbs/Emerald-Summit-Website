@@ -132,18 +132,38 @@ class _NotificationTile extends StatelessWidget {
         backgroundColor: theme.colorScheme.primaryContainer,
         child: Icon(icon, color: theme.colorScheme.primary, size: 20),
       ),
-      title: Text(
-        item.title,
-        style: TextStyle(
-            fontWeight: item.isRead ? FontWeight.w400 : FontWeight.w700),
+      title: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              item.title,
+              style: TextStyle(
+                  fontWeight:
+                      item.isRead ? FontWeight.w400 : FontWeight.w700),
+            ),
+          ),
+          if (item.timeAgo.isNotEmpty) ...[
+            const SizedBox(width: 8),
+            Tooltip(
+              message: item.fullTime,
+              triggerMode: TooltipTriggerMode.longPress,
+              child: Text(
+                item.timeAgo,
+                style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant),
+              ),
+            ),
+          ],
+        ],
       ),
-      subtitle: Text(
-        [if (item.body.isNotEmpty) item.body, item.timeAgo]
-            .where((t) => t.isNotEmpty)
-            .join('\n'),
-        maxLines: 3,
-        overflow: TextOverflow.ellipsis,
-      ),
+      subtitle: item.body.isEmpty
+          ? null
+          : Text(
+              item.body,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
       isThreeLine: item.body.isNotEmpty,
       trailing: item.isRead
           ? null

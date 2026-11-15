@@ -65,7 +65,7 @@ void main() {
     await pumpView(tester, canAssign: false);
     expect(find.text('Maya Chen'), findsOneWidget);
     expect(find.text('Sam Okafor'), findsOneWidget);
-    expect(find.text('Assign volunteer'), findsNothing);
+    expect(find.text('Assign a volunteer to manage'), findsNothing);
     expect(find.byTooltip('Remove'), findsNothing);
   });
 
@@ -80,7 +80,7 @@ void main() {
 
   testWidgets('admins can still assign and remove', (tester) async {
     await pumpView(tester, canAssign: true);
-    expect(find.text('Assign volunteer'), findsOneWidget);
+    expect(find.text('Assign a volunteer to manage'), findsOneWidget);
     expect(find.byTooltip('Remove'), findsNWidgets(2));
   });
 

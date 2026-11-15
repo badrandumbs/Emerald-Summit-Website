@@ -131,10 +131,10 @@ void main() {
           id: 'e', email: 'e@e.com', role: SummitRole.expert, onboarded: true);
       await pump(tester, const SummitFeedbackScreen());
 
-      expect(find.text('The summit overall'), findsOneWidget);
+      expect(find.text('The Summit overall'), findsOneWidget);
       expect(find.text('The Emerald Summit app'), findsOneWidget);
 
-      await tester.tap(find.byTooltip('5 of 5 for The summit overall'));
+      await tester.tap(find.byTooltip('5 of 5 for The Summit overall'));
       await tester.pump();
       await tester.tap(find.text('Send feedback'));
       await tester.pump();

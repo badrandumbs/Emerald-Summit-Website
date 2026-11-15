@@ -4,9 +4,11 @@ import '../app_state.dart';
 import '../backend/repositories.dart';
 import '../backend/service_locator.dart';
 import '../models/models.dart';
+import '../models/user_profile.dart';
+import '../widgets/manager_replace_dialogs.dart';
 import '../widgets/volunteer_contact.dart';
 
-/// The "Volunteers" tab of the session page: who's organizing this session.
+/// The "Volunteers" tab of the session page: who's managing this session.
 /// Tapping a person opens their contact sheet (number, Call, Text).
 ///
 /// Admins ([canAssign]) also assign/unassign volunteers here. Being assigned is
@@ -35,6 +37,11 @@ class _SessionVolunteersViewState extends State<SessionVolunteersView> {
   bool _failed = false;
   List<VolunteerRef> _assigned = const [];
 
+  /// Admins only: volunteers on this session's roster (as a participant,
+  /// spectator or expert), who can be made its manager instead.
+  List<RosterEntry> _signedUp = const [];
+  bool _busy = false;
+
   @override
   void initState() {
     super.initState();
@@ -46,9 +53,23 @@ class _SessionVolunteersViewState extends State<SessionVolunteersView> {
       final assigned = await assignmentRepository.fetchSessionVolunteers(
         widget.session.id,
       );
+      var signedUp = const <RosterEntry>[];
+      if (widget.canAssign) {
+        try {
+          final roster = await attendanceRepository
+              .fetchSessionRoster(widget.session.id);
+          signedUp = [
+            for (final r in roster)
+              if (r.role == SummitRole.volunteer.id) r,
+          ];
+        } catch (_) {
+          signedUp = const [];
+        }
+      }
       if (!mounted) return;
       setState(() {
         _assigned = assigned;
+        _signedUp = signedUp;
         _loading = false;
         _failed = false;
       });
@@ -83,13 +104,98 @@ class _SessionVolunteersViewState extends State<SessionVolunteersView> {
       );
       return;
     }
+    final signedUpType = {
+      for (final r in _signedUp) r.userId: r.participationType,
+    };
     final picked = await showModalBottomSheet<VolunteerRef>(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => _VolunteerPicker(volunteers: available),
+      builder: (ctx) =>
+          _VolunteerPicker(volunteers: available, signedUp: signedUpType),
     );
     if (picked == null || !mounted) return;
-    await _assign(picked);
+    final type = signedUpType[picked.id];
+    if (type != null) {
+      await _convert(picked.id, _nameOf(picked), type);
+    } else {
+      await _assign(picked);
+    }
+  }
+
+  String _nameOf(VolunteerRef v) => v.name.isEmpty ? v.email : v.name;
+
+  /// Makes a volunteer who's signed up for this session its manager instead.
+  Future<void> _convert(
+      String userId, String name, ParticipationType type) async {
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    final items = await assignmentRepository.previewManagerAssignment(
+        widget.session.id, userId);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (items == null) {
+      // Backend without volunteer_conflict_override.sql: the old refusal.
+      await _showBlocked("$name is signed up for this session, so they can't "
+          'manage it. They need to remove it from their day first.');
+      return;
+    }
+    final ok = await showMakeManagerDialog(context,
+        personName: name, type: type, items: items);
+    if (!ok || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await assignmentRepository.assignManagerReplacingConflicts(
+          widget.session.id, userId);
+      messenger.showSnackBar(SnackBar(
+          content: Text("$name now manages this session and is off its "
+              "roster. They've been told.")));
+      await _load();
+    } catch (_) {
+      messenger.showSnackBar(const SnackBar(
+          content: Text('Could not make them a manager. Admins only.')));
+    }
+    if (mounted) setState(() => _busy = false);
+  }
+
+  Future<void> _showBlocked(String message) => showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Schedule conflict'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Got it'),
+            ),
+          ],
+        ),
+      );
+
+  /// Assigns [v] over a clash, after showing what comes off their day.
+  /// Returns false when the backend can't replace yet.
+  Future<bool> _replace(VolunteerRef v) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final name = _nameOf(v);
+    final items = await assignmentRepository.previewManagerAssignment(
+        widget.session.id, v.id);
+    if (items == null || items.isEmpty || !mounted) return false;
+    final ok = await showReplaceScheduleDialog(context,
+        personName: name, sessionTitle: widget.session.title, items: items);
+    if (!ok || !mounted) return true;
+    try {
+      final replaced = await assignmentRepository
+          .assignManagerReplacingConflicts(widget.session.id, v.id);
+      final n = replaced.length;
+      messenger.showSnackBar(SnackBar(
+          content: Text('Assigned $name. $n '
+              "${n == 1 ? 'thing was' : 'things were'} taken off their day, "
+              "and they've been told.")));
+      await _load();
+    } catch (_) {
+      messenger.showSnackBar(
+          const SnackBar(content: Text('Could not assign. Admins only.')));
+    }
+    return true;
   }
 
   Future<void> _assign(VolunteerRef v, {bool confirmRegistered = false}) async {
@@ -100,6 +206,10 @@ class _SessionVolunteersViewState extends State<SessionVolunteersView> {
         v.id,
         confirmRegistered: confirmRegistered,
       );
+      if (!mounted) return;
+      if (result.outcome != AssignmentOutcome.assigned && await _replace(v)) {
+        return;
+      }
       if (!mounted) return;
       switch (result.outcome) {
         case AssignmentOutcome.conflict:
@@ -189,19 +299,23 @@ class _SessionVolunteersViewState extends State<SessionVolunteersView> {
           "Couldn't load this session's volunteers. Pull down to try "
           'again.';
     } else if (widget.canAssign) {
-      emptyText =
-          'No volunteers assigned yet. Assign volunteers so they can '
-          "see this session's roster and mark attendance.";
+      emptyText = 'No volunteers assigned yet. Assign volunteers so they can '
+          'manage this session.';
     } else {
-      emptyText = 'No one has been assigned to organize this session yet.';
+      emptyText = 'No one has been assigned to manage this session yet.';
     }
+    final managerIds = {for (final v in _assigned) v.id};
+    final convertible = [
+      for (final r in _signedUp)
+        if (!managerIds.contains(r.userId)) r,
+    ];
     return Scaffold(
       floatingActionButton: widget.canAssign
           ? FloatingActionButton.extended(
               heroTag: 'fab-assign-volunteer',
-              onPressed: _pickAndAssign,
+              onPressed: _busy ? null : _pickAndAssign,
               icon: const Icon(Icons.person_add_alt),
-              label: const Text('Assign volunteer'),
+              label: const Text('Assign a volunteer to manage'),
             )
           : null,
       body: SafeArea(
@@ -225,17 +339,30 @@ class _SessionVolunteersViewState extends State<SessionVolunteersView> {
                     const SizedBox(height: 2),
                     Text(
                       '${widget.session.timeLabel} · '
-                      '${widget.session.room.isEmpty ? "Unassigned room" : widget.session.room}',
+                      '${!kSessionRoomsEnabled ? widget.session.roomLabel : widget.session.room.isEmpty ? "Unassigned room" : widget.session.room}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
-                    if (!widget.canAssign && _assigned.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _assigned.isEmpty
+                          ? 'The people managing this session.'
+                          : 'The people managing this session. Tap anyone '
+                              'to see their number.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    if (widget.canAssign) ...[
                       const SizedBox(height: 8),
                       Text(
-                        'The people organizing this session. Tap anyone to '
-                        'see their number.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
+                        'Managers can see everyone signed up for this session '
+                        '(participants, spectators and experts) with their '
+                        'contact details, mark attendance, and remove someone '
+                        "from the session. They can't edit the session's "
+                        'details, like its description, time, room or photos.',
+                        style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
@@ -271,6 +398,46 @@ class _SessionVolunteersViewState extends State<SessionVolunteersView> {
                                 : null,
                           ),
                         ),
+                    if (widget.canAssign && convertible.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Text('Volunteers signed up for this session',
+                          style: theme.textTheme.titleSmall),
+                      const SizedBox(height: 8),
+                      for (final r in convertible)
+                        Card(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(r.name.isEmpty ? r.email : r.name,
+                                    style: theme.textTheme.titleSmall),
+                                Text(
+                                  [
+                                    _signedUpAs(r.participationType),
+                                    if (r.email.isNotEmpty) r.email,
+                                  ].join(' · '),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                OutlinedButton(
+                                  onPressed: _busy
+                                      ? null
+                                      : () => _convert(
+                                          r.userId,
+                                          r.name.isEmpty ? r.email : r.name,
+                                          r.participationType),
+                                  child: const Text(
+                                      'Assign to be a manager instead'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
                   ],
                 ),
               ),
@@ -279,11 +446,20 @@ class _SessionVolunteersViewState extends State<SessionVolunteersView> {
   }
 }
 
-/// A searchable bottom-sheet picker over the available volunteers.
+/// "Signed up as participant", for a volunteer on this session's roster.
+String _signedUpAs(ParticipationType t) => 'Signed up as ${switch (t) {
+      ParticipationType.participant => 'participant',
+      ParticipationType.spectator => 'spectator',
+      ParticipationType.expert => 'expert',
+    }}';
+
+/// A searchable bottom-sheet picker over the available volunteers. Those
+/// already signed up for this session ([signedUp]) come first, tagged.
 class _VolunteerPicker extends StatefulWidget {
-  const _VolunteerPicker({required this.volunteers});
+  const _VolunteerPicker({required this.volunteers, this.signedUp = const {}});
 
   final List<VolunteerRef> volunteers;
+  final Map<String, ParticipationType> signedUp;
 
   @override
   State<_VolunteerPicker> createState() => _VolunteerPickerState();
@@ -301,7 +477,11 @@ class _VolunteerPickerState extends State<_VolunteerPicker> {
             v.name.toLowerCase().contains(q) ||
             v.email.toLowerCase().contains(q))
           v,
-    ];
+    ]..sort((a, b) {
+        final sa = widget.signedUp.containsKey(a.id) ? 0 : 1;
+        final sb = widget.signedUp.containsKey(b.id) ? 0 : 1;
+        return sa - sb;
+      });
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -320,6 +500,11 @@ class _VolunteerPickerState extends State<_VolunteerPicker> {
                 color: Theme.of(context).colorScheme.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: Text('Assign a volunteer to manage',
+                  style: Theme.of(context).textTheme.titleMedium),
             ),
             Padding(
               padding: const EdgeInsets.all(16),
@@ -342,7 +527,10 @@ class _VolunteerPickerState extends State<_VolunteerPicker> {
                   return ListTile(
                     leading: const Icon(Icons.person_outline),
                     title: Text(v.name.isEmpty ? v.email : v.name),
-                    subtitle: Text(v.email),
+                    subtitle: Text([
+                      if (widget.signedUp[v.id] case final t?) _signedUpAs(t),
+                      v.email,
+                    ].join(' · ')),
                     onTap: () => Navigator.pop(context, v),
                   );
                 },

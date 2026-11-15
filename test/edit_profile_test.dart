@@ -107,7 +107,7 @@ void main() {
     expect(p.details, {
       'school': 'Emerald High School',
       'grade': '12',
-      'phone': '925 555 0123',
+      'phone': '9255550123',
       'old_answer': 'kept',
     });
     expect(find.text('Profile saved.'), findsOneWidget);

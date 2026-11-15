@@ -15,12 +15,14 @@ Future<void> showRosterPersonSheet(
   BuildContext context, {
   required Session session,
   required RosterEntry entry,
+  VoidCallback? onRemove,
 }) {
   return showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
-    builder: (_) => _RosterPersonSheet(session: session, entry: entry),
+    builder: (_) =>
+        _RosterPersonSheet(session: session, entry: entry, onRemove: onRemove),
   );
 }
 
@@ -38,10 +40,15 @@ String _detailLabel(String key) {
 }
 
 class _RosterPersonSheet extends StatelessWidget {
-  const _RosterPersonSheet({required this.session, required this.entry});
+  const _RosterPersonSheet(
+      {required this.session, required this.entry, this.onRemove});
 
   final Session session;
   final RosterEntry entry;
+
+  /// Set when the viewer can take this person off the session; the sheet
+  /// closes first, then this asks to confirm.
+  final VoidCallback? onRemove;
 
   Future<void> _launch(BuildContext context, Uri uri) async {
     final messenger = ScaffoldMessenger.of(context);
@@ -164,6 +171,21 @@ class _RosterPersonSheet extends StatelessWidget {
               ),
             for (final a in e.answers.entries)
               _InfoRow(label: questions[a.key] ?? 'Answer', value: a.value),
+            if (onRemove != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: theme.colorScheme.error,
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    onRemove!();
+                  },
+                  icon: const Icon(Icons.person_remove_outlined),
+                  label: const Text('Remove from this session'),
+                ),
+              ),
           ],
         ),
       ),

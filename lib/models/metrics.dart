@@ -16,6 +16,7 @@ String gradeLabel(String? raw) {
     'sophomore': '10',
     'junior': '11',
     'senior': '12',
+    'eighth': '8',
   };
   for (final e in words.entries) {
     if (s.contains(e.key)) return e.value;
@@ -24,6 +25,27 @@ String gradeLabel(String? raw) {
   if (n != null && n >= 1 && n <= 12) return '$n';
   return 'Other';
 }
+
+/// Why a grade can't participate in a session, or null if it can. Matches
+/// `register_for_session` (eighth_grade_participation.sql): 8th graders
+/// participate only where the session allows it, younger students only
+/// spectate, and a blank or unreadable grade isn't blocked.
+enum GradeBlock { eighthGradeNotAllowed, middleSchoolNotAllowed }
+
+GradeBlock? participationGradeBlock(String? grade, bool allowEighthGraders) {
+  final n = int.tryParse(gradeLabel(grade));
+  if (n == null || n >= 9) return null;
+  if (n == 8) return allowEighthGraders ? null : GradeBlock.eighthGradeNotAllowed;
+  return GradeBlock.middleSchoolNotAllowed;
+}
+
+/// The note under a greyed-out Participate, like the website's.
+String gradeBlockNote(GradeBlock block) => switch (block) {
+      GradeBlock.eighthGradeNotAllowed =>
+        "This session isn't open to 8th graders. You can spectate it.",
+      GradeBlock.middleSchoolNotAllowed =>
+        'Participating is for high schoolers. You can spectate.',
+    };
 
 /// Grade columns in reading order: numbers ascending, then Other, then blank.
 int compareGrades(String a, String b) {

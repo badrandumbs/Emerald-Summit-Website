@@ -47,6 +47,11 @@ class _SessionEditorScreenState extends State<SessionEditorScreen> {
   /// When registering to participate closes (local time); null = no deadline.
   DateTime? _participantDeadline;
 
+  /// "Let 8th graders participate" (`sessions.allow_eighth_graders`), and
+  /// what the session had when the editor opened.
+  late bool _allowEighthGraders;
+  late final bool _hadEighthGraders;
+
   /// The session's existing teams (team id → member count), from its roster,
   /// so the editor can warn before a team setting change affects them.
   Map<String, int> _teamSizes = const {};
@@ -98,6 +103,7 @@ class _SessionEditorScreenState extends State<SessionEditorScreen> {
     _maxTeamSize = (s?.maxTeamSize ?? kDefaultMaxTeamSize)
         .clamp(kSoloOnlyTeamSize, kLargestTeamSizeLimit);
     _participantDeadline = s?.participantDeadline;
+    _allowEighthGraders = _hadEighthGraders = s?.allowEighthGraders ?? false;
     _heroImageUrl = s?.heroImageUrl;
     for (final block in s?.pageBlocks ?? const <SessionPageBlock>[]) {
       _blocks.add(_BlockControllers(title: block.title, body: block.body));
@@ -332,6 +338,7 @@ class _SessionEditorScreenState extends State<SessionEditorScreen> {
       'capacity': capacity,
       'max_team_size': _maxTeamSize,
       'participant_deadline': _participantDeadline?.toUtc().toIso8601String(),
+      'allow_eighth_graders': _allowEighthGraders,
       'project_prompt': switch (_projectPrompt.text.trim()) {
         '' || DefaultQuestions.projectName => null,
         final custom => custom,
@@ -560,6 +567,7 @@ class _SessionEditorScreenState extends State<SessionEditorScreen> {
                       "don't.",
                 ),
                 _deadlineField(theme),
+                _eighthGradeField(theme),
                 _field(_description, 'Description', maxLines: 4),
                 const SizedBox(height: 8),
                 const Divider(),
@@ -708,6 +716,44 @@ class _SessionEditorScreenState extends State<SessionEditorScreen> {
                   : muted,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// "Let 8th graders participate", with the website's helper text.
+  Widget _eighthGradeField(ThemeData theme) {
+    final muted = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: theme.colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: CheckboxListTile(
+          value: _allowEighthGraders,
+          onChanged: _busy
+              ? null
+              : (v) => setState(() => _allowEighthGraders = v ?? false),
+          title: const Text('Let 8th graders participate'),
+          subtitle: Text(
+            [
+              _allowEighthGraders
+                  ? '8th graders can register to participate, the same as '
+                      'high schoolers.'
+                  : 'Only high schoolers can participate. Anyone can '
+                      'spectate, 8th graders included.',
+              if (_hadEighthGraders && !_allowEighthGraders)
+                '8th graders who already registered stay registered.',
+            ].join(' '),
+            style: muted,
+          ),
+          controlAffinity: ListTileControlAffinity.leading,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)),
         ),
       ),
     );

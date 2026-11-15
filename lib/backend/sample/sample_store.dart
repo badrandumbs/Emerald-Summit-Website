@@ -1,5 +1,6 @@
 import '../../data/sample_data.dart';
 import '../../models/models.dart';
+import '../repositories.dart';
 import '../../models/user_profile.dart';
 
 /// Mutable in-memory state shared by the sample backend's repositories, seeded
@@ -77,6 +78,9 @@ class SampleStore {
 
   /// sessionId → its roster (registered participants + attendance state).
   final Map<String, List<RosterEntry>> rosters = {};
+
+  /// sessionId → who an organizer removed from it, newest first.
+  final Map<String, List<SessionRemoval>> sessionRemovals = {};
 
   /// The summit-wide attendee directory for front-desk check-in.
   final List<Attendee> attendees = [];

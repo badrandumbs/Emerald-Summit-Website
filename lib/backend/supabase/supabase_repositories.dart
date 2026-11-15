@@ -161,11 +161,11 @@ class SupabaseScheduleRepository implements ScheduleRepository {
         },
       );
     } on PostgrestException catch (e) {
-      // A removed member trying to rejoin is refused by a database trigger.
-      if (e.message.contains('removed_from_team')) {
-        return RegistrationResult.invalidProject(
-            projectProblemMessage('removed_from_team')!);
-      }
+      // Refusals raised as errors: a removed team member or session
+      // registrant, registration not open yet, or a grade that can't
+      // participate here.
+      final refusal = registrationRefusalMessage(e.message);
+      if (refusal != null) return RegistrationResult.invalidProject(refusal);
       rethrow;
     }
     final map = (res as Map).cast<String, dynamic>();
@@ -1025,6 +1025,26 @@ class SupabaseAssignmentRepository implements AssignmentRepository {
       conflictKindFrom(map['conflict_kind']),
     );
   }
+
+  @override
+  Future<List<ReplacedItem>?> previewManagerAssignment(
+      String sessionId, String userId) async {
+    try {
+      final res = await _client.rpc('preview_manager_assignment',
+          params: {'p_session_id': sessionId, 'p_user_id': userId});
+      return ReplacedItem.listFrom((res as Map?)?['replaces']);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<List<ReplacedItem>> assignManagerReplacingConflicts(
+      String sessionId, String userId) async {
+    final res = await _client.rpc('assign_manager_replacing_conflicts',
+        params: {'p_session_id': sessionId, 'p_user_id': userId});
+    return ReplacedItem.listFrom((res as Map?)?['replaced']);
+  }
 }
 
 /// Manual volunteer hour logs, read and written straight against
@@ -1164,6 +1184,34 @@ class SupabaseAttendanceRepository implements AttendanceRepository {
       'p_user_id': userId,
       'p_attended': attended,
     });
+  }
+
+  @override
+  Future<SessionRemovalOutcome> removeFromSession(
+      String sessionId, String userId) async {
+    final res = await _client.rpc('remove_session_registration',
+        params: {'p_session_id': sessionId, 'p_user_id': userId});
+    return switch ((res as Map?)?['outcome']) {
+      'not_registered' => SessionRemovalOutcome.notRegistered,
+      'cannot_remove_self' => SessionRemovalOutcome.cannotRemoveSelf,
+      _ => SessionRemovalOutcome.removed,
+    };
+  }
+
+  @override
+  Future<void> allowBackToSession(String sessionId, String userId) async {
+    await _client.rpc('allow_back_to_session',
+        params: {'p_session_id': sessionId, 'p_user_id': userId});
+  }
+
+  @override
+  Future<List<SessionRemoval>> fetchSessionRemovals(String sessionId) async {
+    final res = await _client.rpc('fetch_session_removals',
+        params: {'p_session_id': sessionId});
+    return [
+      for (final r in res as List)
+        SessionRemoval.fromMap((r as Map).cast<String, dynamic>()),
+    ];
   }
 
   @override

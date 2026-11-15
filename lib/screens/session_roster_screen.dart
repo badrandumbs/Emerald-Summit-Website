@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../backend/repositories.dart';
 import '../backend/service_locator.dart';
 import '../models/models.dart';
 import '../widgets/roster_person_sheet.dart';
@@ -60,6 +61,15 @@ class _SessionRosterViewState extends State<SessionRosterView> {
   String? _error;
   List<RosterEntry> _roster = const [];
 
+  /// Everyone on the session, across tabs, so removing someone can say what
+  /// happens to their team.
+  List<RosterEntry> _everyone = const [];
+
+  /// Who organizers removed, or null while `fetch_session_removals` fails
+  /// (session_participant_removal.sql not run), which hides Remove too.
+  List<SessionRemoval>? _removals;
+  bool _busy = false;
+
   @override
   void initState() {
     super.initState();
@@ -74,9 +84,23 @@ class _SessionRosterViewState extends State<SessionRosterView> {
     try {
       final roster =
           await attendanceRepository.fetchSessionRoster(widget.session.id);
+      List<SessionRemoval>? removals;
+      try {
+        removals =
+            await attendanceRepository.fetchSessionRemovals(widget.session.id);
+      } catch (_) {
+        removals = null;
+      }
       if (!mounted) return;
       final types = widget.types;
       setState(() {
+        _everyone = roster;
+        _removals = removals
+            ?.where((r) =>
+                types == null ||
+                r.participationType == null ||
+                types.contains(r.participationType))
+            .toList();
         _roster = types == null
             ? roster
             : roster.where((e) => types.contains(e.participationType)).toList();
@@ -105,6 +129,130 @@ class _SessionRosterViewState extends State<SessionRosterView> {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not save attendance.')));
     }
+  }
+
+  String _who(RosterEntry e) => e.name.isEmpty ? e.email : e.name;
+
+  /// Confirms, then takes [e] off the session.
+  Future<void> _remove(RosterEntry e) async {
+    final who = _who(e);
+    final teammates = e.teamId == null
+        ? 0
+        : _everyone
+            .where((r) => r.teamId == e.teamId && r.userId != e.userId)
+            .length;
+    final teamNote = e.isTeam != true
+        ? ''
+        : teammates == 0
+            ? " They're the only one on their team, so the team is deleted too."
+            : e.isTeamOwner
+                ? ' They own a team, so it passes to the teammate who joined '
+                    'first.'
+                : ' Their teammates will be told they were removed.';
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Remove $who?'),
+        content: Text(
+          'They\'ll be taken off "${widget.session.title}" and get a notice '
+          'saying an organizer removed them. They can\'t sign up for it '
+          'again unless someone allows them back.$teamNote',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    try {
+      final outcome = await attendanceRepository.removeFromSession(
+          widget.session.id, e.userId);
+      messenger.showSnackBar(SnackBar(
+        content: Text(switch (outcome) {
+          SessionRemovalOutcome.removed => 'Removed $who from this session',
+          SessionRemovalOutcome.notRegistered =>
+            '$who had already left this session',
+          SessionRemovalOutcome.cannotRemoveSelf =>
+            "You can't remove yourself. Remove the session from your day "
+                'instead.',
+        }),
+      ));
+    } catch (_) {
+      messenger.showSnackBar(
+          SnackBar(content: Text("Couldn't remove $who. Try again.")));
+    }
+    if (!mounted) return;
+    setState(() => _busy = false);
+    await _load();
+  }
+
+  /// Lets a removed person sign up again.
+  Future<void> _allowBack(SessionRemoval r) async {
+    final who = r.name.isEmpty ? r.email : r.name;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    try {
+      await attendanceRepository.allowBackToSession(
+          widget.session.id, r.userId);
+      messenger.showSnackBar(SnackBar(
+          content: Text('$who can sign up for this session again')));
+    } catch (_) {
+      messenger.showSnackBar(
+          SnackBar(content: Text("Couldn't allow $who back. Try again.")));
+    }
+    if (!mounted) return;
+    setState(() => _busy = false);
+    await _load();
+  }
+
+  /// The Removed list at the bottom of the roster.
+  List<Widget> _removedSection(ThemeData theme) {
+    final removals = _removals;
+    if (removals == null || removals.isEmpty) return const [];
+    return [
+      Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(top: 12),
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+        color: theme.colorScheme.surfaceContainer,
+        child: Row(
+          children: [
+            Icon(Icons.person_off_outlined,
+                size: 20, color: theme.colorScheme.error),
+            const SizedBox(width: 12),
+            Text('Removed', style: theme.textTheme.titleSmall),
+          ],
+        ),
+      ),
+      for (final r in removals)
+        ListTile(
+          title: Text(r.name.isEmpty ? r.email : r.name),
+          subtitle: Text([
+            ?r.participationType?.chipLabel,
+            if (r.removedBy != null) 'Removed by ${r.removedBy}',
+            if (r.removedAt != null)
+              MaterialLocalizations.of(context)
+                  .formatShortMonthDay(r.removedAt!),
+          ].join(' · ')),
+          trailing: OutlinedButton(
+            onPressed: _busy ? null : () => _allowBack(r),
+            child: const Text('Allow back'),
+          ),
+        ),
+    ];
   }
 
   /// Splits the roster into project groups (teams, then solo projects, by
@@ -228,7 +376,7 @@ class _SessionRosterViewState extends State<SessionRosterView> {
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
           child: Text(
             '${widget.session.timeLabel} · '
-            '${widget.session.room.isEmpty ? "Unassigned room" : widget.session.room}'
+            '${!kSessionRoomsEnabled ? widget.session.roomLabel : widget.session.room.isEmpty ? "Unassigned room" : widget.session.room}'
             '  ·  $present / ${_roster.length} present'
             '${projectCount > 0 ? '  ·  $projectCount project${projectCount == 1 ? '' : 's'}' : ''}',
             style: theme.textTheme.bodySmall
@@ -239,7 +387,7 @@ class _SessionRosterViewState extends State<SessionRosterView> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
             child: Text(
-              'View only — attendance is marked by the volunteers assigned to '
+              'View only. Attendance is marked by the volunteers assigned to '
               'this session.',
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -247,7 +395,7 @@ class _SessionRosterViewState extends State<SessionRosterView> {
           ),
         const Divider(height: 1),
         Expanded(
-          child: _roster.isEmpty
+          child: _roster.isEmpty && (_removals?.isEmpty ?? true)
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(32),
@@ -261,10 +409,15 @@ class _SessionRosterViewState extends State<SessionRosterView> {
                   ),
                 )
               : groups.isEmpty
-                  ? ListView.separated(
-                      itemCount: _roster.length,
-                      itemBuilder: (context, i) => _entryTile(theme, _roster[i]),
-                      separatorBuilder: (_, _) => const Divider(height: 1),
+                  ? ListView(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      children: [
+                        for (var i = 0; i < _roster.length; i++) ...[
+                          if (i > 0) const Divider(height: 1),
+                          _entryTile(theme, _roster[i]),
+                        ],
+                        ..._removedSection(theme),
+                      ],
                     )
                   : ListView(
                       padding: const EdgeInsets.only(bottom: 24),
@@ -276,6 +429,7 @@ class _SessionRosterViewState extends State<SessionRosterView> {
                             _entryTile(theme, g.members[i]),
                           ],
                         ],
+                        ..._removedSection(theme),
                       ],
                     ),
         ),
@@ -310,7 +464,8 @@ class _SessionRosterViewState extends State<SessionRosterView> {
           session: widget.session,
           // Latest copy, so the sheet reflects an attendance toggle.
           entry: _roster.firstWhere((r) => r.userId == e.userId,
-              orElse: () => e)),
+              orElse: () => e),
+          onRemove: _removals == null || _busy ? null : () => _remove(e)),
     );
   }
 }

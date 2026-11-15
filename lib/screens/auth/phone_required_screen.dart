@@ -68,13 +68,14 @@ class _PhoneRequiredScreenState extends State<PhoneRequiredScreen> {
                 children: [
                   Text(
                     '${role.label}s need a mobile number on file so the '
-                    'summit team can reach you.',
+                    'Summit team can reach you.',
                     style: theme.textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 20),
                   TextField(
                     controller: _controller,
-                    keyboardType: TextInputType.phone,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: ProfileField.phoneFormatters,
                     autofocus: true,
                     enabled: !_busy,
                     onSubmitted: (_) => _save(),

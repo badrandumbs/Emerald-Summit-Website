@@ -656,7 +656,7 @@ class _SessionCardState extends State<_SessionCard> {
                 Text(
                   [
                     s.timeLabel,
-                    if (s.room.isNotEmpty) s.room,
+                    if (s.roomLabel.isNotEmpty) s.roomLabel,
                     if (_meaningfulTrack(s, widget.discipline)) s.track,
                   ].join('  ·  '),
                   style:

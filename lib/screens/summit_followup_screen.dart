@@ -101,7 +101,7 @@ class _SummitFeedbackScreenState extends State<SummitFeedbackScreen> {
         ),
       _Item(
         FeedbackKind.summit,
-        'The summit overall',
+        'The Summit overall',
         saved: saved(FeedbackKind.summit),
       ),
       _Item(

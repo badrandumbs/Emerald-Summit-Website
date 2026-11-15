@@ -338,7 +338,7 @@ class AnnouncementActionsMenu extends StatelessWidget {
           builder: (dialogContext) => AlertDialog(
             title: const Text('Remove from your feed?'),
             content: Text('Once you remove "${item.title}", you can\'t get it '
-                'back in your feed. It stays in News for everyone else.'),
+                'back in your feed. It stays in Announcements for everyone else.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),

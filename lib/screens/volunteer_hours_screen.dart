@@ -137,7 +137,7 @@ class _VolunteerHoursScreenState extends State<VolunteerHoursScreen> {
                 const SizedBox(height: 4),
                 Text(
                   '${formatHours(loggedMinutes)} logged by you · '
-                  '${formatHours(summitMinutes)} on summit day',
+                  '${formatHours(summitMinutes)} on Summit day',
                   style: muted,
                 ),
               ],
@@ -156,9 +156,9 @@ class _VolunteerHoursScreenState extends State<VolunteerHoursScreen> {
         ),
         _InfoNote(
           summitDate == null
-              ? 'Each session you manage on summit day is added to your '
+              ? 'Each session you manage on Summit day is added to your '
                     'total after it ends, counted from its start time to its '
-                    'end time. They will start counting once the summit date '
+                    'end time. They will start counting once the Summit date '
                     'is set.'
               : 'Each session you manage on ${formatDay(summitDate)} is '
                     'added to your total after it ends, counted from its start '
@@ -202,7 +202,7 @@ class _VolunteerHoursScreenState extends State<VolunteerHoursScreen> {
           ),
         const _SectionHeader(
           title: 'Your logs',
-          subtitle: 'Planning, setup, and anything else outside summit day.',
+          subtitle: 'Planning, setup, and anything else outside Summit day.',
         ),
         if (_logs.isEmpty)
           _EmptyNote('Nothing logged yet. Tap Add hours to log your first one.')

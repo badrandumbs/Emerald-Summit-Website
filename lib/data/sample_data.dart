@@ -213,39 +213,6 @@ class SampleData {
     ),
   ];
 
-  static const List<ResourceDoc> resources = [
-    ResourceDoc(
-      id: 'r1',
-      title: 'Master Schedule (PDF)',
-      category: 'Schedules',
-      icon: Icons.calendar_month,
-    ),
-    ResourceDoc(
-      id: 'r2',
-      title: 'Campus Map',
-      category: 'Navigation',
-      icon: Icons.map,
-    ),
-    ResourceDoc(
-      id: 'r3',
-      title: 'Code of Conduct',
-      category: 'Policies',
-      icon: Icons.gavel,
-    ),
-    ResourceDoc(
-      id: 'r4',
-      title: 'TechVerse Track Brief',
-      category: 'Track Briefs',
-      icon: Icons.description,
-    ),
-    ResourceDoc(
-      id: 'r5',
-      title: 'Sponsor Directory',
-      category: 'Sponsors',
-      icon: Icons.handshake,
-    ),
-  ];
-
   /// Sample slideshow photos for demo mode (no live backend). With Supabase
   /// configured these come from the `gallery_photos` Storage bucket instead.
   /// Picsum gives stable, hotlink-friendly placeholder photos.

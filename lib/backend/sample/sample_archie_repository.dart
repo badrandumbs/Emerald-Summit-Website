@@ -80,7 +80,7 @@ class SampleArchieRepository implements ArchieRepository {
   Stream<ArchieEvent> ask(List<ArchieTurn> transcript) async* {
     final question = transcript.last.text.toLowerCase();
 
-    yield const ArchieStatus('Looking through the summit schedule');
+    yield const ArchieStatus('Looking through the Summit schedule');
     await Future<void>.delayed(const Duration(milliseconds: 700));
 
     final answer = _answerFor(question);
@@ -91,7 +91,7 @@ class SampleArchieRepository implements ArchieRepository {
     yield const ArchieSources([
       ArchieSource(
         title: 'Emerald Summit',
-        url: 'https://sites.google.com/view/ehs-academic-foundation/programs/emerald-summit',
+        url: 'https://emeraldsummit.ehsacademics.org',
       ),
     ]);
   }

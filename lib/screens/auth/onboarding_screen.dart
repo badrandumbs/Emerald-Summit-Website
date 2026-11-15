@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../app_state.dart';
 import '../../backend/repositories.dart';
@@ -435,11 +434,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         const SizedBox(height: 6),
         Text(
           fields.isEmpty
-              ? "You're all set — no extra details needed for this role."
+              ? "You're all set. No extra details needed for this role."
               : 'Just a couple of role-specific details.',
           style: theme.textTheme.bodyMedium
               ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
+        if (_role == SummitRole.parentSpectator) ...[
+          const SizedBox(height: 12),
+          Text(SummitRoleX.spectatorAgesNote,
+              style: theme.textTheme.bodyMedium),
+        ],
         const SizedBox(height: 20),
         if (_changingRole) ...[
           _roleChangeNotice(theme),
@@ -458,10 +462,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           TextField(
             controller: _fieldControllers[field.key],
             enabled: !_busy,
-            keyboardType: field.keyboardType,
-            inputFormatters: field.digitsOnly
-                ? [FilteringTextInputFormatter.digitsOnly]
-                : null,
+            keyboardType: field.keyboard,
+            inputFormatters: field.inputFormatters,
             minLines: field.lines,
             maxLines: field.lines,
             textInputAction: TextInputAction.next,

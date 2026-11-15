@@ -149,7 +149,7 @@ void main() {
       // 45 + 60 + 135 = 240 min.
       expect(find.text('4'), findsOneWidget);
       expect(
-        find.text('2.25 logged by you · 1.75 on summit day'),
+        find.text('2.25 logged by you · 1.75 on Summit day'),
         findsOneWidget,
       );
       expect(find.text('45 min'), findsOneWidget);
@@ -167,7 +167,7 @@ void main() {
       expect(find.text('45 min'), findsOneWidget);
       expect(find.text('Not counted yet'), findsOneWidget);
       expect(
-        find.textContaining('once the summit date is set'),
+        find.textContaining('once the Summit date is set'),
         findsOneWidget,
       );
       expect(find.text('Download certificate'), findsNothing);

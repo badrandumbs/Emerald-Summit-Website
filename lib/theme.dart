@@ -130,7 +130,7 @@ class EmeraldTheme {
       navigationBarTheme: NavigationBarThemeData(
         // A slightly smaller, tighter label keeps every tab of the five-tab
         // bar on a single line across both platforms (the iOS system font is
-        // wider; "Resources" used to wrap before Archie replaced it).
+        // wider).
         labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => TextStyle(
             fontSize: 11.5,

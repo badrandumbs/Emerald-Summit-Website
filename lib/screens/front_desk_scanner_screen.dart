@@ -309,7 +309,7 @@ class _ResultCard extends StatelessWidget {
               Icons.person_off_outlined,
               s.error,
               'No account found',
-              "This pass doesn't match anyone registered for the summit. "
+              "This pass doesn't match anyone registered for the Summit. "
                   'Try searching the attendee list instead.',
               null,
             ),

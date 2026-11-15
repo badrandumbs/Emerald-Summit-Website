@@ -222,7 +222,7 @@ class _VisibilityCard extends StatelessWidget {
                         color: theme.colorScheme.primary),
                     title: const Text('Summit feedback'),
                     subtitle: Text(appState.myFeedback.isEmpty
-                        ? 'Tell us how the summit went'
+                        ? 'Tell us how the Summit went'
                         : 'Sent. Tap to change it'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => openSummitFollowUp(context),
@@ -247,7 +247,7 @@ class _VisibilityCard extends StatelessWidget {
                         color: theme.colorScheme.primary),
                     title: const Text('Track volunteer hours'),
                     subtitle:
-                        const Text('Your logged hours and summit-day hours'),
+                        const Text('Your logged hours and Summit-day hours'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
@@ -271,7 +271,7 @@ class _VisibilityCard extends StatelessWidget {
                     leading: Icon(Icons.how_to_reg_outlined,
                         color: theme.colorScheme.primary),
                     title: const Text('Front desk check-in'),
-                    subtitle: const Text('Mark attendees arrived at the summit'),
+                    subtitle: const Text('Mark attendees arrived at the Summit'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(

@@ -119,7 +119,7 @@ class _CheckinPassCardState extends State<CheckinPassCard>
                   ],
                   const SizedBox(height: 6),
                   Text(
-                    'Show this at the front desk when you arrive on summit day.',
+                    'Show this at the front desk when you arrive on Summit day.',
                     style: theme.textTheme.bodySmall
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),

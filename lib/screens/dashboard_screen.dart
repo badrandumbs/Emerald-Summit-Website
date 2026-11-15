@@ -10,16 +10,12 @@ import '../app_state.dart';
 import '../data/sample_data.dart';
 import '../models/models.dart';
 import '../theme.dart';
-import '../widgets/discipline_vibe.dart';
-import '../widgets/duotone_icon.dart';
+import '../widgets/home_about_sections.dart';
 import '../widgets/summit_logo.dart';
 import 'announcement_detail_screen.dart';
-import 'discipline_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
-import 'resources_screen.dart';
 import 'session_detail_screen.dart';
-import 'volunteer_hub_screen.dart';
 
 /// "Home" tab — the launchpad. Instead of dropping the participant straight
 /// into an (often empty) schedule, this greets them, sets the tone with a
@@ -52,16 +48,16 @@ class DashboardScreen extends StatelessWidget {
             SizedBox(height: 20),
             _UpNext(),
             SizedBox(height: 24),
-            _QuickActions(),
-            SizedBox(height: 24),
-            _DisciplineStrip(),
-            SizedBox(height: 24),
             _LatestNews(),
-            SizedBox(height: 24),
+            SizedBox(height: 28),
+            SupportEafSection(),
+            SizedBox(height: 28),
+            SponsorsSection(),
+            SizedBox(height: 28),
             _LinksCard(),
             SizedBox(height: 28),
-            _Footer(),
-            SizedBox(height: 24),
+            AboutAppSection(),
+            SizedBox(height: 32),
           ],
         ),
       ),
@@ -488,7 +484,7 @@ class _PhotoSlideshowState extends State<_PhotoSlideshow> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: AspectRatio(
-              aspectRatio: 16 / 9,
+              aspectRatio: 2 / 1,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -883,7 +879,7 @@ class _NextSessionCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${session.disciplineName} · ${session.room}',
+                          '${session.disciplineName} · ${session.roomLabel}',
                           style: theme.textTheme.bodySmall,
                         ),
                       ],
@@ -963,261 +959,6 @@ class _PlanNudge extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Quick actions — the Uber-style tile grid.
-// ---------------------------------------------------------------------------
-class _QuickActions extends StatelessWidget {
-  const _QuickActions();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: appState,
-      builder: (context, _) => _buildActions(context),
-    );
-  }
-
-  Widget _buildActions(BuildContext context) {
-    final actions = <_Action>[
-      _Action(
-        icon: Duotone.calendarCheck,
-        label: 'My schedule',
-        onTap: () => rootTab.value = kScheduleTabIndex,
-      ),
-      _Action(
-        icon: Duotone.compass,
-        label: 'Browse sessions',
-        onTap: () => rootTab.value = kDiscoverTabIndex,
-      ),
-      _Action(
-        icon: Duotone.megaphoneSimple,
-        label: 'What\'s new',
-        onTap: () => rootTab.value = kNewsTabIndex,
-      ),
-      _Action(
-        icon: Duotone.mapTrifold,
-        label: 'Campus map',
-        onTap: () => Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => const ResourcesScreen())),
-      ),
-      _Action(
-        icon: Duotone.books,
-        label: 'Resources',
-        onTap: () => Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => const ResourcesScreen())),
-      ),
-      if (appState.isVolunteer || appState.isAdmin)
-        _Action(
-          icon: Duotone.handshake,
-          label: 'Volunteer hub',
-          onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const VolunteerHubScreen())),
-        ),
-      _Action(
-        icon: Duotone.identificationCard,
-        label: 'My profile',
-        onTap: () =>
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (_) => const ProfileScreen())),
-      ),
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _SectionTitle(title: 'Jump to'),
-          const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              const spacing = 12.0;
-              final tileWidth = (constraints.maxWidth - spacing * 2) / 3;
-              return Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                children: [
-                  for (final a in actions)
-                    SizedBox(
-                      width: tileWidth,
-                      child: _ActionTile(action: a),
-                    ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Action {
-  const _Action({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-  final DuotoneIconData icon;
-  final String label;
-  final VoidCallback onTap;
-}
-
-class _ActionTile extends StatelessWidget {
-  const _ActionTile({required this.action});
-  final _Action action;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Material(
-      color: theme.colorScheme.surface,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: action.onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: theme.colorScheme.outlineVariant.withValues(alpha: .5),
-            ),
-          ),
-          child: Column(
-            children: [
-              DuotoneIcon(
-                action.icon,
-                color: theme.colorScheme.primary,
-                fillOpacity: .28,
-                size: 34,
-              ),
-              const SizedBox(height: 10),
-              // Room for two lines on every tile keeps the grid even.
-              SizedBox(
-                height: 30,
-                child: Center(
-                  child: Text(
-                    action.label,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                      height: 1.1,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Discipline strip — a horizontal browse rail into the catalog.
-// ---------------------------------------------------------------------------
-class _DisciplineStrip extends StatelessWidget {
-  const _DisciplineStrip();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: appState,
-      builder: (context, _) => _buildStrip(context),
-    );
-  }
-
-  Widget _buildStrip(BuildContext context) {
-    final disciplines = appState.disciplines;
-    if (disciplines.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              const Expanded(
-                child: _SectionTitle(title: 'Explore disciplines'),
-              ),
-              TextButton(
-                onPressed: () => rootTab.value = kDiscoverTabIndex,
-                child: const Text('See all'),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 4),
-        SizedBox(
-          height: 116,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: disciplines.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 12),
-            itemBuilder: (context, i) =>
-                _DisciplineChip(discipline: disciplines[i]),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _DisciplineChip extends StatelessWidget {
-  const _DisciplineChip({required this.discipline});
-  final Discipline discipline;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return SizedBox(
-      width: 132,
-      child: Card(
-        margin: EdgeInsets.zero,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => openDiscipline(context, discipline, from: context),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                DisciplineBadge(
-                  vibe: DisciplineVibe.of(discipline),
-                  discipline: discipline,
-                  size: 36,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  discipline.name,
-                  style: theme.textTheme.titleSmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  '${discipline.sessions.length} '
-                  'session${discipline.sessions.length == 1 ? '' : 's'}',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Latest news — a peek at the top announcement.
 // ---------------------------------------------------------------------------
 class _LatestNews extends StatelessWidget {
@@ -1242,7 +983,7 @@ class _LatestNews extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _SectionTitle(title: 'Latest news'),
+          const _SectionTitle(title: 'Latest announcements'),
           const SizedBox(height: 10),
           Card(
             margin: EdgeInsets.zero,
@@ -1303,7 +1044,7 @@ class _LinksCard extends StatelessWidget {
     (
       icon: Icons.language,
       label: 'Summit website',
-      url: 'https://sites.google.com/view/ehs-academic-foundation/programs/emerald-summit',
+      url: 'https://emeraldsummit.ehsacademics.org',
     ),
     (
       icon: Icons.camera_alt,
@@ -1360,38 +1101,6 @@ class _LinksCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Footer — brand sign-off.
-// ---------------------------------------------------------------------------
-class _Footer extends StatelessWidget {
-  const _Footer();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const SummitLogo(size: 40),
-        const SizedBox(height: 8),
-        Text(
-          SampleData.eventName,
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          "The Tri-Valley's student-run STEAM summit at Emerald High",
-          style: TextStyle(
-            fontSize: 12,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
     );
   }
 }

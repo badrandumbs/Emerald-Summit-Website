@@ -77,19 +77,19 @@ WHERE YOUR ANSWERS COME FROM (in priority order)
 1. LIVE APP DATA: provided below in the <app_data> sections. It is the source of truth for sessions, times, rooms, experts, seats left, announcements, and the user's own schedule. It is newer than anything on the web; when they disagree, trust the app data and say so.
 2. KNOWLEDGE BASE: provided below in <knowledge_base>, written and checked by the summit organizers. Use it for facts about the summit, the EHS Academic Foundation, Emerald High School, and Dublin Unified. If it answers the question, answer from it and don't search the web. (For sessions, times, rooms, and seats, the live app data wins.)
 3. OFFICIAL SITES: fetch these with web_fetch only when the app data and the knowledge base don't answer a question about the summit or the school:
-   - Emerald Summit: https://sites.google.com/view/ehs-academic-foundation/programs/emerald-summit
-   - EHS Academic Foundation: https://sites.google.com/view/ehs-academic-foundation
+   - Emerald Summit: https://emeraldsummit.ehsacademics.org
+   - EHS Academic Foundation: https://www.ehsacademics.org
    - Emerald High School: https://ehs.dublinusd.org
    - Dublin Unified School District: https://www.dublinusd.org
 4. WEB SEARCH: for anything else in scope that the sources above don't cover (directions, school news, background on a discipline's topic). Prefer official and reputable sources.
 
 GROUNDING RULES
-- Never invent sessions, times, rooms, names, prices, or policies. If neither the app data, the knowledge base, nor a source you found answers it, say you don't know and point the user to president@ehsacademics.org or the News tab.
+- Never invent sessions, times, rooms, names, prices, or policies. If neither the app data, the knowledge base, nor a source you found answers it, say you don't know and point the user to president@ehsacademics.org or the Announcements tab.
 - When you use app data or the knowledge base, say so naturally ("According to the summit schedule…", "In your schedule…", "According to the summit organizers…").
 - For facts about the summit or Emerald High that the app data and knowledge base don't cover (dates, schedules, policies, what's allowed, required, or charged), check the official sites or search rather than answering from memory, even when you feel confident; these details change.
 - When you use the web, rely on what the pages actually say; your citations are shown to the user as source links automatically, so you don't need to paste URLs.
 - Session times in the app data are 24-hour "HH:mm" on summit day; present them as 12-hour times (e.g. 2:30 PM).
-- You can't change anything in the app (register, cancel, post). Tell the user where to do it: Discover tab → a discipline → a session → "Add to my day"; the Schedule tab shows their day; News has announcements; the avatar on Home opens Profile.
+- You can't change anything in the app (register, cancel, post). Tell the user where to do it: Discover tab → a discipline → a session → "Add to my day"; the Schedule tab shows their day; the Announcements tab has announcements; the avatar on Home opens Profile.
 
 SCOPE
 Answer questions about: the Emerald Summit (sessions, disciplines, tracks, experts, logistics, volunteering, registration), Emerald High School and Dublin Unified, getting to and around campus, and introductory explanations of the summit's subject areas (e.g. "what happens at a mock trial?", "what is CAD?") that help someone get ready for a session.
@@ -154,7 +154,7 @@ Deno.serve(async (req) => {
     return sse(async (send) => {
       send({
         type: "delta",
-        text: `You've reached today's limit of ${DAILY_LIMIT} questions. Ask me again tomorrow. Until then, the **News** and **Discover** tabs have the latest updates and sessions.`,
+        text: `You've reached today's limit of ${DAILY_LIMIT} questions. Ask me again tomorrow. Until then, the **Announcements** and **Discover** tabs have the latest updates and sessions.`,
       });
       send({ type: "done" });
     });
@@ -236,8 +236,8 @@ async function streamAnswer(
           max_uses: 3,
           // The official sites in the prompt. Plain hostnames, subdomains
           // included (dublinusd.org covers ehs.dublinusd.org); web_fetch takes
-          // no paths, so this can't narrow Google Sites to the foundation's.
-          allowed_domains: ["sites.google.com", "dublinusd.org"],
+          // no paths.
+          allowed_domains: ["ehsacademics.org", "dublinusd.org"],
           citations: { enabled: true },
         },
       ],
@@ -453,7 +453,7 @@ async function loadCatalogContext(db: SupabaseClient): Promise<CatalogContext> {
   lines.push("</app_data>");
 
   // News block: changes when an admin posts or deletes an announcement.
-  const news = ['<app_data section="announcements">', "## Recent announcements (News tab, newest first)"];
+  const news = ['<app_data section="announcements">', "## Recent announcements (Announcements tab, newest first)"];
   if (announcements.length === 0) news.push("(None yet.)");
   for (const a of announcements) news.push(describeAnnouncement(a));
   news.push("</app_data>");

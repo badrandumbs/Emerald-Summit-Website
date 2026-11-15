@@ -96,7 +96,7 @@ class _VolunteerHubScreenState extends State<VolunteerHubScreen> {
       children: [
         Text(
           'Tap anyone to see their number. Numbers are shared here so '
-          'volunteers and admins can reach each other on summit day.',
+          'volunteers and admins can reach each other on Summit day.',
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),

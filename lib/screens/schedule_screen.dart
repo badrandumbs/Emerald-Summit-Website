@@ -289,7 +289,7 @@ class _ScheduleCard extends StatelessWidget {
                       ),
                     Text(session.title, style: theme.textTheme.titleMedium),
                     const SizedBox(height: 4),
-                    Text('${session.disciplineName} · ${session.room}',
+                    Text('${session.disciplineName} · ${session.roomLabel}',
                         style: theme.textTheme.bodySmall),
                     const SizedBox(height: 8),
                     _RoleChip(entry: entry),

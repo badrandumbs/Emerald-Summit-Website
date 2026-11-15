@@ -10,10 +10,9 @@ import 'archie_screen.dart';
 import 'notifications_screen.dart';
 
 /// Bottom-tab shell hosting the five main sections of the app (Home ·
-/// Schedule · Discover · News · Archie). Resources is no longer a tab — it's
-/// pushed from the Home tiles. Profile lives
-/// behind the avatar in the [DashboardScreen] header (Uber-style), so it isn't
-/// a bottom-bar destination.
+/// Schedule · Discover · News · Archie). Profile lives behind the avatar in
+/// the [DashboardScreen] header (Uber-style), so it isn't a bottom-bar
+/// destination.
 class RootNav extends StatefulWidget {
   const RootNav({super.key});
 
@@ -67,7 +66,7 @@ class _RootNavState extends State<RootNav> with WidgetsBindingObserver {
       valueListenable: rootTab,
       builder: (context, index, _) => Scaffold(
         body: IndexedStack(index: index, children: _screens),
-        // Inner builder so the News unread badge repaints on feed/read changes.
+        // Inner builder so the Announcements unread badge repaints on feed/read changes.
         bottomNavigationBar: ListenableBuilder(
           listenable: appState,
           builder: (context, _) => Theme(
@@ -95,16 +94,16 @@ class _RootNavState extends State<RootNav> with WidgetsBindingObserver {
                   label: 'Discover',
                 ),
                 // No count here: the bell on Home counts new posts, so a post
-                // isn't counted twice. Each post keeps its own dot in News.
+                // isn't counted twice. Each post keeps its own dot in Announcements.
                 const NavigationDestination(
                   icon: Icon(Icons.campaign_outlined),
                   selectedIcon: Icon(Icons.campaign),
-                  label: 'News',
+                  label: 'Announcements',
                 ),
                 const NavigationDestination(
                   icon: ArchieNavIcon(selected: false),
                   selectedIcon: ArchieNavIcon(selected: true),
-                  label: 'Archie',
+                  label: 'Ask Archie',
                 ),
               ],
             ),

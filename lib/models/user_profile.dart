@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// The roles a Summit account can hold. Picked during sign-up; drives which
 /// onboarding fields we collect and which management privileges the user gets.
@@ -102,6 +103,27 @@ class ProfileField {
   /// True for the school question: a dropdown of Tri-Valley high schools
   /// (`schools.dart`) with an "Other" choice that opens a text box.
   final bool schoolPicker;
+
+  /// True for a mobile number field.
+  bool get isPhone => keyboardType == TextInputType.phone;
+
+  /// The keyboard to open: the number pad for phone numbers.
+  TextInputType get keyboard => isPhone ? TextInputType.number : keyboardType;
+
+  /// What the field lets through as you type or paste: phone numbers keep
+  /// digits only, at most 15 ("(925) 555-0100" becomes 9255550100), like the
+  /// website.
+  List<TextInputFormatter>? get inputFormatters => isPhone
+      ? phoneFormatters
+      : digitsOnly
+          ? [FilteringTextInputFormatter.digitsOnly]
+          : null;
+
+  /// The formatters every mobile number field uses.
+  static final phoneFormatters = <TextInputFormatter>[
+    FilteringTextInputFormatter.digitsOnly,
+    LengthLimitingTextInputFormatter(15),
+  ];
 }
 
 extension SummitRoleX on SummitRole {
@@ -110,21 +132,21 @@ extension SummitRoleX on SummitRole {
 
   String get label => switch (this) {
         SummitRole.participant => 'Participant',
-        SummitRole.expert => 'Expert / Speaker',
-        SummitRole.parentSpectator => 'Parent / Spectator',
+        SummitRole.expert => 'Expert',
+        SummitRole.parentSpectator => 'Spectator',
         SummitRole.volunteer => 'Volunteer',
         SummitRole.admin => 'Admin',
       };
 
   String get blurb => switch (this) {
         SummitRole.participant =>
-          'Build your schedule and follow your summit day.',
-        SummitRole.expert => 'Lead a session or speak at the summit. An '
-            'admin approves expert accounts before they can be used.',
-        SummitRole.parentSpectator => 'Follow along and stay in the loop.',
-        SummitRole.volunteer =>
-          'Help run the summit: EAF ambassadors, parent and student volunteers.',
-        SummitRole.admin => 'Manage the summit, announcements, and content.',
+          'Build your schedule and follow your Summit day.',
+        SummitRole.expert => 'Evaluate tracks and join panel discussions to '
+            'share insights with attendees.',
+        SummitRole.parentSpectator => 'Attend tracks and stay in the loop. '
+            'Curious minds of all ages are welcome.',
+        SummitRole.volunteer => 'Parent and student volunteers.',
+        SummitRole.admin => 'Manage the Summit, announcements, and content.',
       };
 
   IconData get icon => switch (this) {
@@ -175,6 +197,15 @@ extension SummitRoleX on SummitRole {
   static const _gradeNote = 'Goes on your volunteer hours record.';
 
   /// Shown under the volunteer / admin student ID field.
+  /// Shown under a participant's grade.
+  static const _studentGradeNote = '8th graders can participate in some '
+      'sessions and spectate any of them. Middle schoolers must come with an '
+      'adult.';
+
+  /// Shown at the top of the Spectator sign-up questions.
+  static const spectatorAgesNote = 'Curious minds of all ages are welcome. '
+      'Middle schoolers and younger need a parent with them.';
+
   static const _studentIdNote =
       'If you have one, it goes on your volunteer hours record.';
 
@@ -199,7 +230,11 @@ extension SummitRoleX on SummitRole {
                 required: true,
                 schoolPicker: true),
             ProfileField(
-                key: 'grade', label: 'Grade', required: true, hint: 'e.g. 11'),
+                key: 'grade',
+                label: 'Grade',
+                required: true,
+                hint: 'e.g. 11',
+                helper: _studentGradeNote),
             ProfileField(
                 key: 'phone',
                 label: 'Mobile number (optional)',
@@ -243,7 +278,7 @@ extension SummitRoleX on SummitRole {
             ProfileField(
                 key: 'phone',
                 label: 'Mobile number (optional)',
-                helper: 'Only used to reach you on the day of the summit if '
+                helper: 'Only used to reach you on the day of the Summit if '
                     'necessary. $_phonePrivacyNote',
                 keyboardType: TextInputType.phone),
           ],

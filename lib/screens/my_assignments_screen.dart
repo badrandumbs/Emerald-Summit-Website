@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_state.dart';
+import '../models/models.dart';
 import 'session_roster_screen.dart';
 
 /// A volunteer's own session assignments. Tapping one opens its roster so they
@@ -67,7 +68,7 @@ class _MyAssignmentsScreenState extends State<MyAssignmentsScreen> {
                           title: Text(s.title),
                           subtitle: Text(
                             '${s.timeLabel} · '
-                            '${s.room.isEmpty ? "Unassigned room" : s.room}',
+                            '${!kSessionRoomsEnabled ? s.roomLabel : s.room.isEmpty ? "Unassigned room" : s.room}',
                           ),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () => Navigator.of(context).push(

@@ -5,7 +5,10 @@ import 'package:flutter/services.dart';
 import '../app_state.dart';
 import '../backend/repositories.dart';
 import '../backend/service_locator.dart';
+import '../models/metrics.dart';
 import '../models/models.dart';
+import '../models/user_profile.dart';
+import '../widgets/manager_replace_dialogs.dart';
 import '../widgets/session_metrics_view.dart';
 import 'session_editor_screen.dart';
 import 'session_registration_screen.dart';
@@ -322,6 +325,13 @@ class _SessionAboutTabState extends State<_SessionAboutTab> {
     final theme = Theme.of(context);
     final isVolunteer = appState.isVolunteer;
     final deadline = s.participantDeadline;
+    // Participants only: 8th graders where the session allows it, high
+    // schoolers everywhere. Spectating is open to every grade.
+    final profile = appState.profile;
+    final gradeBlock = profile?.role == SummitRole.participant
+        ? participationGradeBlock(
+            profile?.details['grade']?.toString(), s.allowEighthGraders)
+        : null;
     return showModalBottomSheet<AddMode>(
       context: context,
       showDragHandle: true,
@@ -335,7 +345,14 @@ class _SessionAboutTabState extends State<_SessionAboutTab> {
               child: Text('Add to my day', style: theme.textTheme.titleLarge),
             ),
             for (final m in modes)
-              if (m == AddMode.participate && s.participationClosed)
+              if (m == AddMode.participate && gradeBlock != null)
+                ListTile(
+                  enabled: false,
+                  leading: Icon(m.icon),
+                  title: Text(m.title),
+                  subtitle: Text(gradeBlockNote(gradeBlock)),
+                )
+              else if (m == AddMode.participate && s.participationClosed)
                 ListTile(
                   enabled: false,
                   leading: Icon(m.icon),
@@ -815,6 +832,27 @@ class _SessionAboutTabState extends State<_SessionAboutTab> {
           SnackBar(content: Text('Stopped managing "${s.title}"')),
         );
       case AddOutcome.conflict:
+        // Managing wins: offer to take what clashes off the admin's day.
+        final me = appState.profile?.id;
+        final items = me == null
+            ? null
+            : await assignmentRepository.previewManagerAssignment(s.id, me);
+        if (!mounted) return;
+        if (items != null && items.isNotEmpty) {
+          final ok = await showReplaceScheduleDialog(context,
+              personName: null, sessionTitle: s.title, items: items);
+          if (!ok || !mounted) return;
+          try {
+            await appState.manageReplacingConflicts(s);
+            messenger.showSnackBar(
+              SnackBar(content: Text('You\'re now managing "${s.title}"')),
+            );
+          } catch (_) {
+            messenger.showSnackBar(const SnackBar(
+                content: Text("Couldn't update your day. Try again.")));
+          }
+          return;
+        }
         _showBlockedDialog(
           'Time conflict',
           result.conflictKind == ConflictKind.registeredThis

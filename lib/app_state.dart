@@ -369,6 +369,15 @@ class AppState extends ChangeNotifier {
     return AddResult(manage ? AddOutcome.added : AddOutcome.removed);
   }
 
+  /// Admin: manages [session] and drops whatever on their own day clashes
+  /// with it (volunteer_conflict_override.sql), then reloads their day.
+  Future<void> manageReplacingConflicts(Session session) async {
+    final me = profile?.id;
+    if (me == null) return;
+    await assignmentRepository.assignManagerReplacingConflicts(session.id, me);
+    await Future.wait([loadSchedule(), loadMyAssignments()]);
+  }
+
   static AddOutcome _toAddOutcome(RegistrationOutcome o) => switch (o) {
         RegistrationOutcome.added => AddOutcome.added,
         RegistrationOutcome.removed => AddOutcome.removed,

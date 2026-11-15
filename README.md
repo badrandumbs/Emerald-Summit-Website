@@ -62,9 +62,8 @@ Home header** (Uber-style), not a bottom-bar tab.
   art, an **Up next** card (the next session in your schedule, or a "plan your
   day" nudge when it's empty), a grid of Uber-style **Jump to** action tiles
   with two-tone Phosphor icons
-  (schedule, browse, news with an unread badge, campus map, resources,
-  **Volunteer hub** for volunteers and admins, profile — campus map/resources
-  push the Resources screen, which is no longer a tab),
+  (schedule, browse, news with an unread badge, **Volunteer hub** for
+  volunteers and admins, profile),
   a horizontal **Explore disciplines** rail into the catalog (opens each one
   with its portal transition), a **Latest news**
   peek, and outbound **Links** (website, Instagram, contact) opened via
@@ -560,8 +559,6 @@ Home header** (Uber-style), not a bottom-bar tab.
     streamed answer — tens of KB — and opening a saved chat is similar.
     Thousands of questions stay well inside the free plan's egress; Storage
     photos remain the egress risk (see the `CachedNetworkImage` note).
-- **Resources** — searchable document hub (sample documents). No longer a tab;
-  opened from the Home **Campus map** / **Resources** tiles.
 - **Profile** (reached from the Home-header avatar) — contact card with role
   badge (volunteers also show their **subtype** and the discipline(s) they
   manage) and a pencil to **Edit profile**
@@ -1022,7 +1019,7 @@ lib/
   theme_setting.dart        Light / Dark / System choice, saved on device
   app_state.dart            Catalog, schedule, announcements, profile, roles (talks only to backend/)
   app_navigation.dart       Global selected-tab notifier + tab-index constants (banner/dashboard → tabs)
-  models/models.dart        Discipline, Session, Announcement, GalleryPhoto, ResourceDoc, disciplineIcon()
+  models/models.dart        Discipline, Session, Announcement, GalleryPhoto, disciplineIcon()
   models/user_profile.dart  UserProfile + SummitRole + per-role fields + scope helpers
   backend/                  The backend seam — see "Swapping backends" under Backend
     backend.dart              Re-exports the contracts + BackendDescriptor
@@ -1031,7 +1028,7 @@ lib/
     service_locator.dart      get_it wiring + configureBackend() (the single switch point)
     supabase/                 The Supabase implementation — ONLY place supabase_flutter is imported
     sample/                   In-memory implementation (standalone/demo mode)
-  data/sample_data.dart     Static seed content used by the sample backend + resources hub
+  data/sample_data.dart     Static seed content used by the sample backend
   widgets/in_app_banner.dart  Instagram-style in-app banner (controller + host)
   widgets/summit_logo.dart    Brand mark rebuilt as a CustomPainter (no asset)
   widgets/roster_person_sheet.dart  Organizer-only profile sheet opened from a roster row
@@ -1063,7 +1060,7 @@ lib/
     announcement_detail_screen.dart   Full announcement page (message, photo viewer, files)
     archie_screen.dart      Archie AI assistant tab (welcome + starters, streamed chat, typing reveal)
     archie_insights_screen.dart  Admin: anonymous recent Archie questions + answers
-    announcements_screen.dart, resources_screen.dart, profile_screen.dart
+    announcements_screen.dart, profile_screen.dart
     edit_profile_screen.dart     Edit your name + sign-up answers (from Profile)
   widgets/type_to_confirm_dialog.dart  confirmByTypingName — type-the-name confirm for deletes
 supabase/                   SQL migrations + Edge Functions (sync-allowlist, dev-login, archie-chat)
@@ -1861,8 +1858,8 @@ have it yet; see the to-do below.
   - **Donate opens Zeffy outside the app**: the Zeffy page above, in the
     browser, not embedded.
   - **No Resources tab**: the website took Resources out of its sidebar
-    (the page still exists, unlinked). Decide whether the app's Resources
-    entry goes too.
+    (the page still exists, unlinked). Done in the app: the Resources screen
+    and the Home **Campus map** / **Resources** tiles are gone.
   - Never "universes" either: the website's landing page now says
     Disciplines, "Which discipline is yours?" and "What are the six
     disciplines?".
@@ -1995,7 +1992,7 @@ replaced, not adapted.
 | Tracks | Sessions under disciplines (`disciplines`, `sessions_with_counts` view for reads, `sessions` for writes). |
 | Directory page (everyone, with visibility settings) | No equivalent; `profiles` is own-row-only. `fetch_volunteer_hub` lists volunteers for the people allowed to see it. Drop the directory or turn it into the volunteer hub. |
 | Judging page | No backend. Leave it hidden (the route already redirects). |
-| Resources page | The app's Resources is sample content too. Keep it static. |
+| Resources page | The app no longer has one. Leave it unlinked or delete it. |
 | "Bypass Login (Local Demo Mode)" | Remove it. A fake local session against a real backend shows screens whose data never loads. Use password-gated test accounts (below). |
 | `src/test/databaseSecurity.adversarial.test.ts` | Tests the old schema. Rewrite it against the RPC behaviour described in **Backend**, or delete it. |
 

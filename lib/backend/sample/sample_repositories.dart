@@ -885,6 +885,68 @@ class SampleAssignmentRepository implements AssignmentRepository {
     _store.myAssignedSessionIds.add(sessionId);
     return const AssignmentResult(AssignmentOutcome.assigned);
   }
+
+  bool _isMe(String userId) => userId == _store.profile?.id;
+
+  @override
+  Future<List<ReplacedItem>?> previewManagerAssignment(
+      String sessionId, String userId) async {
+    final target = _store.sessionById(sessionId);
+    if (target == null) return const [];
+    final items = <ReplacedItem>[];
+    if (_isMe(userId)) {
+      for (final e in _store.myRegistrations.entries) {
+        final other = _store.sessionById(e.key);
+        if (other == null) continue;
+        if (e.key == sessionId || other.overlaps(target)) {
+          items.add(ReplacedItem(
+            sessionId: e.key,
+            title: other.title,
+            kind: e.key == sessionId
+                ? ReplacedKind.registeredThis
+                : ReplacedKind.registered,
+            participationType: e.value,
+          ));
+        }
+      }
+    }
+    final managed = _isMe(userId)
+        ? _store.myAssignedSessionIds
+        : _store.assignmentsByUser[userId] ?? const <String>{};
+    for (final id in managed) {
+      final other = _store.sessionById(id);
+      if (id != sessionId && other != null && other.overlaps(target)) {
+        items.add(ReplacedItem(
+            sessionId: id, title: other.title, kind: ReplacedKind.managing));
+      }
+    }
+    return items;
+  }
+
+  @override
+  Future<List<ReplacedItem>> assignManagerReplacingConflicts(
+      String sessionId, String userId) async {
+    final items = await previewManagerAssignment(sessionId, userId) ?? [];
+    for (final item in items) {
+      if (item.kind == ReplacedKind.managing) {
+        if (_isMe(userId)) _store.myAssignedSessionIds.remove(item.sessionId);
+        await unassign(item.sessionId, userId);
+      } else if (_isMe(userId)) {
+        _store.myRegistrations.remove(item.sessionId);
+      }
+    }
+    if (_isMe(userId)) {
+      _store.myAssignedSessionIds.add(sessionId);
+    } else {
+      (_store.assignmentsByUser[userId] ??= <String>{}).add(sessionId);
+      final vols = _store.sessionVolunteers[sessionId] ??= <VolunteerRef>[];
+      final ref = _store.volunteers.where((v) => v.id == userId);
+      vols.add(ref.isNotEmpty
+          ? ref.first
+          : VolunteerRef(id: userId, name: userId, email: ''));
+    }
+    return items;
+  }
 }
 
 /// In-memory attendance: per-session rosters and the front-desk directory.
@@ -905,6 +967,36 @@ class SampleAttendanceRepository implements AttendanceRepository {
     final i = roster.indexWhere((e) => e.userId == userId);
     if (i >= 0) roster[i] = roster[i].copyWith(attended: attended);
   }
+
+  @override
+  Future<SessionRemovalOutcome> removeFromSession(
+      String sessionId, String userId) async {
+    final roster = _store.rosters[sessionId];
+    final i = roster?.indexWhere((e) => e.userId == userId) ?? -1;
+    if (roster == null || i < 0) return SessionRemovalOutcome.notRegistered;
+    final entry = roster.removeAt(i);
+    (_store.sessionRemovals[sessionId] ??= []).insert(
+      0,
+      SessionRemoval(
+        userId: entry.userId,
+        name: entry.name,
+        email: entry.email,
+        participationType: entry.participationType,
+        removedBy: _store.profile?.fullName,
+        removedAt: DateTime.now(),
+      ),
+    );
+    return SessionRemovalOutcome.removed;
+  }
+
+  @override
+  Future<void> allowBackToSession(String sessionId, String userId) async {
+    _store.sessionRemovals[sessionId]?.removeWhere((r) => r.userId == userId);
+  }
+
+  @override
+  Future<List<SessionRemoval>> fetchSessionRemovals(String sessionId) async =>
+      [...?_store.sessionRemovals[sessionId]];
 
   @override
   Future<List<Attendee>> fetchAttendeeDirectory([String query = '']) async {

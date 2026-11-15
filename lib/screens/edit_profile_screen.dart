@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../app_state.dart';
 import '../models/user_profile.dart';
@@ -127,10 +126,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       TextField(
                         controller: _fieldControllers[f.key],
                         enabled: !_busy,
-                        keyboardType: f.keyboardType,
-                        inputFormatters: f.digitsOnly
-                            ? [FilteringTextInputFormatter.digitsOnly]
-                            : null,
+                        keyboardType: f.keyboard,
+                        inputFormatters: f.inputFormatters,
                         minLines: f.lines,
                         maxLines: f.lines,
                         textInputAction: TextInputAction.next,

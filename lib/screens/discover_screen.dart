@@ -393,7 +393,7 @@ class _ResultTile extends StatelessWidget {
                     Text(s.title, style: theme.textTheme.titleSmall),
                     const SizedBox(height: 2),
                     Text(
-                      '${discipline.name} · ${s.timeLabel} · ${s.room}',
+                      '${discipline.name} · ${s.timeLabel} · ${s.roomLabel}',
                       style: theme.textTheme.bodySmall,
                     ),
                   ],

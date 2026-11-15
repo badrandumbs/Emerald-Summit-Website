@@ -84,6 +84,34 @@ String? projectProblemMessage(String? outcome) => switch (outcome) {
       _ => null,
     };
 
+/// Shown while `website_registration_open` is off and the server refuses a
+/// new sign-up with `registration_closed`. Same words as the website.
+const registrationClosedMessage = 'Registration will open on November 21st';
+
+/// User-facing text for a sign-up the server refused with an error (rather
+/// than an outcome), matched by the error code in [error]. Null when [error]
+/// isn't one of them.
+String? registrationRefusalMessage(String error) {
+  if (error.contains('removed_from_team')) {
+    return projectProblemMessage('removed_from_team');
+  }
+  if (error.contains('registration_closed')) return registrationClosedMessage;
+  if (error.contains('eighth_grade_not_allowed')) {
+    return "This session isn't open to 8th graders for participating. You "
+        'can still add it as a spectator.';
+  }
+  if (error.contains('middle_school_not_allowed')) {
+    return 'Participating is for high schoolers, and 8th graders in some '
+        'sessions. You can still add this session as a spectator.';
+  }
+  if (error.contains('removed_from_session')) {
+    return "An organizer removed you from this session, so you can't sign up "
+        'for it again. If you think this was a mistake, contact the Summit '
+        'team.';
+  }
+  return null;
+}
+
 /// Outcome of an admin assigning a volunteer to a session. [conflict] mirrors
 /// the server-side overlap guard (the volunteer is already committed to an
 /// overlapping session or personal registration).
@@ -563,6 +591,123 @@ abstract interface class AssignmentRepository {
   /// would overlap something already on the admin's schedule. Admin-only,
   /// enforced server-side.
   Future<AssignmentResult> setManage(String sessionId, bool manage);
+
+  /// Admin only: what assigning [userId] to manage [sessionId] would take off
+  /// their day (volunteer_conflict_override.sql). Null when the backend
+  /// doesn't have it yet, so callers keep the old refusal.
+  Future<List<ReplacedItem>?> previewManagerAssignment(
+      String sessionId, String userId);
+
+  /// Admin only: makes [userId] a manager of [sessionId], removing their
+  /// sign-up for it and anything that overlaps it, and tells them. Pass your
+  /// own id to manage it yourself. Returns what was replaced.
+  Future<List<ReplacedItem>> assignManagerReplacingConflicts(
+      String sessionId, String userId);
+}
+
+/// What one item a manager assignment replaces is.
+enum ReplacedKind {
+  /// Signed up for this same session; they'll manage it instead.
+  registeredThis,
+
+  /// Signed up for an overlapping session.
+  registered,
+
+  /// Manages an overlapping session.
+  managing,
+}
+
+/// One thing taken off someone's day when they're made a session's manager.
+class ReplacedItem {
+  const ReplacedItem({
+    required this.sessionId,
+    required this.title,
+    required this.kind,
+    this.participationType,
+    this.teamName,
+    this.teamOwner = false,
+    this.teammates = 0,
+  });
+
+  factory ReplacedItem.fromMap(Map<String, dynamic> m) => ReplacedItem(
+        sessionId: m['session_id'].toString(),
+        title: switch (m['title']) {
+          final String t when t.isNotEmpty => t,
+          _ => 'a session',
+        },
+        kind: switch (m['kind']) {
+          'registered_this' => ReplacedKind.registeredThis,
+          'managing' => ReplacedKind.managing,
+          _ => ReplacedKind.registered,
+        },
+        participationType: switch (m['participation_type']) {
+          'participant' => ParticipationType.participant,
+          'spectator' => ParticipationType.spectator,
+          'expert' => ParticipationType.expert,
+          _ => null,
+        },
+        teamName: switch (m['team_name']) {
+          final String t when t.isNotEmpty => t,
+          _ => null,
+        },
+        teamOwner: m['team_owner'] == true,
+        teammates: (m['teammates'] as num?)?.toInt() ?? 0,
+      );
+
+  static List<ReplacedItem> listFrom(Object? raw) => [
+        if (raw is List)
+          for (final r in raw)
+            ReplacedItem.fromMap((r as Map).cast<String, dynamic>()),
+      ];
+
+  final String sessionId;
+  final String title;
+  final ReplacedKind kind;
+  final ParticipationType? participationType;
+  final String? teamName;
+  final bool teamOwner;
+
+  /// Others on the team.
+  final int teammates;
+}
+
+String _doing(ParticipationType? t) => switch (t) {
+      ParticipationType.spectator => 'spectate',
+      ParticipationType.expert => 'serve as an expert',
+      _ => 'participate',
+    };
+
+/// One line of the replace dialog, about someone else ([self] false) or the
+/// admin themselves. Same wording as the website's `describeReplacement`.
+String describeReplacement(ReplacedItem item, {required bool self}) {
+  final doing = _doing(item.participationType);
+  final line = switch (item.kind) {
+    ReplacedKind.managing => '"${item.title}", which '
+        '${self ? 'you manage' : 'they manage'}. '
+        "${self ? 'You' : 'They'}'ll stop managing it.",
+    ReplacedKind.registeredThis =>
+      '${self ? 'Your' : 'Their'} sign-up to $doing in this session. '
+          "${self ? "You'll" : "They'll"} manage it instead.",
+    ReplacedKind.registered => '"${item.title}", where '
+        "${self ? "you're" : "they're"} signed up to $doing.",
+  };
+  final team = describeTeamEffect(item, self: self);
+  return team == null ? line : '$line $team';
+}
+
+/// What leaving a sign-up does to its team, or null when it has none.
+String? describeTeamEffect(ReplacedItem item, {required bool self}) {
+  final name = item.teamName;
+  if (name == null) return null;
+  if (item.teammates == 0) {
+    return '${self ? 'Your' : 'Their'} team "$name" has no one else, so '
+        "it's deleted.";
+  }
+  if (item.teamOwner) {
+    return '${self ? 'You own' : 'They own'} "$name"; it passes to the '
+        'teammate who joined first.';
+  }
+  return '${self ? 'Your' : 'Their'} teammates on "$name" are told.';
 }
 
 /// The signed-in volunteer's or admin's own manual hour logs. Rows are scoped
@@ -603,6 +748,46 @@ abstract interface class SummitRepository {
   Future<void> setEafInterest(bool yes);
 }
 
+/// What `remove_session_registration` did.
+enum SessionRemovalOutcome { removed, notRegistered, cannotRemoveSelf }
+
+/// One person an organizer removed from a session
+/// (`fetch_session_removals`).
+class SessionRemoval {
+  const SessionRemoval({
+    required this.userId,
+    required this.name,
+    required this.email,
+    this.participationType,
+    this.removedBy,
+    this.removedAt,
+  });
+
+  factory SessionRemoval.fromMap(Map<String, dynamic> m) => SessionRemoval(
+        userId: m['user_id'].toString(),
+        name: (m['full_name'] as String?) ?? '',
+        email: (m['email'] as String?) ?? '',
+        participationType: switch (m['participation_type']) {
+          'participant' => ParticipationType.participant,
+          'spectator' => ParticipationType.spectator,
+          'expert' => ParticipationType.expert,
+          _ => null,
+        },
+        removedBy: m['removed_by_name'] as String?,
+        removedAt: switch (m['removed_at']) {
+          final String t => DateTime.tryParse(t)?.toLocal(),
+          _ => null,
+        },
+      );
+
+  final String userId;
+  final String name;
+  final String email;
+  final ParticipationType? participationType;
+  final String? removedBy;
+  final DateTime? removedAt;
+}
+
 /// Attendance: per-session rosters (for session-assigned volunteers) and the
 /// summit-wide front-desk directory (for front-desk-capable volunteers). Every
 /// method is gated server-side.
@@ -613,6 +798,19 @@ abstract interface class AttendanceRepository {
 
   Future<void> markSessionAttendance(
       String sessionId, String userId, bool attended);
+
+  /// Takes [userId] off [sessionId] (session_participant_removal.sql): deletes
+  /// their registration, blocks them from signing up for it again and sends
+  /// them a notice. Open to everyone who can see the roster.
+  Future<SessionRemovalOutcome> removeFromSession(
+      String sessionId, String userId);
+
+  /// Lifts the block from [removeFromSession]; it doesn't re-register them.
+  Future<void> allowBackToSession(String sessionId, String userId);
+
+  /// Who was removed from [sessionId], newest first. Throws when the backend
+  /// doesn't have removals yet (the SQL not run), so the roster can hide them.
+  Future<List<SessionRemoval>> fetchSessionRemovals(String sessionId);
 
   /// All attendees + their arrival state, optionally filtered by [query].
   Future<List<Attendee>> fetchAttendeeDirectory([String query]);
