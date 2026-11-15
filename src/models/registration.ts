@@ -340,6 +340,18 @@ export function participationGradeBlock(grade: unknown, allowEighthGraders: bool
   return 'middle_school_not_allowed';
 }
 
+/**
+ * True for a participant whose grade is 8. They can participate only in
+ * sessions that allow 8th graders, which the session lists mark for them.
+ */
+export function isEighthGradeParticipant(profile: { role?: string; details?: Record<string, unknown> | null } | null | undefined): boolean {
+  return profile?.role === 'participant'
+    && gradeLabel(profile.details?.grade as string | number | null | undefined) === '8';
+}
+
+/** The mark on sessions an 8th-grade participant can participate in. */
+export const EIGHTH_GRADE_BADGE = 'Open to 8th grade';
+
 export const GRADE_BLOCK_MESSAGE: Record<GradeBlock, string> = {
   eighth_grade_not_allowed: "This session isn't open to 8th graders for participating. You can still add it as a spectator.",
   middle_school_not_allowed: 'Participating is for high schoolers, and 8th graders in some sessions. You can still add this session as a spectator.',

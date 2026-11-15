@@ -9,6 +9,7 @@ import {
   ArrowElbowDownLeft,
   ArrowRight as PhArrowRight,
   ArrowsLeftRight,
+  ArrowsOut,
   Bell as PhBell,
   BookOpen as PhBookOpen,
   Bug as PhBug,
@@ -79,6 +80,7 @@ import {
   ShieldCheck as PhShieldCheck,
   SignOut,
   Sparkle,
+  Star as PhStar,
   SquaresFour,
   Sun as PhSun,
   Trash,
@@ -139,6 +141,7 @@ export const Compass = duotone(PhCompass, 'Compass');
 export const AlertCircle = duotone(WarningCircle, 'AlertCircle');
 export const AlertTriangle = duotone(Warning, 'AlertTriangle');
 export const ArrowLeftRight = plain(ArrowsLeftRight, 'ArrowLeftRight');
+export const Maximize2 = plain(ArrowsOut, 'Maximize2');
 export const ArrowRight = duotone(PhArrowRight, 'ArrowRight');
 export const Award = duotone(Medal, 'Award');
 export const Bell = duotone(PhBell, 'Bell');
@@ -212,6 +215,7 @@ export const Search = duotone(MagnifyingGlass, 'Search');
 export const Settings = duotone(Gear, 'Settings');
 export const ShieldCheck = duotone(PhShieldCheck, 'ShieldCheck');
 export const Sparkles = duotone(Sparkle, 'Sparkles');
+export const Star = duotone(PhStar, 'Star', 'fill');
 export const Sun = duotone(PhSun, 'Sun');
 export const Trash2 = duotone(Trash, 'Trash2');
 export const UploadCloud = duotone(CloudArrowUp, 'UploadCloud');

@@ -12,6 +12,8 @@ import {
   type VerseVibe,
 } from '../../models/verseVibes';
 import VerseMotif from './VerseMotif';
+import EighthGradeBadge from './EighthGradeBadge';
+import { EIGHTH_GRADE_BADGE, isEighthGradeParticipant } from '../../models/registration';
 import { useAuth } from '../../context/AuthContext';
 import { canEditVerse, useSummitContent, toMinutes } from '../../services/summitContent';
 import { SessionEditorDialog, type SessionEditorTarget } from './ContentEditors';
@@ -55,6 +57,7 @@ function VerseSessionCard({
   session: s,
   vibe,
   mine,
+  eighthGrade,
   onOpen,
   onAdd,
   onEdit,
@@ -62,6 +65,8 @@ function VerseSessionCard({
   session: Session;
   vibe: VerseVibe;
   mine: Set<string>;
+  /** The viewer is an 8th-grade participant: mark the sessions open to them. */
+  eighthGrade?: boolean;
   /** Opens the session inside this world instead of following the link. */
   onOpen?: (id: string, from: Origin) => void;
   onAdd?: (id: string, from: Origin) => void;
@@ -124,6 +129,11 @@ function VerseSessionCard({
       {joinParts(s.speaker, sessionPlace(s)) && (
         <div className="mt-0.5 text-[13px]" style={{ color: vibe.textDim }}>
           {joinParts(s.speaker, sessionPlace(s))}
+        </div>
+      )}
+      {eighthGrade && s.allowEighthGraders && (
+        <div className="mt-2">
+          <EighthGradeBadge color={vibe.accent} />
         </div>
       )}
       <div className="mt-3 h-1 w-full overflow-hidden rounded-sm" style={{ background: vibe.meter }}>
@@ -194,6 +204,7 @@ function VersePage({
   useSummitContent();
   const { profile } = useAuth();
   const canEdit = canEditVerse(profile, discipline.name);
+  const eighthGrade = isEighthGradeParticipant(profile as Parameters<typeof isEighthGradeParticipant>[0]);
   const [sessionEditor, setSessionEditor] = useState<SessionEditorTarget | null>(null);
   const { theme } = useTheme();
   const vibe = vibeFor(discipline.name, theme);
@@ -352,6 +363,11 @@ function VersePage({
                     />
                   )}
                 </div>
+                {eighthGrade && (
+                  <p className="mb-3 text-[13px]" style={{ color: vibe.textDim }}>
+                    Tracks marked "{EIGHTH_GRADE_BADGE}" are the ones you can participate in. You can spectate any of them.
+                  </p>
+                )}
                 <div className="grid gap-3 sm:grid-cols-2">
                   {sessions.length === 0 && (
                     <p style={{ color: vibe.textDim }}>No tracks in this discipline yet.</p>
@@ -362,6 +378,7 @@ function VersePage({
                       session={s}
                       vibe={vibe}
                       mine={mine}
+                      eighthGrade={eighthGrade}
                       onOpen={(id, from) => openSession(id, { from })}
                       onAdd={canAdd ? (id, from) => openSession(id, { add: true, from }) : undefined}
                       onEdit={canEdit ? (session) => setSessionEditor({ verse: discipline.name, session }) : undefined}

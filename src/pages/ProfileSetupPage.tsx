@@ -3,13 +3,20 @@
 //   (models/profileFields.ts);
 // - a signed-in volunteer or admin with no number, or a student volunteer or
 //   EAF ambassador with no grade, is asked for just that before going on;
-// - after Change role, the new role's questions are asked again, prefilled.
+// - after Change role, the new role's questions are asked again, prefilled;
+// - every account agrees to the Code of Conduct once: under the questions at
+//   sign-up, or on its own for an account made before it existed.
 import { useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Info, Mail, User } from '@/components/icons';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
-import { needsProfileSetup, saveProfileDetails, signOut } from '../services/auth';
+import { agreeToCodeOfConduct, needsProfileSetup, saveProfileDetails, signOut } from '../services/auth';
+import CodeOfConductWindow from '../components/CodeOfConductWindow';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  CODE_OF_CONDUCT_CHECKBOX, CODE_OF_CONDUCT_VERSION, needsCodeOfConduct, tracksCodeOfConduct,
+} from '../models/codeOfConduct';
 import AuthLayout, { AUTH_ENTER, authStagger } from '../components/AuthLayout';
 import ProfileFieldInput from '../components/ProfileFieldInput';
 import { roleByName, roleLabelFor, USER_ROLES } from '../models/roles';
@@ -38,11 +45,13 @@ export default function ProfileSetupPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   const roleName = profile?.role as string | undefined;
   const subtype = profile?.volunteer_subtype as string | null | undefined;
   const onboarding = needsProfileSetup(profile);
   const gate = missingGateField(profile as Parameters<typeof missingGateField>[0]);
+  const conductDue = needsCodeOfConduct(profile);
 
   useEffect(() => {
     if (prefilled || loadingProfile) return;
@@ -54,13 +63,17 @@ export default function ProfileSetupPage() {
 
   if (!loadingProfile && session == null) return <Navigate to="/home" replace />;
   // Nothing to ask: go on into the site.
-  if (!loadingProfile && session != null && !onboarding && !gate && !roleChanged) {
+  if (!loadingProfile && session != null && !onboarding && !gate && !roleChanged && !conductDue) {
     return <Navigate to="/home" replace />;
   }
 
   // The gate asks only for what's missing, like the app's phone and grade screens.
   const gateOnly = !onboarding && !roleChanged && gate != null;
-  const fields: ProfileField[] = gateOnly
+  // A finished account with nothing else missing: just the Code of Conduct.
+  const conductOnly = !onboarding && !roleChanged && gate == null && conductDue;
+  // Sign-up asks for it under the questions, once the SQL has added the columns.
+  const askConduct = conductOnly || (onboarding && tracksCodeOfConduct(profile));
+  const fields: ProfileField[] = conductOnly ? [] : gateOnly
     ? gate === 'phone'
       ? formFields(roleName, subtype).filter((f) => f.key === 'phone')
       : [VOLUNTEER_GRADE_FIELD]
@@ -82,15 +95,31 @@ export default function ProfileSetupPage() {
 
   const save = async () => {
     setError(null);
+    if (conductOnly) {
+      if (!agreed) return setError('Please tick the box to agree to the Code of Conduct.');
+      setIsSaving(true);
+      try {
+        await agreeToCodeOfConduct(CODE_OF_CONDUCT_VERSION);
+        await refreshProfile();
+        navigate('/home', { replace: true });
+      } catch {
+        setError("Couldn't save that. Check your connection and try again.");
+      } finally {
+        setIsSaving(false);
+      }
+      return;
+    }
     if (!gateOnly && !name.trim()) return setError('Please enter your name.');
     const missing = fields.find((f) => f.required && !(answers[f.key] ?? '').trim());
     if (missing) {
       return setError(missing.key === 'phone' ? 'Mobile number is required.' : `Please answer "${missing.label}".`);
     }
+    if (askConduct && !agreed) return setError('Please tick the box to agree to the Code of Conduct.');
     setIsSaving(true);
     try {
       const out = Object.fromEntries(fields.map((f) => [f.key, answers[f.key] ?? '']));
       await saveProfileDetails(gateOnly ? (profile?.name as string) ?? name : name, out, onboarding);
+      if (askConduct) await agreeToCodeOfConduct(CODE_OF_CONDUCT_VERSION);
       await refreshProfile();
       navigate('/home', { replace: true });
     } catch {
@@ -100,10 +129,14 @@ export default function ProfileSetupPage() {
     }
   };
 
-  const title = gateOnly
+  const title = conductOnly
+    ? 'One last step'
+    : gateOnly
     ? gate === 'phone' ? 'Add your number' : 'Add your grade'
     : roleChanged ? `Your details as ${/^[aeiou]/i.test(label) ? 'an' : 'a'} ${label}` : 'Tell us a bit about yourself';
-  const intro = gateOnly
+  const intro = conductOnly
+    ? 'Everyone at the Summit agrees to the Code of Conduct. Read it below, or expand it to read it in full.'
+    : gateOnly
     ? gate === 'phone'
       ? `${role.label}s need a mobile number on file so the Summit team can reach you.`
       : 'Student volunteers and EAF ambassadors give a grade. It goes on your volunteer hours record.'
@@ -167,14 +200,30 @@ export default function ProfileSetupPage() {
           />
         ))}
 
+        {askConduct && (
+          <div className="space-y-3">
+            {!conductOnly && <h2 className="text-[13px] font-semibold">Code of Conduct</h2>}
+            <CodeOfConductWindow />
+            <label className="flex cursor-pointer items-start gap-3 text-sm">
+              <Checkbox
+                checked={agreed}
+                onCheckedChange={(v) => setAgreed(v === true)}
+                className="mt-0.5"
+                aria-label={CODE_OF_CONDUCT_CHECKBOX}
+              />
+              <span className="font-medium">{CODE_OF_CONDUCT_CHECKBOX}</span>
+            </label>
+          </div>
+        )}
+
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
 
         <Button
           type="submit"
           className="glow-emerald h-12 w-full rounded-xl bg-primary text-[15px] font-semibold hover:bg-emerald"
-          disabled={isSaving}
+          disabled={isSaving || (askConduct && !agreed)}
         >
-          {isSaving ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : gateOnly ? 'Save and continue' : 'Continue'}
+          {isSaving ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : conductOnly ? 'Agree and continue' : gateOnly ? 'Save and continue' : 'Continue'}
         </Button>
       </form>
     </AuthLayout>

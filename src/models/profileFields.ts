@@ -14,6 +14,16 @@ export interface ProfileField {
   type?: 'text' | 'tel' | 'digits';
   /** The Tri-Valley school dropdown with an "Other" box. */
   schoolPicker?: boolean;
+  /** A participant's grade: a dropdown of 8th to 12th grade, saved as "8" to "12". */
+  gradePicker?: boolean;
+}
+
+/** The grades a participant can pick. */
+export const PARTICIPANT_GRADES = ['8', '9', '10', '11', '12'] as const;
+
+/** "8th grade" … "12th grade". */
+export function gradeOptionLabel(grade: string): string {
+  return `${grade}th grade`;
 }
 
 const PHONE_PRIVACY_NOTE = "Your number won't be shown publicly.";
@@ -65,7 +75,7 @@ export function onboardingFields(role: string | undefined): ProfileField[] {
     default:
       return [
         { key: 'school', label: 'School', required: true, schoolPicker: true },
-        { key: 'grade', label: 'Grade', required: true, hint: 'e.g. 11', helper: STUDENT_GRADE_NOTE },
+        { key: 'grade', label: 'Grade', required: true, helper: STUDENT_GRADE_NOTE, gradePicker: true },
         { key: 'phone', label: 'Mobile number (optional)', helper: PHONE_PRIVACY_NOTE, type: 'tel' },
       ];
   }

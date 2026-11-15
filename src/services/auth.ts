@@ -34,6 +34,9 @@ export type Profile = {
   can_check_in_front_desk?: boolean;
   notifications_enabled?: boolean;
   expert_queue_seen_at?: string | null;
+  /** The Code of Conduct version agreed to; absent until code_of_conduct.sql runs. */
+  code_of_conduct_version?: string | null;
+  code_of_conduct_agreed_at?: string | null;
 };
 
 /** What a student adds at registration, beyond the basic profile. */
@@ -581,6 +584,13 @@ export async function saveProfileDetails(
   const { data, error } = await client.from('profiles').update(payload)
     .eq('id', session.user.id).select('id').single();
   if (error || !data) throw error ?? new Error(LOAD_FAILED_MESSAGE);
+}
+
+/** Records that the signed-in account agreed to Code of Conduct `version`. */
+export async function agreeToCodeOfConduct(version: string): Promise<void> {
+  await requireRealSession();
+  const { error } = await requireSupabase().rpc('agree_to_code_of_conduct', { p_version: version });
+  if (error) throw error;
 }
 
 export async function saveProfile(input: SaveProfileInput): Promise<void> {

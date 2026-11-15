@@ -28,6 +28,7 @@ import {
   normalizeTeamCode,
   participationClosed,
   participationGradeBlock,
+  isEighthGradeParticipant,
   STATUS_LABEL,
   type AddMode,
   type GradeBlock,
@@ -53,6 +54,7 @@ import SessionVolunteers from './SessionVolunteers';
 import ReplaceScheduleDialog, { type ReplaceRequest } from './ReplaceScheduleDialog';
 import { assignManagerReplacingConflicts, previewManagerAssignment } from '../../services/organizer';
 import SessionMetrics from './SessionMetrics';
+import EighthGradeBadge from '../verse/EighthGradeBadge';
 import { SessionEditorDialog } from '../verse/ContentEditors';
 import { fetchSessionPhotos, splitHero, type SessionPhoto } from '../../services/sessionPhotos';
 import { suggestedSessions } from '../../models/suggested';
@@ -202,6 +204,7 @@ export default function SessionView({
   // Middle schoolers can always spectate; 8th graders participate only where
   // the leads allowed it. The server refuses it too (register_for_session).
   const gradeBlock = participationGradeBlock(profile?.details?.grade, s.allowEighthGraders);
+  const eighthGrade = isEighthGradeParticipant(profile as Parameters<typeof isEighthGradeParticipant>[0]);
   // While times are hidden, a deadline reads "TBD" instead of its date.
   const showTimes = switches.showTimes;
   const deadlineText = (d: Date) => (showTimes ? formatDeadline(d) : TBD);
@@ -455,6 +458,15 @@ export default function SessionView({
           <Users className="h-4 w-4" style={{ color: accent }} />
           {left === 0 ? `Full (${s.enrolled}/${s.capacity})` : `${left} of ${s.capacity} seats left`}
         </p>
+        {/* An 8th-grade participant sees whether they can participate. */}
+        {eighthGrade && (s.allowEighthGraders
+          ? <p><EighthGradeBadge color={accent} /></p>
+          : (
+            <p className="flex items-center gap-2">
+              <Info className="h-4 w-4" style={{ color: accent }} />
+              Not open to 8th graders for participating. You can spectate it.
+            </p>
+          ))}
       </div>
 
       {deadline && (

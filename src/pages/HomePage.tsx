@@ -14,6 +14,7 @@ import { useAuth } from '../context/AuthContext';
 import { MOCK_SESSIONS, joinParts, sessionPlace, type Session } from '../models/sessions';
 import { needsProfileSetup } from '../services/auth';
 import { missingGateField } from '../models/profileFields';
+import { needsCodeOfConduct } from '../models/codeOfConduct';
 import { toMinutes, useSummitContent } from '../services/summitContent';
 import { TBD, useSiteSwitches } from '../services/siteSwitches';
 import {
@@ -244,7 +245,8 @@ export default function HomePage() {
   }
 
   // Like the app's auth gate: finish sign-up, then add a missing number or grade.
-  if (isSignedIn && (needsProfileSetup(profile) || missingGateField(profile as Parameters<typeof missingGateField>[0]))) {
+  if (isSignedIn && (needsProfileSetup(profile) || missingGateField(profile as Parameters<typeof missingGateField>[0])
+    || needsCodeOfConduct(profile))) {
     return <Navigate to="/profile" replace />;
   }
 
