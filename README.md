@@ -75,20 +75,30 @@ Home header** (Uber-style), not a bottom-bar tab.
   down on first view.
   **Three more sections are coming to Home** (the website's dashboard has
   them; building them in the app is on the to-do list under **Home: smaller
-  slideshow, no Tracks or Explore rows, three new sections**). They go above Links, and
-  they're static text and links, with no backend. The **Explore disciplines**
-  rail comes off Home at the same time; Discover stays the way in. The three:
-  - **About the app**: what the app does: build your schedule, check in with
-    your QR pass, get announcements, explore the verses.
-  - **Support EAF**: what the Emerald High School Academic Foundation does,
-    "EAF is a 501(c)(3) nonprofit. Tax ID 33-4810954.", and **Donate** and
-    **Volunteer with EAF** buttons that open the EAF site's donate and
-    volunteer pages.
-  - **Sponsors**: "Sponsors will be listed here as they sign on", the six
-    sponsorship tiers (Cornerstone $500+, Foundation $1,000+, Pillar $1,500+,
-    Keystone $2,000+, Capstone $5,000+, Legacy Builder $10,000+), a **Become a
-    sponsor** button that emails contact.ehsaf@gmail.com, and a link to the
-    EAF site's Sponsorship Details page.
+  slideshow, no Tracks or Explore rows, three new sections**, with the wording
+  in **Home sections and wording, Nov 14** below). They're static text and
+  links, with no backend. The **Explore disciplines** rail comes off Home at
+  the same time; Discover stays the way in. In the website's order: Support
+  EAF and Sponsors above Links, About the app at the very bottom:
+  - **Support EAF**: "This Emerald Summit App is brought to you 100% built by
+    students and free for all to use." then EAF's support for
+    student-initiated projects, "Please consider supporting EAF and its
+    mission.", and **Donate** (EAF's Zeffy donation form, the one its
+    Summit page links) and **Volunteer with EAF**
+    (https://www.ehsacademics.org/get-involved/parent-volunteering)
+    buttons.
+  - **Sponsors**: the five sponsorship tiers from ehsacademics.org's
+    Emerald Summit '27 → Sponsor page, ranked highest first as a stepped
+    peak (Capstone $5,000, Keystone $2,000, Pillar $1,500, Foundation
+    $1,000, Cornerstone $500, each with its perks), each sponsor's name
+    inside its tier, a note that sponsorships go through EAF and are fully
+    tax-deductible, a **Become a sponsor** button that emails
+    contact@ehsacademics.org, and a **Sponsorship details** link to
+    https://www.ehsacademics.org/initiatives/emerald-summit-27/sponsor.
+  - **About the app**: "This app has been 100% built by Emerald High School
+    students." with credits: lead developers Arjun Mahajan and Akhil
+    Muthyala; developers and testers Nithali Anand, Arush Singh, Guhan Bala
+    and Deep Shah. No feature list.
 - **Schedule** — the user's full personal schedule (formerly the "My Day" first
   tab; the in-app header still reads "My Day"). A summary line at the top
   ([day_summary.dart](lib/widgets/day_summary.dart)) gives sessions and time
@@ -1500,7 +1510,7 @@ Open items, in the order below: 8th graders in sessions · Remove someone
 from a session · Dates on older bell notes · Rename the News tab to
 Announcements · Managing replaces a clash · See and convert signed-up
 volunteers · Registration closed message · Universe subtitles · Archie and
-the FAQ · Report a bug or send feedback. Checked against the website on Nov 13, 2026: everything else the
+the FAQ · Report a bug or send feedback · Home sections and wording, Nov 14. Checked against the website on Nov 13, 2026: everything else the
 website does, the app does too, apart from the website-only list at the end.
 Updated Nov 13, 2026. These shipped on the website and the app doesn't have
 them yet. The app isn't public yet, so none of them is urgent, but do them
@@ -1720,19 +1730,12 @@ have it yet; see the to-do below.
   row beside the quote card. The Tracks strip under Your day, with its
   Browse sessions button, is gone, and so is the **Explore the verses** row
   of verse cards (the app's **Explore disciplines** rail on Home: remove it;
-  Discover stays the way into the disciplines). New sections
-  after Quick access, all static text and links, no backend
-  (`src/components/home/AboutSections.tsx`):
-  - **About the app**: what the portal does (schedule, QR pass,
-    announcements, verses). In the app, reword it to describe the app.
-  - **Support EAF**: EAF's mission, "501(c)(3) nonprofit. Tax ID
-    33-4810954.", and **Donate** / **Volunteer with EAF** links to the EAF
-    site's donate and volunteer pages.
-  - **Sponsors**: "Sponsors will be listed here as they sign on", the six
-    tiers from the EAF Sponsorship Details page (Cornerstone $500+ to Legacy
-    Builder $10,000+), **Become a sponsor** (mailto:contact.ehsaf@gmail.com)
-    and **Sponsorship details**. When sponsors sign on, their logos could
-    come from a `sponsors` bucket like `gallery_photos`.
+  Discover stays the way into the disciplines). New sections, all static
+  text and links, no backend (`src/components/home/AboutSections.tsx`).
+  Their current text, order and links are in the Home description near the
+  top of this README and in **Home sections and wording, Nov 14** below.
+  When sponsors sign on, their logos could come from a `sponsors` bucket
+  like `gallery_photos`.
 - [ ] **"Room TBD" in session lists** (website, Nov 14, 2026). While rooms
   are locked (`SESSION_ROOMS_ENABLED` is false), the website's session lists
   (discipline pages, My Schedule, Home, search results) show "Room TBD"
@@ -1788,6 +1791,30 @@ have it yet; see the to-do below.
   - Error codes to word: `name_required`, `description_required`,
     `too_long`, `too_many_reports` (10 an hour), `not_signed_in`. A failed
     email doesn't fail the report.
+- [ ] **Home sections and wording, Nov 14** (website, Nov 14, 2026).
+  - The Archie tab is labeled **Ask Archie** (sidebar and bottom bar; the
+    website's `NAV_ITEMS` in `src/components/AppShell.tsx`).
+  - "Summit" is always capitalized in app text ("Summit day", "the Summit
+    team", "questions about the Summit", role blurbs, the phone-number
+    helper, volunteer hours, the follow-up screens).
+  - Never "Explore the verses"; it's always **Explore the disciplines**.
+  - Home's **Quick access** row (Resources, Announcements, Profile, Volunteer
+    hub) is gone on the website. Decide whether the app's action grid follows.
+  - Support EAF, Sponsors and About the app use the new text and layout
+    described under Home above (tiered sponsors, credits in About, About at
+    the bottom).
+  - Never "universes" either: the website's landing page now says
+    Disciplines, "Which discipline is yours?" and "What are the six
+    disciplines?".
+  - **EAF's real site is ehsacademics.org**; the Summit page is
+    https://emeraldsummit.ehsacademics.org. The old Google Sites page
+    (sites.google.com/view/ehs-academic-foundation) is out of date. The app
+    still links it: the Summit website link in
+    [dashboard_screen.dart](lib/screens/dashboard_screen.dart), the sample
+    Archie source in
+    [sample_archie_repository.dart](lib/backend/sample/sample_archie_repository.dart),
+    and three places in [knowledge.md](supabase/archie/knowledge.md) (redeploy
+    Archie after editing it). The website switched on Nov 14, 2026.
 
 Website-only on purpose, no app work: the public landing page (hero, the
 arrival, the Summit figure, the FAQ, the universes orbit), the
