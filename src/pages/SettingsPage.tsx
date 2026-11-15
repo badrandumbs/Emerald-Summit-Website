@@ -10,6 +10,7 @@ import AppShell from '../components/AppShell';
 import PageHeader from '../components/PageHeader';
 import QrPassModal from '../components/QrPassModal';
 import ReportDialog from '../components/ReportDialog';
+import ChangeRoleDialog from '../components/ChangeRoleDialog';
 import type { ReportKind } from '../services/bugReports';
 import ThemeToggle from '../components/ThemeToggle';
 import { useRequireProfile } from '../hooks/useRequireProfile';
@@ -146,6 +147,7 @@ function ProfileHub({ profile }: { profile: Profile }) {
   const role = roleByName(roleName) ?? USER_ROLES[0];
   const roleLabel = roleLabelFor(roleName, profile.volunteer_subtype);
   const [signingOut, setSigningOut] = useState(false);
+  const [changeRoleOpen, setChangeRoleOpen] = useState(false);
   const [qrPassOpen, setQrPassOpen] = useState(false);
   const [reportKind, setReportKind] = useState<ReportKind | null>(null);
   const lastReportKind = useRef<ReportKind>('bug');
@@ -208,13 +210,14 @@ function ProfileHub({ profile }: { profile: Profile }) {
           {isAdmin && <SettingsRow icon={ShieldCheck} title="Expert approvals" subtitle="Approve or decline expert sign-ups" onClick={() => navigate('/admin/experts')} />}
           {isAdmin && <SettingsRow icon={Inbox} title="Bug reports and feedback" subtitle="What people reported, with their details" onClick={() => navigate('/admin/reports')} />}
           {isAdmin && <SettingsRow icon={MapPin} title="Manage rooms" subtitle="The rooms sessions can be held in" onClick={() => navigate('/admin/rooms')} />}
-          <SettingsRow icon={ArrowLeftRight} title="Change role" subtitle={`Currently ${roleLabel}`} onClick={() => navigate('/roles')} />
+          <SettingsRow icon={ArrowLeftRight} title="Change role" subtitle={`Currently ${roleLabel}`} onClick={() => setChangeRoleOpen(true)} />
         </div>
       </section>
       <section className="overflow-hidden rounded-2xl border border-border/70 bg-card/70">
         <SettingsRow icon={LogOut} title={signingOut ? 'Signing out…' : 'Sign out'} onClick={handleSignOut} destructive />
       </section>
       <QrPassModal open={qrPassOpen} onOpenChange={setQrPassOpen} profile={profile} />
+      <ChangeRoleDialog open={changeRoleOpen} onOpenChange={setChangeRoleOpen} />
       <ReportDialog open={reportKind !== null} onOpenChange={(o) => { if (!o) setReportKind(null); }} kind={reportKind ?? lastReportKind.current} defaultName={profile.name ?? ''} email={profile.email} />
     </div>
   );

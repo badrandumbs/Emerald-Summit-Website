@@ -1,6 +1,6 @@
 // Signed in and picking another role: preview what the switch does to your
 // sessions, then confirm. Same steps and words as the app's Change role.
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftRight, Loader2 } from '@/components/icons';
 import { toast } from 'sonner';
@@ -16,7 +16,20 @@ import {
 } from '../services/roleChange';
 import { Button } from '@/components/ui/button';
 
-export default function ChangeRolePanel({ role }: { role: RoleInfo }) {
+export default function ChangeRolePanel({
+  role,
+  autoPreview = false,
+  onCancel,
+  onDone,
+}: {
+  role: RoleInfo;
+  /** Load the preview straight away (the role was already picked in the change-role popup). */
+  autoPreview?: boolean;
+  /** Cancel on the preview goes back to the caller instead of the first step. */
+  onCancel?: () => void;
+  /** Called after the role changed, before moving on to the profile page. */
+  onDone?: () => void;
+}) {
   const { profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [changes, setChanges] = useState<RoleChangeItem[] | null>(null);
@@ -44,6 +57,14 @@ export default function ChangeRolePanel({ role }: { role: RoleInfo }) {
     }
   };
 
+  const started = useRef(false);
+  useEffect(() => {
+    if (!autoPreview || started.current) return;
+    started.current = true;
+    void preview();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPreview]);
+
   const confirm = async () => {
     setBusy(true);
     setError(null);
@@ -51,6 +72,7 @@ export default function ChangeRolePanel({ role }: { role: RoleInfo }) {
       const kept = await changeRole(role.name);
       await refreshProfile();
       toast.success(`You’re now a ${roleLabelFor(kept.role, kept.volunteer_subtype)}.`);
+      onDone?.();
       // Like the app, the new role's sign-up questions come next.
       navigate('/profile', { replace: true, state: { roleChanged: true } });
     } catch (err) {
@@ -64,7 +86,11 @@ export default function ChangeRolePanel({ role }: { role: RoleInfo }) {
       <p className="text-muted-foreground">
         You're signed in as <span className="font-semibold text-foreground">{current}</span>.
       </p>
-      {changes === null ? (
+      {changes === null && autoPreview && !error ? (
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" /> Checking what changes…
+        </div>
+      ) : changes === null ? (
         <Button type="button" onClick={preview} disabled={busy} className="w-full gap-2">
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeftRight className="h-4 w-4" />}
           Change role to {role.label}
@@ -97,11 +123,14 @@ export default function ChangeRolePanel({ role }: { role: RoleInfo }) {
             <Button type="button" onClick={confirm} disabled={busy} className="flex-1 gap-2">
               {busy && <Loader2 className="h-4 w-4 animate-spin" />} Confirm
             </Button>
-            <Button type="button" variant="outline" disabled={busy} onClick={() => setChanges(null)}>Cancel</Button>
+            <Button type="button" variant="outline" disabled={busy} onClick={() => (onCancel ? onCancel() : setChanges(null))}>Cancel</Button>
           </div>
         </>
       )}
       {error && <p role="alert" className="text-destructive">{error}</p>}
+      {error && onCancel && changes === null && (
+        <Button type="button" variant="outline" onClick={onCancel} className="w-full">Pick another role</Button>
+      )}
     </div>
   );
 }

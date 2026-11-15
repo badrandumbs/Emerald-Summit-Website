@@ -2,12 +2,12 @@
 // wasn't approved" dialog (lib/screens/auth/expert_pending_screen.dart and
 // auth_gate.dart). Same words as the app.
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Loader2, Mail, RefreshCw } from '@/components/icons';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 import { acknowledgeExpertDecline, fetchExpertStatus, signOut } from '../services/auth';
 import { Button } from '@/components/ui/button';
+import ChangeRoleDialog from './ChangeRoleDialog';
 import {
   Dialog,
   DialogContent,
@@ -27,8 +27,8 @@ export function needsExpertApproval(profile: { role?: string; profile_setup_comp
 
 export function ExpertPending() {
   const { profile, refreshProfile } = useAuth();
-  const navigate = useNavigate();
   const [checking, setChecking] = useState(false);
+  const [changeRoleOpen, setChangeRoleOpen] = useState(false);
   const expertise = String((profile?.details as Record<string, unknown> | undefined)?.expertise ?? '').trim();
 
   const checkAgain = async () => {
@@ -65,9 +65,10 @@ export function ExpertPending() {
         <Button onClick={checkAgain} disabled={checking} className="gap-2">
           {checking ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} Check again
         </Button>
-        <Button variant="outline" disabled={checking} onClick={() => navigate('/roles')}>Sign up as something else</Button>
+        <Button variant="outline" disabled={checking} onClick={() => setChangeRoleOpen(true)}>Sign up as something else</Button>
         <Button variant="ghost" disabled={checking} onClick={() => void signOut()}>Sign out</Button>
       </div>
+      <ChangeRoleDialog open={changeRoleOpen} onOpenChange={setChangeRoleOpen} />
     </section>
   );
 }

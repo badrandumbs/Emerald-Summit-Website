@@ -7,7 +7,7 @@ import LoginPage from '../LoginPage';
 
 const auth = vi.hoisted(() => ({ send: vi.fn(), verify: vi.fn(), google: vi.fn(), isTest: vi.fn(), testSignIn: vi.fn() }));
 vi.mock('../../context/AuthContext', () => ({ useAuth: () => ({ session: null, profile: null, clearSignInError: vi.fn() }) }));
-vi.mock('../../services/auth', () => ({ sendSignInCode: (email: string, role: string) => auth.send(email, role), verifySignInCode: (email: string, code: string) => auth.verify(email, code), signInWithGoogle: auth.google, signInWithGoogleIdToken: vi.fn(), isTestAccount: (email: string) => auth.isTest(email), signInWithTestAccount: (email: string, password: string) => auth.testSignIn(email, password) }));
+vi.mock('../../services/auth', () => ({ sendSignInCode: (email: string, role: string, opts?: unknown) => auth.send(email, role, opts), NoAccountError: class NoAccountError extends Error {}, verifySignInCode: (email: string, code: string) => auth.verify(email, code), signInWithGoogle: auth.google, signInWithGoogleIdToken: vi.fn(), isTestAccount: (email: string) => auth.isTest(email), signInWithTestAccount: (email: string, password: string) => auth.testSignIn(email, password) }));
 vi.mock('../../lib/supabase', () => ({ isSupabaseConfigured: true, supabase: null }));
 // Google's script can't load in tests, so the page shows the redirect button.
 vi.mock('../../lib/googleIdentity', () => ({ GOOGLE_WEB_CLIENT_ID: 'web', loadGoogleIdentity: async () => null, makeNonce: async () => ({ raw: 'r', hashed: 'h' }) }));
@@ -29,7 +29,7 @@ test('expert email sign-in requires a verified code and offers no LinkedIn or lo
   expect(screen.queryByText('Use demo mode')).not.toBeInTheDocument();
   await user.type(screen.getByLabelText('Email'), 'Expert@Example.com');
   await user.click(screen.getByRole('button', { name: 'Send sign-in code' }));
-  expect(auth.send).toHaveBeenCalledWith('expert@example.com', 'expert');
+  expect(auth.send).toHaveBeenCalledWith('expert@example.com', 'expert', { createAccount: false });
   expect(auth.verify).not.toHaveBeenCalled();
   await user.type(await screen.findByLabelText('Sign-in code'), '12345678');
   await user.click(screen.getByRole('button', { name: 'Verify and sign in' }));
@@ -61,4 +61,34 @@ test('use a different email leaves the password step', async () => {
   await user.click(screen.getByRole('button', { name: 'Use a different email' }));
   expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
   expect(screen.getByLabelText('Email')).toBeEnabled();
+});
+
+test('sign up creates the account; sign in to an unknown email offers sign up instead', async () => {
+  const user = userEvent.setup();
+  const { NoAccountError } = await import('../../services/auth');
+  auth.send.mockImplementation(async (_e: string, _r: string, opts: { createAccount: boolean }) => {
+    if (!opts.createAccount) throw new NoAccountError();
+  });
+  render(<MemoryRouter initialEntries={['/login/participant']}><Routes><Route path="/login/:role" element={<LoginPage />} /></Routes></MemoryRouter>);
+  expect(screen.getByRole('heading', { name: 'Sign in as Participant' })).toBeInTheDocument();
+  await user.type(screen.getByLabelText('Email'), 'new@example.com');
+  await user.click(screen.getByRole('button', { name: 'Send sign-in code' }));
+  expect(auth.send).toHaveBeenLastCalledWith('new@example.com', 'participant', { createAccount: false });
+  const alert = await screen.findByRole('alert');
+  expect(alert).toHaveTextContent("Let's create you an account!");
+  expect(alert).toHaveTextContent('Press Continue to enter some information and create your Participant account.');
+  await user.click(screen.getByRole('button', { name: 'Continue' }));
+  expect(auth.send).toHaveBeenLastCalledWith('new@example.com', 'participant', { createAccount: true });
+  expect(await screen.findByLabelText('Sign-in code')).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Sign up as Participant' })).toBeInTheDocument();
+});
+
+test('organizer sign in is for admins and test accounts and may create an allowlisted admin', async () => {
+  const user = userEvent.setup();
+  render(<MemoryRouter initialEntries={['/login/admin?mode=signup']}><Routes><Route path="/login/:role" element={<LoginPage />} /></Routes></MemoryRouter>);
+  expect(screen.getByRole('heading', { name: 'Organizer sign in' })).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Sign up' })).not.toBeInTheDocument();
+  await user.type(screen.getByLabelText('Email'), 'admin@example.com');
+  await user.click(screen.getByRole('button', { name: 'Send sign-in code' }));
+  expect(auth.send).toHaveBeenLastCalledWith('admin@example.com', 'admin', { createAccount: true });
 });

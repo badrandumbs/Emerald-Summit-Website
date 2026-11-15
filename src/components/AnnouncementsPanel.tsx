@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import {
   Pin,
-  Bell,
   ChevronRight,
   Link2,
   Download,
@@ -229,24 +228,25 @@ export default function AnnouncementsPanel({
           !isFull && 'border-b border-border pb-4',
         )}
       >
-        <h2 className="font-display text-base font-semibold">Announcements</h2>
-        <div className="flex items-center gap-2">
-          {unreadCount > 0 && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-rose-600 px-2 py-1 text-[11px] font-bold text-white">
-              {unreadCount} unread
-            </span>
-          )}
-          {pinnedCount > 0 && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald/15 px-2 py-1 text-[11px] font-semibold text-emerald-mint">
-              <Bell className="h-3 w-3" /> {pinnedCount} pinned
-            </span>
-          )}
-          {onCompose && (
-            <Button size="sm" className="h-8" onClick={onCompose}>
-              <Plus className="h-3.5 w-3.5" /> New
-            </Button>
+        <div className="min-w-0">
+          <h2 className="font-display text-base font-semibold">Announcements</h2>
+          {(unreadCount > 0 || pinnedCount > 0) && (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {unreadCount > 0 && (
+                <span className="font-semibold text-rose-600">{unreadCount} unread</span>
+              )}
+              {unreadCount > 0 && pinnedCount > 0 && (
+                <span aria-hidden="true"> · </span>
+              )}
+              {pinnedCount > 0 && <span>{pinnedCount} pinned</span>}
+            </p>
           )}
         </div>
+        {onCompose && (
+          <Button size="sm" className="h-8 shrink-0" onClick={onCompose}>
+            <Plus className="h-3.5 w-3.5" /> New
+          </Button>
+        )}
       </div>
 
       <div className="space-y-3">

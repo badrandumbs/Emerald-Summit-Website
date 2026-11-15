@@ -295,12 +295,37 @@ export function takeOAuthError(): string | null {
   return `Google sign-in didn't finish (${raw.replace(/\+/g, ' ')}). Try again, or use your email.`;
 }
 
-export async function sendSignInCode(email: string, roleName: string): Promise<void> {
+/** Thrown by sendSignInCode when Sign in is used with an email that has no account. */
+export class NoAccountError extends Error {
+  constructor() {
+    super("There's no account with that email yet. Sign up to create one.");
+    this.name = 'NoAccountError';
+  }
+}
+
+/**
+ * Emails a sign-in code. Sign up (and Organizer sign in, for an admin's first
+ * visit) creates the account if it's new; Sign in only reaches accounts that
+ * already exist and throws NoAccountError otherwise.
+ */
+export async function sendSignInCode(
+  email: string,
+  roleName: string,
+  { createAccount = true }: { createAccount?: boolean } = {},
+): Promise<void> {
   savePendingRole(roleName);
   const { error } = await requireSupabase().auth.signInWithOtp({
-    email, options: { shouldCreateUser: true },
+    email, options: { shouldCreateUser: createAccount },
   });
-  if (error) throw error;
+  if (error) {
+    // Supabase's answer when shouldCreateUser is false and the email is new.
+    const code = (error as { code?: string }).code;
+    if (!createAccount && (code === 'otp_disabled' || /signups not allowed/i.test(error.message))) {
+      localStorage.removeItem(PENDING_ROLE_KEY);
+      throw new NoAccountError();
+    }
+    throw error;
+  }
 }
 
 export async function verifySignInCode(email: string, token: string): Promise<void> {

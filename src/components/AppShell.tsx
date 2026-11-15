@@ -27,6 +27,7 @@ import { MOCK_SESSIONS, joinParts, sessionPlace } from '../models/sessions';
 import { useSiteSwitches } from '../services/siteSwitches';
 import BrandMark from './BrandMark';
 import QrPassModal from './QrPassModal';
+import ChangeRoleDialog from './ChangeRoleDialog';
 import { cn } from '@/lib/utils';
 
 type NavGroup = 'My Summit' | 'Account';
@@ -271,6 +272,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
     .filter((n): n is NavItem => n != null);
   const isQrEligible = roleName === 'participant' || roleName === 'ambassador';
   const [qrPassOpen, setQrPassOpen] = useState(false);
+  const [changeRoleOpen, setChangeRoleOpen] = useState(false);
   const hasUnread = (unreadCount ?? 0) > 0;
   const currentPage =
     items.find((n) => pathname === n.to || pathname.startsWith(`${n.to}/`))
@@ -364,7 +366,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         <div className="relative">
           <button
             type="button"
-            onClick={() => navigate('/roles')}
+            onClick={() => setChangeRoleOpen(true)}
             aria-label={`${name}, ${roleLabel}. Switch role`}
             className="group flex w-full items-center gap-2.5 rounded-xl border border-white/10 p-2.5 pr-[58px] text-left transition-colors hover:border-white/25 hover:bg-white/[0.06]"
           >
@@ -506,6 +508,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         ))}
       </nav>
 
+      <ChangeRoleDialog open={changeRoleOpen} onOpenChange={setChangeRoleOpen} />
       {isQrEligible && (
         <QrPassModal
           open={qrPassOpen}

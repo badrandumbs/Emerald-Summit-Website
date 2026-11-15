@@ -19,20 +19,20 @@ export interface RoleInfo {
   color: string;
 }
 
-// Descriptions are the app's SummitRole.blurb (user_profile.dart).
+// Labels and descriptions match the sign-in page (Nov 14, 2026); the app's
+// SummitRole labels and blurbs (user_profile.dart) are on its to-do list to match.
 export const USER_ROLES: RoleInfo[] = [
   {
     name: 'participant',
     label: 'Participant',
-    description:
-      'Build your schedule and follow your Summit day.',
+    description: 'Build your schedule and follow your Summit day.',
     icon: GraduationCap, // school_outlined
     color: '#0EA5E9',
   },
   {
     name: 'attendee',
-    label: 'Parent / Spectator',
-    description: 'Follow along and stay in the loop.',
+    label: 'Spectator',
+    description: 'Attend tracks and stay in the loop. Curious minds of all ages are welcome.',
     icon: Eye,
     color: '#2563EB',
   },
@@ -55,15 +55,14 @@ export const USER_ROLES: RoleInfo[] = [
   {
     name: 'volunteer',
     label: 'Volunteer',
-    description:
-      'Help run the Summit: EAF ambassadors, parent and student volunteers.',
+    description: 'Parent and student volunteers.',
     icon: Users,
     color: '#E11D48',
   },
   {
     name: 'expert',
-    label: 'Expert / Speaker',
-    description: 'Lead a session or speak at the Summit.',
+    label: 'Expert',
+    description: 'Evaluate tracks and join panel discussions to share insights with attendees.',
     icon: Award, // workspace_premium_outlined
     color: '#7C3AED',
   },
@@ -112,3 +111,21 @@ export function roleLabelFor(
   }
   return roleByName(roleName)?.label ?? USER_ROLES[0].label;
 }
+
+/**
+ * The roles people choose between on the "How are you joining the Summit?"
+ * page and in the change-role popup, in order. Admins aren't here: they use
+ * "Organizer sign in".
+ */
+const CHOOSER: { name: string; section: 'attending' | 'helping' }[] = [
+  { name: 'participant', section: 'attending' },
+  { name: 'attendee', section: 'attending' },
+  { name: 'expert', section: 'attending' },
+  { name: 'volunteer', section: 'helping' },
+];
+
+export const CHOOSER_ROLES: { name: string; title: string; description: string; section: 'attending' | 'helping' }[] =
+  CHOOSER.map(({ name, section }) => {
+    const role = USER_ROLES.find((r) => r.name === name)!;
+    return { name, title: role.label, description: role.description, section };
+  });

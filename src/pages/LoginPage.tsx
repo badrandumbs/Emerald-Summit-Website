@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react';
-import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Loader2, Lock, Mail, ShieldCheck } from '@/components/icons';
 import { toast } from 'sonner';
 import { SIGN_IN_ROLES } from '../models/roles';
 import { useAuth } from '../context/AuthContext';
 import {
+  NoAccountError,
   isTestAccount,
   sendSignInCode,
   signInWithTestAccount,
@@ -28,6 +29,7 @@ export default function LoginPage() {
   const { role: roleName } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const role = SIGN_IN_ROLES.find((r) => r.name === roleName);
   const { session, profile, clearSignInError } = useAuth();
   const signedInRole = session ? ((profile?.role as string | undefined) ?? null) : null;
@@ -40,6 +42,8 @@ export default function LoginPage() {
   const [testAccount, setTestAccount] = useState(false);
   const [password, setPassword] = useState('');
   const [isChecking, setIsChecking] = useState(false);
+  // Sign in was tried with an email that has no account.
+  const [noAccount, setNoAccount] = useState(false);
 
   if (!role) {
     return (
@@ -64,11 +68,29 @@ export default function LoginPage() {
     return <Navigate to="/home" replace />;
   }
 
+  // Sign up creates the account and then asks the sign-up questions (profile
+  // details; the code of conduct is still to come) before the app opens. Sign
+  // in only reaches an existing account and goes straight in. Either way the
+  // profile gate (useRequireProfile) sends an account that hasn't finished
+  // sign-up to /profile and a finished one to Home, so an existing account
+  // that taps Sign up just signs in. Admins and test accounts use "Organizer
+  // sign in" (role admin), which may create an allowlisted admin's account.
+  const isOrganizer = role.name === 'admin';
+  const signingUp = !isOrganizer && searchParams.get('mode') === 'signup';
+
+  const switchMode = (toSignUp: boolean) => {
+    setNoAccount(false);
+    setCodeSent(false);
+    setCode('');
+    setSearchParams(toSignUp ? { mode: 'signup' } : {}, { replace: true });
+  };
+
   const handleEmail = async (e: FormEvent) => {
     e.preventDefault();
     const trimmed = email.trim().toLowerCase();
     if (!isValidEmail(trimmed) || isChecking) return;
     setIsChecking(true);
+    setNoAccount(false);
     clearSignInError();
     try {
       if (testAccount) {
@@ -81,10 +103,32 @@ export default function LoginPage() {
       } else if (await isTestAccount(trimmed)) {
         setTestAccount(true);
       } else {
-        await sendSignInCode(trimmed, role.name);
+        await sendSignInCode(trimmed, role.name, { createAccount: signingUp || isOrganizer });
         setCodeSent(true);
         toast.success('Check your email for a sign-in code.');
       }
+    } catch (error) {
+      if (error instanceof NoAccountError) {
+        setNoAccount(true);
+        return;
+      }
+      toast.error(error instanceof Error ? error.message : String(error));
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  // "Let's create you an account!": Continue switches to sign up and sends the
+  // code straight away, so the next thing to do is enter it.
+  const continueToSignUp = async () => {
+    const trimmed = email.trim().toLowerCase();
+    if (isChecking) return;
+    setIsChecking(true);
+    try {
+      await sendSignInCode(trimmed, role.name, { createAccount: true });
+      switchMode(true);
+      setCodeSent(true);
+      toast.success('Check your email for a code to create your account.');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error));
     } finally {
@@ -98,20 +142,33 @@ export default function LoginPage() {
   };
 
   const needsList = role.name === 'volunteer' || role.name === 'admin';
+  const heading = isOrganizer
+    ? 'Organizer sign in'
+    : signingUp ? `Sign up as ${role.label}` : `Sign in as ${role.label}`;
 
   return (
     <AuthLayout
       accent={role.color}
       icon={role.icon}
-      eyebrow="Sign in"
-      title={role.label}
-      onBack={() => navigate(signedInRole ? '/roles' : '/home')}
+      eyebrow={signingUp ? 'Sign up' : 'Sign in'}
+      title={isOrganizer ? 'Organizer' : role.label}
+      onBack={() => navigate('/roles')}
     >
       <div className="space-y-7">
         <header style={authStagger(1)} className={AUTH_ENTER}>
           <h1 className="font-display text-4xl font-bold leading-[1.08] tracking-tight sm:text-[44px]">
-            Sign in as {role.label}
+            {heading}
           </h1>
+          {signingUp && (
+            <p className="mt-3 text-[15px] text-muted-foreground">
+              Continue with Google or your email, then tell us a bit about yourself.
+            </p>
+          )}
+          {isOrganizer && (
+            <p className="mt-3 text-[15px] text-muted-foreground">
+              For Summit admins and test accounts.
+            </p>
+          )}
         </header>
 
         {signedInRole && (
@@ -154,6 +211,26 @@ export default function LoginPage() {
             {testAccount && <button type="button" onClick={leaveTestAccount} disabled={isChecking} className="text-xs font-medium text-muted-foreground underline">Use a different email</button>}
             {codeSent && <button type="button" onClick={() => { setCodeSent(false); setCode(''); }} className="text-xs font-medium text-muted-foreground underline">Use another email or resend code</button>}
           </form>
+          {noAccount && (
+            <div role="alert" className="rounded-xl border border-border bg-card p-4 text-[13.5px]">
+              <p className="font-display text-lg font-bold">Let's create you an account!</p>
+              <p className="mt-1 text-muted-foreground">
+                There's no account for <span className="font-semibold text-foreground">{email.trim()}</span> yet.
+                Press Continue to enter some information and create your {role.label} account.
+              </p>
+              <Button type="button" onClick={() => void continueToSignUp()} disabled={isChecking} className="mt-3 w-full rounded-xl">
+                {isChecking ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Continue'}
+              </Button>
+            </div>
+          )}
+          {!isOrganizer && (
+            <p className="pt-1 text-center text-[13px] text-muted-foreground">
+              {signingUp ? 'Already have an account? ' : 'New to the Summit? '}
+              <button type="button" onClick={() => switchMode(!signingUp)} className="font-semibold text-foreground underline underline-offset-4">
+                {signingUp ? 'Sign in' : 'Sign up'}
+              </button>
+            </p>
+          )}
           {needsList && <p className="flex items-start gap-2 text-[12.5px] leading-relaxed text-muted-foreground"><ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: role.color }} />{role.label}s need their sign-in email on the Summit team's {role.label.toLowerCase()} list.</p>}
           {role.name === 'expert' && <p className="text-[12.5px] leading-relaxed text-muted-foreground">Experts need approval from the Summit team before taking part.</p>}
         </div>

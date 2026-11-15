@@ -43,19 +43,30 @@ export default function ProfileFieldInput({
         <Input
           id={id}
           type={field.type === 'tel' ? 'tel' : 'text'}
-          inputMode={field.type === 'digits' ? 'numeric' : field.type === 'tel' ? 'tel' : undefined}
+          inputMode={field.type === 'digits' || field.type === 'tel' ? 'numeric' : undefined}
           autoComplete={field.type === 'tel' ? 'tel' : undefined}
           required={field.required}
           placeholder={field.hint}
           aria-describedby={helperId}
           value={value}
-          onChange={(e) => onChange(field.type === 'digits' ? e.target.value.replace(/\D/g, '') : e.target.value)}
+          onChange={(e) => onChange(cleanValue(field.type, e.target.value))}
           className={FIELD_CLASS}
         />
       )}
       {helper}
     </div>
   );
+}
+
+/**
+ * Phone numbers and digit fields take numbers only: spaces, dashes, brackets
+ * and + are dropped as you type or paste, so "(925) 555-0100" becomes
+ * 9255550100. A phone keeps at most 15 digits, the international maximum.
+ */
+export function cleanValue(type: ProfileField['type'], raw: string): string {
+  if (type === 'tel') return raw.replace(/\D/g, '').slice(0, 15);
+  if (type === 'digits') return raw.replace(/\D/g, '');
+  return raw;
 }
 
 function SchoolPicker({ field, value, onChange }: { field: ProfileField; value: string; onChange: (v: string) => void }) {
