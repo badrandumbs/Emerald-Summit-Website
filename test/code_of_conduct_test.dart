@@ -39,7 +39,14 @@ void main() {
       appState.profile = _profile(role: role);
       expect(appState.needsCodeOfConduct, isTrue, reason: role.name);
     }
-    appState.profile = _profile(version: codeOfConductVersion);
+    appState.profile = _profile(version: codeOfConduct.version);
+    expect(appState.needsCodeOfConduct, isFalse);
+    // Experts agree to the Speaker Policy, not the Code of Conduct.
+    appState.profile =
+        _profile(role: SummitRole.expert, version: codeOfConduct.version);
+    expect(appState.needsCodeOfConduct, isTrue);
+    appState.profile =
+        _profile(role: SummitRole.expert, version: speakerPolicy.version);
     expect(appState.needsCodeOfConduct, isFalse);
     appState.profile = _profile(version: 'an-older-version');
     expect(appState.needsCodeOfConduct, isTrue);
@@ -68,16 +75,16 @@ void main() {
     await tester.pumpWidget(
         const MaterialApp(home: CodeOfConductScreen()));
 
-    expect(find.text(codeOfConductTitle), findsOneWidget);
+    expect(find.text(codeOfConduct.title), findsOneWidget);
     final button = find.widgetWithText(FilledButton, 'Agree and continue');
     expect(tester.widget<FilledButton>(button).onPressed, isNull);
 
-    await tester.tap(find.text(codeOfConductCheckbox));
+    await tester.tap(find.text(codeOfConduct.checkbox));
     await tester.pump();
     expect(tester.widget<FilledButton>(button).onPressed, isNotNull);
     await tester.tap(button);
     await tester.pump();
-    expect(appState.profile!.codeOfConductVersion, codeOfConductVersion);
+    expect(appState.profile!.codeOfConductVersion, codeOfConduct.version);
     expect(appState.needsCodeOfConduct, isFalse);
   });
 
@@ -88,7 +95,7 @@ void main() {
     await tester.tap(find.text('Expand'));
     await tester.pumpAndSettle();
     expect(find.text('Liability and insurance'), findsOneWidget);
-    expect(find.text(codeOfConductCheckbox), findsNothing);
+    expect(find.text(codeOfConduct.checkbox), findsNothing);
   });
 
   group('8th graders', () {
@@ -129,5 +136,13 @@ void main() {
       expect(find.byType(EighthGradeBadge), findsNothing);
       expect(find.textContaining('Not open to 8th graders'), findsOneWidget);
     });
+  });
+
+  testWidgets('experts see the Speaker Policy', (tester) async {
+    appState.profile = _profile(role: SummitRole.expert);
+    await tester.pumpWidget(const MaterialApp(home: CodeOfConductScreen()));
+    expect(find.text(speakerPolicy.title), findsOneWidget);
+    expect(find.text(speakerPolicy.checkbox), findsOneWidget);
+    expect(find.text(codeOfConduct.title), findsNothing);
   });
 }

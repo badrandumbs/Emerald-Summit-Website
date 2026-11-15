@@ -1,9 +1,10 @@
 -- Emerald Summit — Code of Conduct agreement
 -- Run AFTER profiles_setup.sql. Additive; safe to re-run.
 --
--- Every account (participant, spectator, expert, volunteer, admin) agrees to
--- the Summit's Code of Conduct once, by ticking a box, before using the app or
--- the website. New accounts see it right after the sign-up questions; accounts
+-- Every account agrees once, by ticking a box, before using the app or the
+-- website: experts to the Speaker Policy, everyone else (participant,
+-- spectator, volunteer, admin) to the Code of Conduct. Both are stored here;
+-- the version string says which ("speaker-…" or "conduct-…"). New accounts see it right after the sign-up questions; accounts
 -- that already exist see it the next time they open the app or the website.
 -- The text lives in the clients (the app's lib/models/code_of_conduct.dart and
 -- the website's src/models/codeOfConduct.ts) with a version string; when the

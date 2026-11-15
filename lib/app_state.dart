@@ -993,21 +993,25 @@ class AppState extends ChangeNotifier {
         gradeLabel(p.details['grade']?.toString()) == '8';
   }
 
-  /// True when this account hasn't agreed to the current Code of Conduct.
-  /// Every role agrees once; the auth gate asks right after sign-up, or on
+  /// True when this account hasn't agreed to its role's current agreement:
+  /// the Speaker Policy for experts, the Code of Conduct for everyone else
+  /// ([agreementFor]). Every role agrees once; the auth gate asks right after sign-up, or on
   /// the next launch for an account that signed up before it existed.
   bool get needsCodeOfConduct {
     final p = profile;
     return p != null &&
         p.onboarded &&
         p.tracksCodeOfConduct &&
-        p.codeOfConductVersion != codeOfConductVersion;
+        p.codeOfConductVersion != agreementFor(p.role).version;
   }
 
   /// Records the agreement and refreshes the profile.
   Future<void> agreeToCodeOfConduct() async {
-    await profileRepository.agreeToCodeOfConduct(codeOfConductVersion);
-    profile?.codeOfConductVersion = codeOfConductVersion;
+    final p = profile;
+    if (p == null) return;
+    final version = agreementFor(p.role).version;
+    await profileRepository.agreeToCodeOfConduct(version);
+    p.codeOfConductVersion = version;
     notifyListeners();
   }
 

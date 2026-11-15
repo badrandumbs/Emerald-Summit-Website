@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../app_state.dart';
 import '../../models/code_of_conduct.dart';
+import '../../models/user_profile.dart';
 
 /// The last sign-up step, and a one-time step for accounts that signed up
-/// before it existed: read the Code of Conduct in a window (Expand opens it
-/// full screen) and tick the box. Every role agrees. Shown by the auth gate
+/// before it existed: read the role's agreement ([agreementFor]: the Speaker
+/// Policy for experts, the Code of Conduct for everyone else) in a window
+/// (Expand opens it full screen) and tick the box. Shown by the auth gate
 /// while [AppState.needsCodeOfConduct].
 class CodeOfConductScreen extends StatefulWidget {
   const CodeOfConductScreen({super.key});
@@ -39,9 +41,11 @@ class _CodeOfConductScreenState extends State<CodeOfConductScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final agreement =
+        agreementFor(appState.profile?.role ?? SummitRole.participant);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Code of Conduct'),
+        title: Text(agreement.name),
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
@@ -57,13 +61,13 @@ class _CodeOfConductScreenState extends State<CodeOfConductScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Everyone at the Summit agrees to the Code of Conduct. '
-                  'Read it below, or expand it to read it full screen.',
+                  '${agreement.whoAgrees} Read it below, or expand it to '
+                  'read it full screen.',
                   style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant),
                 ),
                 const SizedBox(height: 16),
-                const CodeOfConductWindow(),
+                CodeOfConductWindow(agreement: agreement),
                 const SizedBox(height: 12),
                 CheckboxListTile(
                   value: _agreed,
@@ -72,7 +76,7 @@ class _CodeOfConductScreenState extends State<CodeOfConductScreen> {
                       : (v) => setState(() => _agreed = v ?? false),
                   controlAffinity: ListTileControlAffinity.leading,
                   contentPadding: EdgeInsets.zero,
-                  title: const Text(codeOfConductCheckbox),
+                  title: Text(agreement.checkbox),
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: 4),
@@ -105,11 +109,13 @@ class _CodeOfConductScreenState extends State<CodeOfConductScreen> {
   }
 }
 
-/// The code in a bordered, scrollable window, with Expand to read it full
-/// screen.
+/// An agreement in a bordered, scrollable window, with Expand to read it
+/// full screen.
 class CodeOfConductWindow extends StatefulWidget {
-  const CodeOfConductWindow({super.key, this.height = 260});
+  const CodeOfConductWindow(
+      {super.key, required this.agreement, this.height = 260});
 
+  final SummitAgreement agreement;
   final double height;
 
   @override
@@ -129,11 +135,11 @@ class _CodeOfConductWindowState extends State<CodeOfConductWindow> {
     Navigator.of(context).push(MaterialPageRoute<void>(
       fullscreenDialog: true,
       builder: (context) => Scaffold(
-        appBar: AppBar(title: const Text('Code of Conduct')),
+        appBar: AppBar(title: Text(widget.agreement.name)),
         body: SafeArea(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-            children: const [CodeOfConductText()],
+            children: [CodeOfConductText(agreement: widget.agreement)],
           ),
         ),
       ),
@@ -160,7 +166,7 @@ class _CodeOfConductWindowState extends State<CodeOfConductWindow> {
               child: SingleChildScrollView(
                 controller: _scroll,
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                child: const CodeOfConductText(),
+                child: CodeOfConductText(agreement: widget.agreement),
               ),
             ),
           ),
@@ -176,9 +182,11 @@ class _CodeOfConductWindowState extends State<CodeOfConductWindow> {
   }
 }
 
-/// The whole code: title, intro, and each section's rules.
+/// A whole agreement: title, intro, and each section's rules.
 class CodeOfConductText extends StatelessWidget {
-  const CodeOfConductText({super.key});
+  const CodeOfConductText({super.key, required this.agreement});
+
+  final SummitAgreement agreement;
 
   @override
   Widget build(BuildContext context) {
@@ -187,10 +195,10 @@ class CodeOfConductText extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(codeOfConductTitle, style: theme.textTheme.titleMedium),
+        Text(agreement.title, style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
-        Text(codeOfConductIntro, style: body),
-        for (final section in codeOfConductSections) ...[
+        Text(agreement.intro, style: body),
+        for (final section in agreement.sections) ...[
           const SizedBox(height: 16),
           Text(section.title,
               style: theme.textTheme.titleSmall

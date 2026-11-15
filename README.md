@@ -1541,7 +1541,7 @@ Both are on the to-do list below.
 
 ### Website changes to bring into the app (to-do)
 Still open: running [code_of_conduct.sql](supabase/code_of_conduct.sql)
-(see **Code of Conduct**) · uploading Archie's edited knowledge file and
+and two decisions on it (see **Code of Conduct and Speaker Policy**) · uploading Archie's edited knowledge file and
 redeploying `archie-chat` (see **Archie and the FAQ**). Everything else
 below landed in the app on Nov 14, 2026 and is ticked, with a note where the
 app does it differently from the website. Checked against the website on
@@ -1830,15 +1830,27 @@ has it too since Nov 14, 2026; see below.
   `appState.pendingSignUpRole`, which onboarding starts on ("Signing up as
   …" with a Change link). Google sign-in from either mode makes the account
   if it's new and onboarding runs, as on the website.
-- [ ] **Code of Conduct** (app and website, Nov 14, 2026; built, waiting on
-  the SQL). Every role (participant, spectator, expert, volunteer, admin)
-  agrees once by ticking a box; no signatures. The text is EAF's "Emerald
-  Summit 2026 Code of Conduct" form rewritten for everyone who attends
-  (conduct, liability and insurance, photos and video with an email
-  opt-out, what the checkbox means), in
+- [ ] **Code of Conduct and Speaker Policy** (app and website, Nov 14,
+  2026; built, waiting on the SQL). Every account agrees once by ticking a
+  box; no signatures. **Experts agree to the Speaker Policy**; participants,
+  spectators, volunteers and admins agree to the **Code of Conduct**
+  (`agreementFor(role)`). Both texts are EAF's forms rewritten: the "Emerald
+  Summit 2026 Code of Conduct" waiver for everyone who attends (conduct,
+  liability and insurance, photos and video with an email opt-out, what the
+  checkbox means) and the "Emerald Summit '26 Speaker Policy Document" v1.0
+  (working with students, topics to avoid with exceptions by email,
+  recording and photos, EAF can cancel). They live in
   [code_of_conduct.dart](lib/models/code_of_conduct.dart) and the website's
-  `src/models/codeOfConduct.ts`, with a version string (`2026-11-14`).
-  Change the text in both and bump the version to have everyone agree again.
+  `src/models/codeOfConduct.ts`, each with a version (`conduct-2026-11-14`,
+  `speaker-2026-11-14`) stored in `profiles.code_of_conduct_version`. Change
+  a text in both and bump its version to have everyone agree again. Someone
+  who changes role to or from Expert is asked to agree to the other one.
+  - **Open decisions (Nov 14, 2026):** (1) the original waiver asks people
+    to grant or not grant photo and video permission; the rewrite says the
+    Summit is photographed and offers an email opt-out instead of a choice.
+    (2) The waiver had parent/guardian and student signatures; the rewrite
+    has only the account holder's checkbox and "If you're under 18, read it
+    with a parent or guardian." The user is deciding both.
   - It shows in a scrollable window with **Expand** (full screen in the app,
     a large popup on the website), then the checkbox "I've read the Code of
     Conduct and agree to follow it."
