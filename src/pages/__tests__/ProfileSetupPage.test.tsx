@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import ProfileSetupPage from '../ProfileSetupPage';
-import { CODE_OF_CONDUCT_CHECKBOX, CODE_OF_CONDUCT_VERSION } from '../../models/codeOfConduct';
+import { CODE_OF_CONDUCT, SPEAKER_POLICY } from '../../models/codeOfConduct';
 
 const state = vi.hoisted(() => ({
   role: 'volunteer',
@@ -115,19 +115,19 @@ test('sign-up ends with the Code of Conduct box, once the columns exist', async 
   render(<MemoryRouter><ProfileSetupPage /></MemoryRouter>);
   const continueButton = screen.getByRole('button', { name: 'Continue' });
   expect(continueButton).toBeDisabled();
-  await user.click(screen.getByRole('checkbox', { name: CODE_OF_CONDUCT_CHECKBOX }));
+  await user.click(screen.getByRole('checkbox', { name: CODE_OF_CONDUCT.checkbox }));
   await user.click(continueButton);
   expect(state.save).toHaveBeenCalled();
-  expect(state.agree).toHaveBeenCalledWith(CODE_OF_CONDUCT_VERSION);
+  expect(state.agree).toHaveBeenCalledWith(CODE_OF_CONDUCT.version);
 });
 
 test('no Code of Conduct box before the SQL adds the columns', () => {
   state.role = 'attendee';
   render(<MemoryRouter><ProfileSetupPage /></MemoryRouter>);
-  expect(screen.queryByRole('checkbox', { name: CODE_OF_CONDUCT_CHECKBOX })).toBeNull();
+  expect(screen.queryByRole('checkbox', { name: CODE_OF_CONDUCT.checkbox })).toBeNull();
 });
 
-test('an existing account that has not agreed sees only the Code of Conduct', async () => {
+test('an existing expert who has not agreed sees only the Speaker Policy', async () => {
   state.role = 'expert';
   state.onboarding = false;
   state.conduct = { code_of_conduct_version: null };
@@ -135,8 +135,9 @@ test('an existing account that has not agreed sees only the Code of Conduct', as
   render(<MemoryRouter><ProfileSetupPage /></MemoryRouter>);
   expect(screen.getByText('One last step')).toBeInTheDocument();
   expect(screen.queryByLabelText('Area of expertise')).toBeNull();
-  await user.click(screen.getByRole('checkbox', { name: CODE_OF_CONDUCT_CHECKBOX }));
+  expect(screen.getAllByText(SPEAKER_POLICY.title).length).toBeGreaterThan(0);
+  await user.click(screen.getByRole('checkbox', { name: SPEAKER_POLICY.checkbox }));
   await user.click(screen.getByRole('button', { name: 'Agree and continue' }));
-  expect(state.agree).toHaveBeenCalledWith(CODE_OF_CONDUCT_VERSION);
+  expect(state.agree).toHaveBeenCalledWith(SPEAKER_POLICY.version);
   expect(state.save).not.toHaveBeenCalled();
 });

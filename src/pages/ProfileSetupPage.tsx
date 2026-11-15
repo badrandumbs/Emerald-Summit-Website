@@ -15,7 +15,7 @@ import { agreeToCodeOfConduct, needsProfileSetup, saveProfileDetails, signOut } 
 import CodeOfConductWindow from '../components/CodeOfConductWindow';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  CODE_OF_CONDUCT_CHECKBOX, CODE_OF_CONDUCT_VERSION, needsCodeOfConduct, tracksCodeOfConduct,
+  agreementFor, needsCodeOfConduct, tracksCodeOfConduct,
 } from '../models/codeOfConduct';
 import AuthLayout, { AUTH_ENTER, authStagger } from '../components/AuthLayout';
 import ProfileFieldInput from '../components/ProfileFieldInput';
@@ -52,6 +52,8 @@ export default function ProfileSetupPage() {
   const onboarding = needsProfileSetup(profile);
   const gate = missingGateField(profile as Parameters<typeof missingGateField>[0]);
   const conductDue = needsCodeOfConduct(profile);
+  // Experts agree to the Speaker Policy; everyone else to the Code of Conduct.
+  const agreement = agreementFor(profile?.role as string | undefined);
 
   useEffect(() => {
     if (prefilled || loadingProfile) return;
@@ -96,10 +98,10 @@ export default function ProfileSetupPage() {
   const save = async () => {
     setError(null);
     if (conductOnly) {
-      if (!agreed) return setError('Please tick the box to agree to the Code of Conduct.');
+      if (!agreed) return setError(`Please tick the box to agree to the ${agreement.name}.`);
       setIsSaving(true);
       try {
-        await agreeToCodeOfConduct(CODE_OF_CONDUCT_VERSION);
+        await agreeToCodeOfConduct(agreement.version);
         await refreshProfile();
         navigate('/home', { replace: true });
       } catch {
@@ -114,12 +116,12 @@ export default function ProfileSetupPage() {
     if (missing) {
       return setError(missing.key === 'phone' ? 'Mobile number is required.' : `Please answer "${missing.label}".`);
     }
-    if (askConduct && !agreed) return setError('Please tick the box to agree to the Code of Conduct.');
+    if (askConduct && !agreed) return setError(`Please tick the box to agree to the ${agreement.name}.`);
     setIsSaving(true);
     try {
       const out = Object.fromEntries(fields.map((f) => [f.key, answers[f.key] ?? '']));
       await saveProfileDetails(gateOnly ? (profile?.name as string) ?? name : name, out, onboarding);
-      if (askConduct) await agreeToCodeOfConduct(CODE_OF_CONDUCT_VERSION);
+      if (askConduct) await agreeToCodeOfConduct(agreement.version);
       await refreshProfile();
       navigate('/home', { replace: true });
     } catch {
@@ -135,7 +137,7 @@ export default function ProfileSetupPage() {
     ? gate === 'phone' ? 'Add your number' : 'Add your grade'
     : roleChanged ? `Your details as ${/^[aeiou]/i.test(label) ? 'an' : 'a'} ${label}` : 'Tell us a bit about yourself';
   const intro = conductOnly
-    ? 'Everyone at the Summit agrees to the Code of Conduct. Read it below, or expand it to read it in full.'
+    ? `${agreement.whoAgrees} Read it below, or expand it to read it in full.`
     : gateOnly
     ? gate === 'phone'
       ? `${role.label}s need a mobile number on file so the Summit team can reach you.`
@@ -202,16 +204,16 @@ export default function ProfileSetupPage() {
 
         {askConduct && (
           <div className="space-y-3">
-            {!conductOnly && <h2 className="text-[13px] font-semibold">Code of Conduct</h2>}
-            <CodeOfConductWindow />
+            {!conductOnly && <h2 className="text-[13px] font-semibold">{agreement.name}</h2>}
+            <CodeOfConductWindow agreement={agreement} />
             <label className="flex cursor-pointer items-start gap-3 text-sm">
               <Checkbox
                 checked={agreed}
                 onCheckedChange={(v) => setAgreed(v === true)}
                 className="mt-0.5"
-                aria-label={CODE_OF_CONDUCT_CHECKBOX}
+                aria-label={agreement.checkbox}
               />
-              <span className="font-medium">{CODE_OF_CONDUCT_CHECKBOX}</span>
+              <span className="font-medium">{agreement.checkbox}</span>
             </label>
           </div>
         )}

@@ -1,17 +1,17 @@
-// The Code of Conduct in a bordered, scrollable window, with Expand to read it
-// in a large popup. Used by the last sign-up step (ProfileSetupPage), like the
+// An agreement (the Code of Conduct, or the Speaker Policy for experts) in a
+// bordered, scrollable window, with Expand to read it in a large popup. Used by the last sign-up step (ProfileSetupPage), like the
 // app's CodeOfConductWindow.
 import { useState } from 'react';
 import { Maximize2 } from '@/components/icons';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { CODE_OF_CONDUCT_INTRO, CODE_OF_CONDUCT_SECTIONS, CODE_OF_CONDUCT_TITLE } from '../models/codeOfConduct';
+import type { SummitAgreement } from '../models/codeOfConduct';
 
-export function CodeOfConductText({ showTitle = true }: { showTitle?: boolean }) {
+export function CodeOfConductText({ agreement, showTitle = true }: { agreement: SummitAgreement; showTitle?: boolean }) {
   return (
     <div className="space-y-4 text-[14px] leading-relaxed">
-      {showTitle && <h3 className="font-display text-lg font-bold">{CODE_OF_CONDUCT_TITLE}</h3>}
-      <p>{CODE_OF_CONDUCT_INTRO}</p>
-      {CODE_OF_CONDUCT_SECTIONS.map((section) => (
+      {showTitle && <h3 className="font-display text-lg font-bold">{agreement.title}</h3>}
+      <p>{agreement.intro}</p>
+      {agreement.sections.map((section) => (
         <section key={section.title} className="space-y-1.5">
           <h4 className="font-semibold text-emerald">{section.title}</h4>
           {section.points.map((p) => (
@@ -25,7 +25,7 @@ export function CodeOfConductText({ showTitle = true }: { showTitle?: boolean })
   );
 }
 
-export default function CodeOfConductWindow() {
+export default function CodeOfConductWindow({ agreement }: { agreement: SummitAgreement }) {
   const [expanded, setExpanded] = useState(false);
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-secondary/40">
@@ -33,9 +33,9 @@ export default function CodeOfConductWindow() {
         className="max-h-64 overflow-y-auto px-4 py-3.5"
         tabIndex={0}
         role="region"
-        aria-label={CODE_OF_CONDUCT_TITLE}
+        aria-label={agreement.title}
       >
-        <CodeOfConductText />
+        <CodeOfConductText agreement={agreement} />
       </div>
       <button
         type="button"
@@ -47,9 +47,9 @@ export default function CodeOfConductWindow() {
       <Dialog open={expanded} onOpenChange={setExpanded}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="font-display text-xl">{CODE_OF_CONDUCT_TITLE}</DialogTitle>
+            <DialogTitle className="font-display text-xl">{agreement.title}</DialogTitle>
           </DialogHeader>
-          <CodeOfConductText showTitle={false} />
+          <CodeOfConductText agreement={agreement} showTitle={false} />
         </DialogContent>
       </Dialog>
     </div>
