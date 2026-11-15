@@ -836,11 +836,7 @@ class _NextSessionCard extends StatelessWidget {
           margin: EdgeInsets.zero,
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => SessionDetailScreen(session: session),
-              ),
-            ),
+            onTap: () => openSession(context, session, from: context),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(

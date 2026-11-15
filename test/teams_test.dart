@@ -578,6 +578,11 @@ void main() {
         project: const ProjectChoice.createTeam('Solar Rover'),
       );
 
+      // The session page's motif animates forever; turn motion off so
+      // pumpAndSettle can settle.
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
       await tester.pumpWidget(MaterialApp(
         theme: EmeraldTheme.light(),
         home: SessionDetailScreen(session: session),
@@ -665,7 +670,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text("Teams aren't allowed for this session."), findsOneWidget);
       expect(
-        find.textContaining('1 team already registered for this session'),
+        find.textContaining('1 team already registered for this session',
+            skipOffstage: false),
         findsOneWidget,
       );
 

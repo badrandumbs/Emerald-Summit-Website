@@ -8,11 +8,11 @@ import 'expert_pending_screen.dart';
 import 'grade_required_screen.dart';
 import 'onboarding_screen.dart';
 import 'phone_required_screen.dart';
-import 'sign_in_screen.dart';
+import 'welcome_screen.dart';
 
 /// Decides what the user sees based on auth + profile state:
 ///
-///   no session          → [SignInScreen]
+///   no session          → [WelcomeScreen] (pick a role, then sign in)
 ///   session, no profile → [OnboardingScreen]
 ///   expert not yet approved by an admin → [ExpertPendingScreen]
 ///   volunteer/admin with no mobile number → [PhoneRequiredScreen]
@@ -45,7 +45,7 @@ class _AuthGateState extends State<AuthGate> {
     return StreamBuilder<void>(
       stream: _authStateChanges,
       builder: (context, _) {
-        if (!authService.isSignedIn) return const SignInScreen();
+        if (!authService.isSignedIn) return const WelcomeScreen();
         return const _ProfileLoader();
       },
     );

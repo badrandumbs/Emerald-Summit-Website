@@ -22,7 +22,14 @@ import '../../widgets/school_picker.dart';
 /// On finish the profile is saved through the backend and the auth gate moves
 /// the user into the app.
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key});
+  const OnboardingScreen({super.key, this.initialRole, this.startOnDetails = false});
+
+  /// The role to start with (Change role passes the one picked in its sheet).
+  final SummitRole? initialRole;
+
+  /// Open straight on the role's questions; Back closes the screen. Used by
+  /// Change role, whose sheet already picked the role and showed what changes.
+  final bool startOnDetails;
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -48,6 +55,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   /// True when an existing account is switching to a different role.
   bool get _changingRole => _editing && _role != appState.profile?.role;
 
+  /// False when the role was picked before signing in: step one then just
+  /// says "Signing up as …" with a Change link that shows the list.
+  late bool _showRoleList;
+
   /// Advances every few seconds so fields with several example [ProfileField.hints]
   /// cycle through them.
   int _hintTick = 0;
@@ -67,8 +78,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _editing = appState.isOnboarded;
     // Prefill name + current role (e.g. changing role from Profile).
     _nameController.text = appState.profile?.fullName ?? '';
-    _role = appState.profile?.role ?? SummitRole.participant;
+    // A first sign-up starts as the role picked before signing in.
+    final pending = _editing ? null : appState.pendingSignUpRole;
+    _role = widget.initialRole ??
+        pending ??
+        appState.profile?.role ??
+        SummitRole.participant;
+    _showRoleList = _editing || pending == null;
     _syncFieldControllers();
+    if (widget.startOnDetails) {
+      _step = 1;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!_changingRole || !mounted) return;
+        List<RoleChangeItem>? changes;
+        try {
+          changes = await appState.previewRoleChange(_role);
+        } catch (_) {
+          changes = null;
+        }
+        if (mounted) setState(() => _roleChanges = changes);
+      });
+    }
     _hintTimer = Timer.periodic(const Duration(seconds: 3), (_) {
       if (_step == 1 && _role.onboardingFields.any((f) => f.hints.isNotEmpty)) {
         setState(() => _hintTick++);
@@ -221,7 +251,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         leading: _step == 1
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: _busy ? null : () => setState(() => _step = 0),
+                onPressed: _busy
+                    ? null
+                    : () => widget.startOnDetails
+                        ? Navigator.of(context).pop()
+                        : setState(() => _step = 0),
               )
             : (_editing
                 ? IconButton(
@@ -270,9 +304,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
         ),
         const SizedBox(height: 24),
-        Text('I am a…', style: theme.textTheme.titleMedium),
-        const SizedBox(height: 12),
-        ...SummitRole.values.map(_roleCard),
+        if (_showRoleList) ...[
+          Text('I am a…', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 12),
+          ...SummitRole.values.map(_roleCard),
+        ] else
+          Row(
+            children: [
+              Icon(_role.icon, color: theme.colorScheme.primary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text('Signing up as ${_role.label}',
+                    style: theme.textTheme.titleMedium),
+              ),
+              TextButton(
+                onPressed:
+                    _busy ? null : () => setState(() => _showRoleList = true),
+                child: const Text('Change'),
+              ),
+            ],
+          ),
         if (_error != null) ...[
           const SizedBox(height: 12),
           Text(_error!,
@@ -392,14 +443,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ],
           if (changes.isNotEmpty) ...[
             const SizedBox(height: 10),
-            Text(
-                _role == SummitRole.parentSpectator
-                    ? 'As a ${_role.label}, you can only spectate. These '
-                        'sessions change:'
-                    : 'Some of your sessions change, because '
-                        "${_rolePlural(_role)} can't take part in them the "
-                        'way you do now:',
-                style: body),
+            Text(roleChangeLeadIn(_role), style: body),
             for (final c in changes) line(describeRoleChange(c)),
             if (changes.any((c) => c.from == 'managing')) ...[
               const SizedBox(height: 10),
@@ -517,10 +561,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 }
 
 /// The role as a plain plural noun for sentences ("experts can't…").
+/// The sentence before the list of sessions a role change affects.
+String roleChangeLeadIn(SummitRole role) => role == SummitRole.parentSpectator
+    ? 'As a ${role.label}, you can only spectate. These sessions change:'
+    : 'Some of your sessions change, because ${_rolePlural(role)} can\'t '
+        'take part in them the way you do now:';
+
 String _rolePlural(SummitRole role) => switch (role) {
       SummitRole.participant => 'participants',
       SummitRole.expert => 'experts',
-      SummitRole.parentSpectator => 'parents and spectators',
+      SummitRole.parentSpectator => 'spectators',
       SummitRole.volunteer => 'volunteers',
       SummitRole.admin => 'admins',
     };

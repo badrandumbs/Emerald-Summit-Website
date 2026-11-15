@@ -26,6 +26,13 @@ class AuthFailure implements Exception {
   String toString() => message;
 }
 
+/// Thrown by [AuthService.sendEmailOtp] when Sign in (not Sign up) is used
+/// with an email that has no account yet.
+class NoAccountFailure extends AuthFailure {
+  const NoAccountFailure()
+      : super("There's no account with that email yet. Sign up to create one.");
+}
+
 /// Passwordless (email one-time-code) auth surface the app needs.
 abstract interface class AuthService {
   /// Emits whenever the auth state changes (sign-in, sign-out, token refresh).
@@ -38,9 +45,11 @@ abstract interface class AuthService {
   /// Whether a session currently exists.
   bool get isSignedIn;
 
-  /// Sends a one-time login code to [email], creating the account on first use.
-  /// Throws [AuthFailure] with a user-safe message on failure.
-  Future<void> sendEmailOtp(String email);
+  /// Sends a one-time login code to [email]. Sign up ([createAccount] true)
+  /// makes the account if it's new; Sign in only reaches an existing account
+  /// and throws [NoAccountFailure] otherwise. Throws [AuthFailure] with a
+  /// user-safe message on other failures.
+  Future<void> sendEmailOtp(String email, {bool createAccount = true});
 
   /// Verifies the [code] emailed to [email], establishing a session.
   /// Throws [AuthFailure] with a user-safe message on failure.

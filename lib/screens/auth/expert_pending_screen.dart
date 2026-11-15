@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../app_state.dart';
-import 'onboarding_screen.dart';
+import '../../widgets/change_role_sheet.dart';
 
 /// Shown by the auth gate while an expert account waits for an admin's
 /// approval. It's the only screen such an account sees. The profile is
@@ -167,11 +167,7 @@ class _ExpertPendingScreenState extends State<ExpertPendingScreen>
                   OutlinedButton(
                     onPressed: _checking
                         ? null
-                        : () => Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => const OnboardingScreen(),
-                              ),
-                            ),
+                        : () => showChangeRoleSheet(context),
                     child: const Text('Sign up as something else'),
                   ),
                   const SizedBox(height: 8),

@@ -22,7 +22,7 @@ class _SignedInAuth implements AuthService {
   @override
   bool get isSignedIn => true;
   @override
-  Future<void> sendEmailOtp(String email) async {}
+  Future<void> sendEmailOtp(String email, {bool createAccount = true}) async {}
   @override
   Future<void> verifyEmailOtp({
     required String email,

@@ -19,7 +19,7 @@ class _TestAccountAuth implements AuthService {
   @override
   bool get isSignedIn => false;
   @override
-  Future<void> sendEmailOtp(String email) async => otpRequests++;
+  Future<void> sendEmailOtp(String email, {bool createAccount = true}) async => otpRequests++;
   @override
   Future<void> verifyEmailOtp({
     required String email,

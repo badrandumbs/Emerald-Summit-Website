@@ -35,8 +35,8 @@ String disciplineHeroTag(String id) => 'discipline-badge-$id';
 
 /// Lists the sessions within one discipline, in that discipline's own look:
 /// its colors, animated background and a flowing border around the screen.
-/// Sessions are grouped by start time and can be filtered by open seats,
-/// time of day or track. Admins and mentors scoped to this discipline also
+/// Its sessions are listed under "Tracks" (a track is a session), grouped by
+/// start time, and can be filtered by open seats or time of day. Admins and mentors scoped to this discipline also
 /// get controls to create and edit sessions. Disciplines can't be deleted
 /// from the app, only from the Supabase dashboard.
 class DisciplineScreen extends StatefulWidget {
@@ -47,7 +47,7 @@ class DisciplineScreen extends StatefulWidget {
   State<DisciplineScreen> createState() => _DisciplineScreenState();
 }
 
-/// The built-in filters; a track filter is stored separately by name.
+/// The session list filters.
 enum _Filter { all, open, morning, afternoon }
 
 class _DisciplineScreenState extends State<DisciplineScreen>
@@ -70,7 +70,6 @@ class _DisciplineScreenState extends State<DisciplineScreen>
   final _titleShown = ValueNotifier(false);
 
   _Filter _filter = _Filter.all;
-  String? _track;
   double _swipe = 0;
 
   @override
@@ -93,27 +92,14 @@ class _DisciplineScreenState extends State<DisciplineScreen>
     super.dispose();
   }
 
-  void _setFilter(_Filter f, {String? track}) {
-    if (f == _filter && track == _track) return;
+  void _setFilter(_Filter f) {
+    if (f == _filter) return;
     HapticFeedback.selectionClick();
-    setState(() {
-      _filter = f;
-      _track = track;
-    });
+    setState(() => _filter = f);
     _list.forward(from: 0);
   }
 
-  /// Track names worth filtering by: set, and not just the discipline's name.
-  List<String> _tracks(Discipline d) {
-    final seen = <String>{};
-    return [
-      for (final s in d.sessions)
-        if (_meaningfulTrack(s, d) && seen.add(s.track.trim())) s.track.trim(),
-    ];
-  }
-
   bool _matches(Session s) {
-    if (_track != null) return s.track.trim() == _track;
     return switch (_filter) {
       _Filter.all => true,
       _Filter.open => !s.isFull,
@@ -232,16 +218,24 @@ class _DisciplineScreenState extends State<DisciplineScreen>
                 ),
               ),
               SliverToBoxAdapter(
-                child: _FilterBar(
-                  filter: _filter,
-                  track: _track,
-                  tracks: _tracks(d),
-                  onFilter: _setFilter,
+                child: _FilterBar(filter: _filter, onFilter: _setFilter),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
+                  child: Text(
+                    'TRACKS',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: _vibe.textDim,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.6,
+                        ),
+                  ),
                 ),
               ),
               if (sessions.isEmpty)
                 const SliverToBoxAdapter(
-                  child: _EmptyNote('No sessions in this discipline yet.'),
+                  child: _EmptyNote('No tracks in this discipline yet.'),
                 )
               else if (shown.isEmpty)
                 const SliverToBoxAdapter(
@@ -282,13 +276,6 @@ class _DisciplineScreenState extends State<DisciplineScreen>
       ),
     );
   }
-}
-
-/// True when [s]'s track says more than its discipline's own name.
-bool _meaningfulTrack(Session s, Discipline d) {
-  String norm(String v) => v.toLowerCase().replaceAll(' ', '');
-  final t = norm(s.track);
-  return t.isNotEmpty && t != norm(d.name);
 }
 
 class _Header extends StatelessWidget {
@@ -441,16 +428,9 @@ class _Meter extends StatelessWidget {
 }
 
 class _FilterBar extends StatelessWidget {
-  const _FilterBar({
-    required this.filter,
-    required this.track,
-    required this.tracks,
-    required this.onFilter,
-  });
+  const _FilterBar({required this.filter, required this.onFilter});
   final _Filter filter;
-  final String? track;
-  final List<String> tracks;
-  final void Function(_Filter, {String? track}) onFilter;
+  final void Function(_Filter) onFilter;
 
   @override
   Widget build(BuildContext context) {
@@ -463,23 +443,19 @@ class _FilterBar extends StatelessWidget {
             onSelected: (_) => onTap(),
           ),
         );
-    final none = track == null;
     return SizedBox(
       height: 60,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(20, 10, 12, 10),
         children: [
-          chip('All', none && filter == _Filter.all,
-              () => onFilter(_Filter.all)),
-          chip('Open seats', none && filter == _Filter.open,
+          chip('All', filter == _Filter.all, () => onFilter(_Filter.all)),
+          chip('Open seats', filter == _Filter.open,
               () => onFilter(_Filter.open)),
-          chip('Morning', none && filter == _Filter.morning,
+          chip('Morning', filter == _Filter.morning,
               () => onFilter(_Filter.morning)),
-          chip('Afternoon', none && filter == _Filter.afternoon,
+          chip('Afternoon', filter == _Filter.afternoon,
               () => onFilter(_Filter.afternoon)),
-          for (final t in tracks)
-            chip(t, track == t, () => onFilter(_Filter.all, track: t)),
         ],
       ),
     );
@@ -545,11 +521,9 @@ class _SessionCardState extends State<_SessionCard> {
 
   void _open() {
     HapticFeedback.lightImpact();
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => SessionDetailScreen(session: widget.session),
-      ),
-    );
+    // Grows out of the tapped card over the same world, so the background,
+    // motif and border carry on while the list swaps for the session.
+    openSession(context, widget.session, from: context);
   }
 
   @override
@@ -657,7 +631,6 @@ class _SessionCardState extends State<_SessionCard> {
                   [
                     s.timeLabel,
                     if (s.roomLabel.isNotEmpty) s.roomLabel,
-                    if (_meaningfulTrack(s, widget.discipline)) s.track,
                   ].join('  ·  '),
                   style:
                       theme.textTheme.bodySmall?.copyWith(color: vibe.textDim),

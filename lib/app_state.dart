@@ -1160,6 +1160,11 @@ class AppState extends ChangeNotifier {
   /// [consumeTestAccountNotice].
   String? _testAccountNotice;
 
+  /// The role picked on the "How are you joining the Summit?" screen before
+  /// signing in. A new account starts sign-up with it; an existing account
+  /// keeps its role.
+  SummitRole? pendingSignUpRole;
+
   /// Marks that the just-created session came from the dev-login bypass.
   void markTestAccountSignIn() => _isTestAccountSession = true;
 
@@ -1275,6 +1280,7 @@ class AppState extends ChangeNotifier {
     final previousRole = profile?.onboarded == true ? profile?.role : null;
     updated.onboarded = true;
     await profileRepository.save(updated);
+    pendingSignUpRole = null;
     // Re-read so the server's enforced role + volunteer scope/capabilities (set
     // by the role_allowlist trigger) are reflected locally, not just what we sent.
     profile = await profileRepository.fetchMine() ?? updated;
@@ -1337,6 +1343,7 @@ class AppState extends ChangeNotifier {
     rooms = const [];
     _isTestAccountSession = false;
     _testAccountNotice = null;
+    pendingSignUpRole = null;
     notifyListeners();
   }
 }

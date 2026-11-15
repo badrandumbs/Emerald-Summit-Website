@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../backend/service_locator.dart';
 import '../theme_setting.dart';
+import '../widgets/change_role_sheet.dart';
 import '../widgets/checkin_pass_card.dart';
 import 'archie_insights_screen.dart';
 import 'auth/onboarding_screen.dart';
@@ -347,10 +348,7 @@ class _VisibilityCard extends StatelessWidget {
                     title: const Text('Change role'),
                     subtitle: Text('Currently ${appState.userRole}'),
                     trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (_) => const OnboardingScreen()),
-                    ),
+                    onTap: () => showChangeRoleSheet(context),
                   ),
                 if (backendInfo.isLive)
                   ListTile(

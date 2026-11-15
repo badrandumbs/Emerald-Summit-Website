@@ -1079,7 +1079,7 @@ class SampleAuthService implements AuthService {
   bool get isSignedIn => false;
 
   @override
-  Future<void> sendEmailOtp(String email) async {
+  Future<void> sendEmailOtp(String email, {bool createAccount = true}) async {
     throw const AuthFailure('Sign-in is unavailable in demo mode.');
   }
 

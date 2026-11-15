@@ -372,9 +372,7 @@ class _ResultTile extends StatelessWidget {
       child: InkWell(
         onTap: () {
           HapticFeedback.lightImpact();
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => SessionDetailScreen(session: s)),
-          );
+          openSession(context, s, from: context);
         },
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),

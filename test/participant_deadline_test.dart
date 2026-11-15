@@ -155,6 +155,11 @@ void main() {
       addTearDown(tester.view.reset);
       final session = setDeadline(store, store.allSessions.first, deadline);
       await appState.loadCatalog();
+      // The session page's motif animates forever; turn motion off so
+      // pumpAndSettle can settle.
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
       await tester.pumpWidget(MaterialApp(
         theme: EmeraldTheme.light(),
         home: SessionDetailScreen(session: session),

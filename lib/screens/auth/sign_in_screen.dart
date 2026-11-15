@@ -4,22 +4,35 @@ import 'package:flutter/services.dart';
 import '../../app_state.dart';
 import '../../backend/backend.dart';
 import '../../backend/service_locator.dart';
+import '../../models/user_profile.dart';
 
 /// Passwordless email sign-in (email one-time code, via the backend seam).
 ///
-/// Two phases in one screen:
-///   1. Enter email  → the backend emails a 6-digit code (creating the account
-///      on first sign-in — same screen handles sign-up and sign-in).
-///   2. Enter code    → verification establishes the session.
+/// Opened from the "How are you joining the Summit?" screen for one [role],
+/// in one of two modes, like the website:
+///   * Sign in ([signUp] false) only reaches an account that already exists.
+///     A new email gets "Let's create you an account!", and Continue switches
+///     to Sign up and emails the code.
+///   * Sign up ([signUp] true) creates the account; the sign-up questions
+///     follow. An existing account that signs up just signs in.
+/// [role] admin is "Organizer sign in" (admins and test accounts), which may
+/// create an allowlisted admin's account. With no [role] the screen signs in
+/// or creates an account as before.
 ///
-/// No password is ever created or stored. On success the auth gate reacts to
-/// the new session and routes onward.
+/// Two phases: enter email → the backend emails a code; enter code →
+/// verification establishes the session, and the auth gate routes onward.
 ///
 /// TEST/DEV builds check the email first: a code email (a test account) gets a
 /// password box instead of an emailed code, and the shared test-account
 /// password signs straight in (see the dev-login function).
 class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key});
+  const SignInScreen({super.key, this.role, this.signUp = false, this.onBack});
+
+  final SummitRole? role;
+  final bool signUp;
+
+  /// Back to the role list; null hides the back button.
+  final VoidCallback? onBack;
 
   @override
   State<SignInScreen> createState() => _SignInScreenState();
@@ -34,6 +47,60 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _testAccountMode = false;
   bool _busy = false;
   String? _error;
+
+  /// Sign up (creates the account) rather than Sign in.
+  late bool _signingUp = widget.signUp;
+
+  /// Sign in was tried with an email that has no account.
+  bool _noAccount = false;
+
+  bool get _isOrganizer => widget.role == SummitRole.admin;
+
+  /// Whether an email code may create a new account.
+  bool get _createAccount =>
+      widget.role == null || _signingUp || _isOrganizer;
+
+  @override
+  void initState() {
+    super.initState();
+    // A new account starts sign-up as this role.
+    if (widget.role != null) appState.pendingSignUpRole = widget.role;
+  }
+
+  void _switchMode(bool toSignUp) {
+    setState(() {
+      _signingUp = toSignUp;
+      _noAccount = false;
+      _codeSent = false;
+      _codeController.clear();
+      _error = null;
+    });
+  }
+
+  /// "Let's create you an account!": Continue switches to Sign up and sends
+  /// the code straight away.
+  Future<void> _continueToSignUp() async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await authService.sendEmailOtp(_email, createAccount: true);
+      if (!mounted) return;
+      setState(() {
+        _signingUp = true;
+        _noAccount = false;
+        _codeSent = true;
+        _busy = false;
+      });
+    } on AuthFailure catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.message;
+        _busy = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -56,6 +123,7 @@ class _SignInScreenState extends State<SignInScreen> {
     setState(() {
       _busy = true;
       _error = null;
+      _noAccount = false;
     });
     try {
       // TEST/DEV: a code email asks for the test-account password instead.
@@ -68,10 +136,16 @@ class _SignInScreenState extends State<SignInScreen> {
         });
         return;
       }
-      await authService.sendEmailOtp(_email);
+      await authService.sendEmailOtp(_email, createAccount: _createAccount);
       if (!mounted) return;
       setState(() {
         _codeSent = true;
+        _busy = false;
+      });
+    } on NoAccountFailure {
+      if (!mounted) return;
+      setState(() {
+        _noAccount = true;
         _busy = false;
       });
     } on AuthFailure catch (e) {
@@ -195,6 +269,16 @@ class _SignInScreenState extends State<SignInScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: widget.onBack == null
+          ? null
+          : AppBar(
+              backgroundColor: theme.scaffoldBackgroundColor,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                tooltip: 'Back',
+                onPressed: _busy ? null : widget.onBack,
+              ),
+            ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -219,7 +303,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Emerald Summit ’27',
+                    _heading,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.headlineSmall,
                   ),
@@ -230,8 +314,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             'account password.'
                         : _codeSent
                             ? 'Enter the code we emailed to $_email.'
-                            : 'Sign in or create your account with your email. '
-                                'No password needed.',
+                            : _subtitle,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -243,6 +326,33 @@ class _SignInScreenState extends State<SignInScreen> {
                     _emailPhase(theme)
                   else
                     _codePhase(theme),
+                  if (_noAccount) ...[
+                    const SizedBox(height: 16),
+                    _noAccountCard(theme),
+                  ],
+                  if (widget.role != null &&
+                      !_isOrganizer &&
+                      !_testAccountMode) ...[
+                    const SizedBox(height: 12),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          _signingUp
+                              ? 'Already have an account?'
+                              : 'New to the Summit?',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant),
+                        ),
+                        TextButton(
+                          onPressed:
+                              _busy ? null : () => _switchMode(!_signingUp),
+                          child: Text(_signingUp ? 'Sign in' : 'Sign up'),
+                        ),
+                      ],
+                    ),
+                  ],
                   if (_error != null) ...[
                     const SizedBox(height: 16),
                     Text(
@@ -257,6 +367,56 @@ class _SignInScreenState extends State<SignInScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  String get _heading {
+    final role = widget.role;
+    if (role == null) return 'Emerald Summit ’27';
+    if (_isOrganizer) return 'Organizer sign in';
+    return _signingUp ? 'Sign up as ${role.label}' : 'Sign in as ${role.label}';
+  }
+
+  String get _subtitle {
+    if (widget.role == null) {
+      return 'Sign in or create your account with your email. No password '
+          'needed.';
+    }
+    if (_isOrganizer) return 'For Summit admins and test accounts.';
+    return _signingUp
+        ? 'Continue with Google or your email, then tell us a bit about '
+            'yourself.'
+        : 'Use the email on your account. No password needed.';
+  }
+
+  Widget _noAccountCard(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+        color: theme.colorScheme.surfaceContainerLow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text("Let's create you an account!",
+              style: theme.textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(
+            "There's no account for $_email yet. Press Continue to enter "
+            'some information and create your ${widget.role?.label ?? ''} '
+            'account.',
+            style: theme.textTheme.bodyMedium
+                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: _busy ? null : _continueToSignUp,
+            child: _busy ? const _ButtonSpinner() : const Text('Continue'),
+          ),
+        ],
       ),
     );
   }

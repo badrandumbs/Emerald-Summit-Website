@@ -50,9 +50,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       final session =
           appState.allSessions.where((s) => s.id == sessionId).firstOrNull;
       if (session != null) {
-        Navigator.of(context).push(MaterialPageRoute<void>(
-          builder: (_) => SessionDetailScreen(session: session),
-        ));
+        openSession(context, session);
       }
     }
   }

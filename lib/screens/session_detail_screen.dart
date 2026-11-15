@@ -8,6 +8,8 @@ import '../backend/service_locator.dart';
 import '../models/metrics.dart';
 import '../models/models.dart';
 import '../models/user_profile.dart';
+import '../widgets/discipline_effects.dart';
+import '../widgets/discipline_vibe.dart';
 import '../widgets/manager_replace_dialogs.dart';
 import '../widgets/session_metrics_view.dart';
 import 'session_editor_screen.dart';
@@ -15,7 +17,32 @@ import 'session_registration_screen.dart';
 import 'session_roster_screen.dart';
 import 'session_volunteers_screen.dart';
 
-/// The session page — a vibrant, tabbed view of a single session.
+/// Opens [session]'s page in its discipline's world, growing out of [from]
+/// (the tapped widget) like the discipline portal. From the discipline page
+/// it grows over the same background, so the list seems to swap for the
+/// session; from anywhere else it's a full screen in that world.
+void openSession(BuildContext context, Session session, {BuildContext? from}) {
+  final vibe = _vibeFor(session);
+  final size = MediaQuery.sizeOf(context);
+  var origin = Offset(size.width / 2, size.height / 2);
+  final box = from?.findRenderObject();
+  if (box is RenderBox && box.hasSize) {
+    origin = box.localToGlobal(box.size.center(Offset.zero));
+  }
+  Navigator.of(context).push(
+    DisciplinePortalRoute<void>(
+      origin: origin,
+      color: vibe.background,
+      builder: (_) => SessionDetailScreen(session: session),
+    ),
+  );
+}
+
+DisciplineVibe _vibeFor(Session s) =>
+    DisciplineVibe.forKey(s.disciplineId, name: s.disciplineName);
+
+/// The session page — a vibrant, tabbed view of a single session, drawn in
+/// its discipline's world (colors, animated motif and flowing border).
 ///
 /// A horizontal (scrollable) tab bar surfaces tabs based on the viewer's
 /// permission:
@@ -42,6 +69,9 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
   // Bumped after returning from the editor to force the About tab to reload its
   // photos (they live in Storage, separate from the catalog row).
   int _refreshToken = 0;
+
+  /// How far a swipe from the left edge has travelled.
+  double _swipe = 0;
 
   Future<void> _openEditor(Session current) async {
     final discipline = appState.disciplines.firstWhere(
@@ -139,40 +169,64 @@ class _SessionDetailScreenState extends State<SessionDetailScreen> {
             ),
         ];
 
+        final vibe = _vibeFor(current);
         // A single-tab (plain participant) view needs no tab bar.
-        if (tabs.length == 1) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(current.disciplineName),
-              actions: actions,
-            ),
-            body: views.first,
-          );
-        }
-
-        return DefaultTabController(
-          length: tabs.length,
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text(current.disciplineName),
-              actions: actions,
-              bottom: TabBar(
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                // Tabs sit on the app bar, so they take its foreground (white
-                // on emerald in light mode, light text on black in dark).
-                labelColor: Theme.of(context).appBarTheme.foregroundColor,
-                unselectedLabelColor: Theme.of(context)
-                    .appBarTheme
-                    .foregroundColor
-                    ?.withValues(alpha: 0.7),
-                indicatorColor: Theme.of(context).appBarTheme.foregroundColor,
-                dividerColor: Colors.transparent,
-                tabs: tabs,
-              ),
-            ),
-            body: TabBarView(children: views),
+        final single = tabs.length == 1;
+        final page = Scaffold(
+          backgroundColor: vibe.background,
+          appBar: AppBar(
+            backgroundColor: vibe.background.withValues(alpha: .9),
+            foregroundColor: vibe.text,
+            systemOverlayStyle: SystemUiOverlayStyle.light,
+            title: Text(current.disciplineName),
+            actions: actions,
+            bottom: single
+                ? null
+                : TabBar(
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
+                    labelColor: vibe.text,
+                    unselectedLabelColor: vibe.textDim,
+                    indicatorColor: vibe.accent,
+                    dividerColor: Colors.transparent,
+                    tabs: tabs,
+                  ),
           ),
+          body: Stack(
+            children: [
+              Positioned.fill(child: AmbientMotif(vibe: vibe)),
+              Positioned.fill(
+                child: single ? views.first : TabBarView(children: views),
+              ),
+              Positioned.fill(
+                child: IgnorePointer(child: FlowingBorder(vibe: vibe)),
+              ),
+              // Swipe back from the left edge (the portal route has no
+              // built-in back gesture).
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: 24,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onHorizontalDragStart: (_) => _swipe = 0,
+                  onHorizontalDragUpdate: (e) => _swipe += e.delta.dx,
+                  onHorizontalDragEnd: (e) {
+                    if (_swipe > 70 || (e.primaryVelocity ?? 0) > 500) {
+                      Navigator.of(context).maybePop();
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+        return Theme(
+          data: vibe.theme,
+          child: single
+              ? page
+              : DefaultTabController(length: tabs.length, child: page),
         );
       },
     );
@@ -1097,11 +1151,7 @@ class _SessionAboutTabState extends State<_SessionAboutTab> {
                         // when the list shifts after an add.
                         key: ValueKey(s.id),
                         session: s,
-                        onOpen: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => SessionDetailScreen(session: s),
-                          ),
-                        ),
+                        onOpen: () => openSession(context, s),
                         onAdd: () => _addToDay(s),
                       );
                     },

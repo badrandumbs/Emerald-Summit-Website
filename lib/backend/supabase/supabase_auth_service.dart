@@ -42,10 +42,18 @@ class SupabaseAuthService implements AuthService {
   bool get isSignedIn => _client.auth.currentSession != null;
 
   @override
-  Future<void> sendEmailOtp(String email) async {
+  Future<void> sendEmailOtp(String email, {bool createAccount = true}) async {
     try {
-      await _client.auth.signInWithOtp(email: email, shouldCreateUser: true);
+      await _client.auth
+          .signInWithOtp(email: email, shouldCreateUser: createAccount);
     } on AuthException catch (e) {
+      // Supabase's answer when shouldCreateUser is false and the email is new.
+      if (!createAccount &&
+          (e.code == 'otp_disabled' ||
+              RegExp('signups not allowed', caseSensitive: false)
+                  .hasMatch(e.message))) {
+        throw const NoAccountFailure();
+      }
       throw AuthFailure(e.message);
     }
   }
