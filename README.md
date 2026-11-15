@@ -330,7 +330,7 @@ Tickets come in two categories, bugs and feedback (`bug_reports.kind`). Profile 
 
 **Reading them** (`/admin/reports`, `src/pages/BugReportsPage.tsx`, admins only; Profile → **Bug reports and feedback**): **Bugs** and **Feedback** tabs, each with its open count, then open / resolved / all, a list with ticket number, date and screenshot count, and a detail panel with the description, screenshots (signed links valid an hour), the key facts, both data blocks, the email status, **Mark resolved** / **Reopen**, and **Copy as Markdown**, which copies the whole ticket ready to paste into a chat with whoever's fixing it. `?category=feedback` opens the Feedback tab and `?ticket=12` opens a ticket in its own category; the team email links there.
 
-**Backend status (Nov 14, 2026):** `bug_reports_setup.sql` is run and `bug-report-email` is deployed with `BUG_REPORT_TO` and `SITE_URL` set; a test report from `admin@ehs.org` saved as Bug #1 (resolved). Emails wait on the Resend domain and the `RESEND_API_KEY` and `BUG_REPORT_FROM` secrets; until then reports save and the form says the copy couldn't be emailed.
+**Backend status (Nov 14, 2026):** `bug_reports_setup.sql` is run and `bug-report-email` is deployed with `BUG_REPORT_TO` and `SITE_URL` set; Resend is set up and every Resend email, sign-in codes included, comes from `app@ehsacademics.org`. Test reports from `admin@ehs.org`: Bug #1 (saved before Resend) and Bug #2 (team email sent), both resolved.
 
 **Testing locally against the shared backend:** put `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in `.env.local` (gitignored) and sign in with a test account (`admin@ehs.org` and the others on `@ehs.org`). The test password is never written in the repo.
 
