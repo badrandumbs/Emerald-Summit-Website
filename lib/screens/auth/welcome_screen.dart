@@ -172,6 +172,52 @@ class _RoleChooser extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 24),
+                  // The website shares this app's accounts, so the same
+                  // email signs in to the same data.
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                    decoration: BoxDecoration(
+                      color: scheme.primary.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: scheme.primary.withValues(alpha: 0.30),
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 1),
+                          child: Icon(Icons.language,
+                              size: 20, color: scheme.primary),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'Coming from the Emerald Summit '
+                                      'website? ',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: scheme.onSurface,
+                                  ),
+                                ),
+                                const TextSpan(
+                                  text: 'Sign in with the same email you '
+                                      'used there, and all your data will '
+                                      'be synced.',
+                                ),
+                              ],
+                            ),
+                            style: muted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 28),
                   _Section(
                     heading: 'Attending the Summit',
