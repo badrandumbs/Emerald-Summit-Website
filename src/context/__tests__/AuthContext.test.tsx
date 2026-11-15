@@ -23,7 +23,7 @@ vi.mock('../../services/auth', async (importActual) => {
     ...actual,
     getCurrentProfile: vi.fn(async () => {
       throw new actual.SignInRefusedError(
-        "You aren't eligible to sign up as a volunteer.",
+        "You are not eligible to sign up as a volunteer.",
         'volunteer',
       );
     }),
@@ -50,7 +50,7 @@ describe('AuthProvider', () => {
     );
 
     expect(
-      await screen.findByText("You aren't eligible to sign up as a volunteer."),
+      await screen.findByText("You are not eligible to sign up as a volunteer."),
     ).toBeInTheDocument();
     expect(screen.getByTestId('state')).toHaveTextContent('signed out');
     await waitFor(() => expect(signOut).toHaveBeenCalled());

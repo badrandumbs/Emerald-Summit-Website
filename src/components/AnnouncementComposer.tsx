@@ -159,7 +159,7 @@ export default function AnnouncementComposer({
             <span>
               {configured
                 ? "Local bypass sign-in has no credentials to publish with. Sign in with a real admin account to post to everyone; uploads stay in memory until then."
-                : 'Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to publish to other devices. Uploaded files are previewed from memory and won\'t persist.'}
+                : 'Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to publish to other devices. Uploaded files are previewed from memory and will not persist.'}
             </span>
           </div>
         )}

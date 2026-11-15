@@ -75,7 +75,7 @@ test('sign up creates the account; sign in to an unknown email offers sign up in
   await user.click(screen.getByRole('button', { name: 'Send sign-in code' }));
   expect(auth.send).toHaveBeenLastCalledWith('new@example.com', 'participant', { createAccount: false });
   const alert = await screen.findByRole('alert');
-  expect(alert).toHaveTextContent("Let's create you an account!");
+  expect(alert).toHaveTextContent("Let us create your account!");
   expect(alert).toHaveTextContent('Press Continue to enter some information and create your Participant account.');
   await user.click(screen.getByRole('button', { name: 'Continue' }));
   expect(auth.send).toHaveBeenLastCalledWith('new@example.com', 'participant', { createAccount: true });

@@ -103,7 +103,7 @@ export default function SharedSessionForm({
     const teams = n === 1 ? '1 team' : `${n} teams`;
     return maxTeamSize < 2
       ? `${teams} already registered for this session will keep their team. Nobody is removed, and members can still leave to go solo. No new teams can be created or joined.`
-      : `${teams} already ${n === 1 ? 'has' : 'have'} more than ${maxTeamSize} members. Nobody is removed, but ${n === 1 ? 'it' : 'they'} can't take new members.`;
+      : `${teams} already ${n === 1 ? 'has' : 'have'} more than ${maxTeamSize} members. Nobody is removed, but ${n === 1 ? 'it' : 'they'} cannot take new members.`;
   })();
 
   const submit = async (e: FormEvent) => {
@@ -140,7 +140,7 @@ export default function SharedSessionForm({
       const affected = await previewTimeConflicts(s.id, start, end);
       if (affected > 0) {
         const who = affected === 1 ? '1 person' : `${affected} people`;
-        const ok = await ask('Schedule clash', `This new time overlaps another session that ${who} registered for it already have. If you save, they'll be notified to adjust their schedule. Save anyway?`);
+        const ok = await ask('Schedule clash', `This new time overlaps another session that ${who} registered for it already have. If you save, they will be notified to adjust their schedule. Save anyway?`);
         if (!ok) {
           setBusy(false);
           return;
@@ -259,7 +259,7 @@ export default function SharedSessionForm({
               <p className="text-xs text-muted-foreground">
                 {soloOnly
                   ? 'No new teams can be created or joined. Anyone already on a team keeps it.'
-                  : "Most people allowed on one team. Lowering it doesn't remove anyone; full teams just stop taking new members."}
+                  : "Most people allowed on one team. Lowering it does not remove anyone; full teams just stop taking new members."}
               </p>
             </div>
             {!soloOnly && (

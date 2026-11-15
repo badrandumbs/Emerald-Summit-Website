@@ -73,7 +73,7 @@ export default function VolunteerHoursPage() {
 
   const load = useCallback(() => {
     setError(null);
-    fetchMyHourLogs().then(setLogs).catch(() => setError("Couldn't load your hours."));
+    fetchMyHourLogs().then(setLogs).catch(() => setError("Could not load your hours."));
   }, []);
   useEffect(() => { if (ready) load(); }, [ready, load]);
 
@@ -114,7 +114,7 @@ export default function VolunteerHoursPage() {
               : 'Each session you manage on Summit day is added to your total after it ends, counted from its start time to its end time. They will start counting once the Summit date is set.'}
           </p>
           {sessions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">You aren't managing any sessions yet. When an admin assigns you one, its hours show up here.</p>
+            <p className="text-sm text-muted-foreground">You are not managing any sessions yet. When an admin assigns you one, its hours show up here.</p>
           ) : (
             <ul className="divide-y divide-border rounded-2xl border border-border px-4">
               {sessions.map((s) => (
@@ -183,14 +183,14 @@ function HourEditor({ log, onClose }: { log: HourLog | null; onClose: (changed: 
   const save = async () => {
     if (!s || !e) return setError('Pick a start and end time.');
     if (e <= s) return setError('The end time has to be after the start.');
-    if (e > new Date()) return setError("You can't log hours that haven't happened yet.");
+    if (e > new Date()) return setError("You cannot log hours that have not happened yet.");
     if (!description.trim()) return setError('Add a short description of what you did.');
     setSaving(true);
     try {
       await saveHourLog({ startedAt: s, endedAt: e, description: description.trim() }, log?.id);
       onClose(true);
     } catch {
-      setError("Couldn't save. Try again.");
+      setError("Could not save. Try again.");
       setSaving(false);
     }
   };
@@ -202,7 +202,7 @@ function HourEditor({ log, onClose }: { log: HourLog | null; onClose: (changed: 
       await deleteHourLog(log.id);
       onClose(true);
     } catch {
-      toast.error("Couldn't delete. Try again.");
+      toast.error("Could not delete. Try again.");
       setSaving(false);
     }
   };

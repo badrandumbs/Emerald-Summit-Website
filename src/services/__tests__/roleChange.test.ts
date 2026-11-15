@@ -34,21 +34,21 @@ describe('role change', () => {
     const items = await rc.previewRoleChange('attendee');
     expect(backend.rpc).toHaveBeenCalledWith('preview_role_change', { p_role: 'parentSpectator' });
     expect(rc.describeRoleChange(items[0])).toBe(
-      '"CADathon": you\'ll go from participating to spectating. Nobody else has joined your team "Bots", so it will be deleted and its code AB12 will stop working.',
+      '"CADathon": you will go from participating to spectating. Nobody else has joined your team "Bots", so it will be deleted and its code AB12 will stop working.',
     );
     expect(rc.roleChangeLeadIn('attendee', 'Attendee')).toBe('As a Attendee, you can only spectate. These sessions change:');
   });
 
   test('managing lines match the app', () => {
     const base = { sessionId: 's', title: 'Expo', team: null };
-    expect(rc.describeRoleChange({ ...base, from: 'managing', to: 'dropped' })).toBe('"Expo": you\'ll stop managing it. It\'s full, so it will be removed from your day.');
-    expect(rc.describeRoleChange({ ...base, from: 'expert', to: 'spectator' })).toBe('"Expo": you\'ll go from serving as an expert to spectating.');
+    expect(rc.describeRoleChange({ ...base, from: 'managing', to: 'dropped' })).toBe('"Expo": you will stop managing it. It is full, so it will be removed from your day.');
+    expect(rc.describeRoleChange({ ...base, from: 'expert', to: 'spectator' })).toBe('"Expo": you will go from serving as an expert to spectating.');
   });
 
   test('saves the role and refuses when the server keeps another one', async () => {
     expect((await rc.changeRole('expert')).role).toBe('expert');
     expect(db.updates[0]).toMatchObject({ role: 'expert' });
     db.keptRole = 'participant';
-    await expect(rc.changeRole('admin')).rejects.toThrow(/aren't eligible/);
+    await expect(rc.changeRole('admin')).rejects.toThrow(/are not eligible/);
   });
 });

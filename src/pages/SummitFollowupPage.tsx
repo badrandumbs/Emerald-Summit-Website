@@ -85,7 +85,7 @@ export default function SummitFollowupPage() {
       toast.success('Thanks for your feedback.');
       navigate('/account');
     } catch {
-      setError("Couldn't send your feedback. Check your connection and try again.");
+      setError("Could not send your feedback. Check your connection and try again.");
       setSaving(false);
     }
   };
@@ -96,7 +96,7 @@ export default function SummitFollowupPage() {
       setInterest(yes);
       toast.success('Thanks, your answer is saved.');
     } catch {
-      toast.error("Couldn't save your answer. Try again.");
+      toast.error("Could not save your answer. Try again.");
     }
   };
 

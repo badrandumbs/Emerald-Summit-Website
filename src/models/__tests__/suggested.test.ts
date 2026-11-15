@@ -22,7 +22,7 @@ describe('suggestedSessions', () => {
     expect(suggestedSessions(current, all, new Set(['mine'])).map((s) => s.id)).toEqual(['earlier', 'later']);
   });
 
-  test("leaves out sessions that clash with something I'm registered for or managing", () => {
+  test("leaves out sessions that clash with something I am registered for or managing", () => {
     const all = [
       current,
       session('managing', '13:00', '14:00'),

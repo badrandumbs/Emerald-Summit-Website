@@ -84,9 +84,9 @@ describe('uploadSessionPhoto', () => {
     expect(photo.url).toBe(`https://cdn/session_photos/${path}`);
   });
 
-  test("refuses a file that isn't a photo without uploading", async () => {
+  test("refuses a file that is not a photo without uploading", async () => {
     const file = new File(['x'], 'notes.pdf', { type: 'application/pdf' });
-    await expect(uploadSessionPhoto('s1', file)).rejects.toThrow("isn't a photo");
+    await expect(uploadSessionPhoto('s1', file)).rejects.toThrow("is not a photo");
     expect(storage.upload).not.toHaveBeenCalled();
   });
 

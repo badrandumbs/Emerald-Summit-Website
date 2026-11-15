@@ -70,4 +70,4 @@ export function isRemovedFromSession(message: string | undefined): boolean {
 }
 
 export const REMOVED_FROM_SESSION_MESSAGE =
-  "An organizer removed you from this session, so you can't sign up for it again. If you think this was a mistake, contact the Summit team.";
+  "An organizer removed you from this session, so you cannot sign up for it again. If you think this was a mistake, contact the Summit team.";

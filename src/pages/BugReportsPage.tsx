@@ -58,7 +58,7 @@ function Detail({ report, onStatus }: { report: BugReport; onStatus: (status: Re
       await navigator.clipboard.writeText(reportAsMarkdown(report, links));
       toast.success(`Copied #${report.ticket_no} as Markdown`);
     } catch {
-      toast.error("Couldn't copy to the clipboard.");
+      toast.error("Could not copy to the clipboard.");
     }
   };
 
@@ -127,7 +127,7 @@ export default function BugReportsPage() {
 
   const load = useCallback(() => {
     setError(null);
-    fetchReports().then(setReports).catch(() => setError("Couldn't load reports."));
+    fetchReports().then(setReports).catch(() => setError("Could not load reports."));
   }, []);
   useEffect(() => { if (ready) load(); }, [ready, load]);
 
@@ -144,7 +144,7 @@ export default function BugReportsPage() {
       setReports((all) => (all ?? []).map((r) => (r.id === report.id ? { ...r, status, resolved_at: status === 'resolved' ? new Date().toISOString() : null } : r)));
       toast.success(status === 'resolved' ? `#${report.ticket_no} marked resolved` : `#${report.ticket_no} reopened`);
     } catch {
-      toast.error("Couldn't update the report.");
+      toast.error("Could not update the report.");
     }
   };
 

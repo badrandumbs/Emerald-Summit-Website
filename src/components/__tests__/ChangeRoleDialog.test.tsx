@@ -50,10 +50,10 @@ test('picks a new role in the popup and confirms it in place, without the sign-i
 
 test('a refused role says why and goes back to the list', async () => {
   const user = userEvent.setup();
-  rc.eligible.mockRejectedValue(new Error("You aren't eligible to sign up as a volunteer."));
+  rc.eligible.mockRejectedValue(new Error("You are not eligible to sign up as a volunteer."));
   renderDialog();
   await user.click(screen.getByRole('button', { name: /Volunteer/ }));
-  expect(await screen.findByRole('alert')).toHaveTextContent("aren't eligible");
+  expect(await screen.findByRole('alert')).toHaveTextContent("are not eligible");
   await user.click(screen.getByRole('button', { name: 'Pick another role' }));
   expect(screen.getByRole('button', { name: /Expert/ })).toBeInTheDocument();
   expect(rc.change).not.toHaveBeenCalled();

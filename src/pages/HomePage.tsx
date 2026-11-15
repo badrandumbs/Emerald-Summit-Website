@@ -79,7 +79,7 @@ const QUICK_ACTIONS: Record<string, QuickAction[]> = {
     },
     {
       to: '/volunteer',
-      label: "Sessions I'm managing",
+      label: "Sessions I am managing",
       sub: 'Take attendance for sessions you run',
       icon: BookUser,
     },

@@ -106,7 +106,7 @@ export default function SessionRoster({
     setError(null);
     fetchSessionRoster(session.id)
       .then((all) => setRoster(all.filter((e) => types.includes(e.type))))
-      .catch(() => setError("Couldn't load this session's people. Try again."));
+      .catch(() => setError("Could not load this session's people. Try again."));
     loadRemovals();
     // types is a fixed list per tab.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -130,14 +130,14 @@ export default function SessionRoster({
     try {
       const outcome = await removeFromSession(session.id, removing.userId);
       if (outcome === 'cannot_remove_self') {
-        toast.error("You can't remove yourself. Remove the session from your day instead.");
+        toast.error("You cannot remove yourself. Remove the session from your day instead.");
       } else {
         toast.success(outcome === 'removed' ? `Removed ${who} from this session` : `${who} had already left this session`);
         setRemoving(null);
         load();
       }
     } catch {
-      toast.error(`Couldn't remove ${who}. Try again.`);
+      toast.error(`Could not remove ${who}. Try again.`);
     } finally {
       setBusy(false);
     }
@@ -151,7 +151,7 @@ export default function SessionRoster({
       toast.success(`${who} can sign up for this session again`);
       loadRemovals();
     } catch {
-      toast.error(`Couldn't allow ${who} back. Try again.`);
+      toast.error(`Could not allow ${who} back. Try again.`);
     } finally {
       setBusy(false);
     }
@@ -177,7 +177,7 @@ export default function SessionRoster({
     ? roster.filter((e) => e.teamId === removing.teamId && e.userId !== removing.userId).length
     : 0;
   const teamNote = !removing?.isTeam ? ''
-    : teammates === 0 ? " They're the only one on their team, so the team is deleted too."
+    : teammates === 0 ? " They are the only one on their team, so the team is deleted too."
       : removing.isTeamOwner ? ' They own a team, so it passes to the teammate who joined first.'
         : ' Their teammates will be told they were removed.';
 
@@ -260,7 +260,7 @@ export default function SessionRoster({
       {removals != null && removals.length > 0 && (
         <section className="rounded-2xl border border-dashed border-border px-4 py-3">
           <h3 className="font-semibold">Removed</h3>
-          <p className="text-xs text-muted-foreground">Taken off this session by an organizer. They can't sign up again unless you allow them back.</p>
+          <p className="text-xs text-muted-foreground">Taken off this session by an organizer. They cannot sign up again unless you allow them back.</p>
           <ul className="mt-1 divide-y divide-border">
             {removals.map((r) => (
               <li key={r.userId} className="flex items-center gap-3 py-2.5">
@@ -283,7 +283,7 @@ export default function SessionRoster({
           <DialogHeader>
             <DialogTitle>Remove {removing?.name || removing?.email}?</DialogTitle>
             <DialogDescription>
-              They'll be taken off "{session.title}" and get a notice saying an organizer removed them. They can't sign up for it again unless someone allows them back.
+              They will be taken off "{session.title}" and get a notice saying an organizer removed them. They cannot sign up for it again unless someone allows them back.
               {teamNote}
             </DialogDescription>
           </DialogHeader>

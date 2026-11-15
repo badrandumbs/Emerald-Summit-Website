@@ -76,7 +76,7 @@ describe('unified profile', () => {
     expect(screen.getByLabelText('Email')).toHaveAttribute('readonly');
   });
 
-  test('a volunteer can\'t save without a mobile number, and is told who sees it', async () => {
+  test('a volunteer cannot save without a mobile number, and is told who sees it', async () => {
     const user = userEvent.setup();
     render(<MemoryRouter initialEntries={['/account/edit']}><Routes><Route path="/account/:section" element={<SettingsPage />} /></Routes></MemoryRouter>);
     const phone = screen.getByLabelText('Mobile number');

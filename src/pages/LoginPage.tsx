@@ -213,9 +213,9 @@ export default function LoginPage() {
           </form>
           {noAccount && (
             <div role="alert" className="rounded-xl border border-border bg-card p-4 text-[13.5px]">
-              <p className="font-display text-lg font-bold">Let's create you an account!</p>
+              <p className="font-display text-lg font-bold">Let us create your account!</p>
               <p className="mt-1 text-muted-foreground">
-                There's no account for <span className="font-semibold text-foreground">{email.trim()}</span> yet.
+                There is no account for <span className="font-semibold text-foreground">{email.trim()}</span> yet.
                 Press Continue to enter some information and create your {role.label} account.
               </p>
               <Button type="button" onClick={() => void continueToSignUp()} disabled={isChecking} className="mt-3 w-full rounded-xl">

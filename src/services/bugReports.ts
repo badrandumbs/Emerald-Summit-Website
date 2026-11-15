@@ -60,18 +60,18 @@ const REFUSALS: Record<string, string> = {
   name_required: 'Please add your name.',
   description_required: 'Please describe the bug or your feedback.',
   too_long: 'That description is too long. Please shorten it.',
-  too_many_reports: "You've sent a lot of reports in the last hour. Please try again later.",
+  too_many_reports: "You have sent a lot of reports in the last hour. Please try again later.",
 };
 
 export function reportErrorMessage(error: unknown): string {
   const text = error instanceof Error ? error.message : typeof error === 'object' && error && 'message' in error ? String((error as { message: unknown }).message) : String(error);
   const code = Object.keys(REFUSALS).find((k) => text.includes(k));
-  return code ? REFUSALS[code] : "We couldn't send your report. Please try again.";
+  return code ? REFUSALS[code] : "We could not send your report. Please try again.";
 }
 
 /** Returns a reason the file can't be attached, or null. */
 export function screenshotProblem(file: File): string | null {
-  if (!SCREENSHOT_TYPES.includes(file.type)) return `${file.name || 'That file'} isn't an image.`;
+  if (!SCREENSHOT_TYPES.includes(file.type)) return `${file.name || 'That file'} is not an image.`;
   if (file.size > MAX_SCREENSHOT_BYTES) return `${file.name || 'That image'} is over 10 MB.`;
   return null;
 }
@@ -98,7 +98,7 @@ export async function submitReport(input: ReportInput): Promise<SubmitResult> {
     if (problem) throw new Error(problem);
     const path = `${userId}/${id}/${i + 1}.${EXTENSION[file.type] ?? 'png'}`;
     const { error } = await store.upload(path, file, { contentType: file.type, upsert: false });
-    if (error) throw new Error(`Couldn't upload ${file.name || 'a screenshot'}.`);
+    if (error) throw new Error(`Could not upload ${file.name || 'a screenshot'}.`);
     paths.push(path);
   }
 

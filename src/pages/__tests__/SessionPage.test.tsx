@@ -141,7 +141,7 @@ describe('session page', () => {
     expect(container.querySelector('img[src="https://cdn/s2/hero.jpg"]')).not.toBeNull();
   });
 
-  test("doesn't suggest a session that's already on my day", () => {
+  test("does not suggest a session that is already on my day", () => {
     state.schedule.mySchedule = ['s2'];
     page();
     expect(screen.queryByRole('heading', { name: 'Sessions similar to this' })).not.toBeInTheDocument();
@@ -222,7 +222,7 @@ describe('session page', () => {
     await waitFor(() => expect(state.toggle).toHaveBeenCalledWith('s1', { add: false, newOwnerId: 'pal' }));
   });
 
-  test('admins get the organizer tabs; participants don\'t', async () => {
+  test('admins get the organizer tabs; participants do not', async () => {
     page();
     expect(screen.queryByRole('tab', { name: 'Participants' })).not.toBeInTheDocument();
   });
@@ -253,8 +253,8 @@ describe('an admin managing a session they are busy for', () => {
     page();
     await user.click(screen.getByRole('button', { name: /Add to my day/ }));
     await user.click(screen.getByRole('button', { name: /Manage this session/ }));
-    expect(await screen.findByText('Replace what you’re doing?')).toBeInTheDocument();
-    expect(screen.getByText(/"Bio Lab", where you're signed up to spectate./)).toBeInTheDocument();
+    expect(await screen.findByText('Replace what you are doing?')).toBeInTheDocument();
+    expect(screen.getByText(/"Bio Lab", where you are signed up to spectate./)).toBeInTheDocument();
     expect(state.preview).toHaveBeenCalledWith('s1', 'me');
     await user.click(screen.getByRole('button', { name: 'Manage instead' }));
     await waitFor(() => expect(state.replace).toHaveBeenCalledWith('s1', 'me'));
@@ -268,7 +268,7 @@ describe('an admin managing a session they are busy for', () => {
     page();
     await user.click(screen.getByRole('button', { name: /Add to my day/ }));
     await user.click(screen.getByRole('button', { name: /Manage this session/ }));
-    expect(await screen.findByText(/Your sign-up to participate in this session. You'll manage it instead./)).toBeInTheDocument();
+    expect(await screen.findByText(/Your sign-up to participate in this session. You will manage it instead./)).toBeInTheDocument();
   });
 
   test('before the SQL is run, the old refusal stays', async () => {
@@ -283,14 +283,14 @@ describe('an admin managing a session they are busy for', () => {
 });
 
 describe('8th graders', () => {
-  test("can only spectate a session that isn't open to them", async () => {
+  test("can only spectate a session that is not open to them", async () => {
     state.grade = '8th';
     const user = userEvent.setup();
     page();
     await user.click(screen.getByRole('button', { name: /Add to my day/ }));
     const participate = screen.getByRole('button', { name: /Participate/ });
     expect(participate).toBeDisabled();
-    expect(participate).toHaveTextContent("This session isn't open to 8th graders. You can spectate it.");
+    expect(participate).toHaveTextContent("This session is not open to 8th graders. You can spectate it.");
     await user.click(screen.getByRole('button', { name: /Spectate/ }));
     await waitFor(() => expect(state.toggle).toHaveBeenCalledWith('s1', expect.objectContaining({ add: true, type: 'spectator' })));
   });

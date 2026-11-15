@@ -231,7 +231,7 @@ function check<T extends { error: { message: string; code?: string } | null }>(r
     // 42501: an insert RLS refused. PGRST116: an update or delete RLS hid
     // the row from, so nothing matched.
     if (res.error.code === '42501' || res.error.code === 'PGRST116') {
-      throw new Error("You don't have permission to edit this verse.");
+      throw new Error("You do not have permission to edit this discipline.");
     }
     throw new Error(res.error.message);
   }

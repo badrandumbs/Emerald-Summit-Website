@@ -120,7 +120,7 @@ function requireSupabase() {
 
 const GOOGLE_SIGN_IN_ROLES = SIGN_IN_ROLES.map((r) => r.name);
 
-const LOAD_FAILED_MESSAGE = "We couldn't load your account. Try signing in again.";
+const LOAD_FAILED_MESSAGE = "We could not load your account. Try signing in again.";
 
 /**
  * A sign-in that must not continue: the role was refused, or the account
@@ -255,7 +255,7 @@ export async function signInWithGoogleIdToken(
   });
   if (error) {
     localStorage.removeItem(PENDING_ROLE_KEY);
-    throw new Error(`Google sign-in didn't finish (${error.message}). Try again, or use your email.`);
+    throw new Error(`Google sign-in did not finish (${error.message}). Try again, or use your email.`);
   }
 }
 
@@ -295,13 +295,13 @@ export function takeOAuthError(): string | null {
   const rest = query.toString();
   window.history.replaceState(window.history.state, '', pathname + (rest ? `?${rest}` : ''));
   localStorage.removeItem(PENDING_ROLE_KEY);
-  return `Google sign-in didn't finish (${raw.replace(/\+/g, ' ')}). Try again, or use your email.`;
+  return `Google sign-in did not finish (${raw.replace(/\+/g, ' ')}). Try again, or use your email.`;
 }
 
 /** Thrown by sendSignInCode when Sign in is used with an email that has no account. */
 export class NoAccountError extends Error {
   constructor() {
-    super("There's no account with that email yet. Sign up to create one.");
+    super("There is no account with that email yet. Sign up to create one.");
     this.name = 'NoAccountError';
   }
 }

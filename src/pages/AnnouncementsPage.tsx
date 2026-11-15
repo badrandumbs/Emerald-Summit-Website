@@ -130,7 +130,7 @@ export default function AnnouncementsPage() {
           <DialogHeader>
             <DialogTitle className="font-display">Delete announcement?</DialogTitle>
             <DialogDescription>
-              “{pendingDelete?.title}” will be removed for everyone. This can't be
+              “{pendingDelete?.title}” will be removed for everyone. This cannot be
               undone.
             </DialogDescription>
           </DialogHeader>
@@ -153,7 +153,7 @@ export default function AnnouncementsPage() {
           <DialogHeader>
             <DialogTitle className="font-display">Remove from your feed?</DialogTitle>
             <DialogDescription>
-              Once you remove “{pendingRemove?.title}”, you can't get it back in
+              Once you remove “{pendingRemove?.title}”, you cannot get it back in
               your feed. It stays in Announcements for everyone else.
             </DialogDescription>
           </DialogHeader>

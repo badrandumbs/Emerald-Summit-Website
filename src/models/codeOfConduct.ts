@@ -30,7 +30,7 @@ export const CODE_OF_CONDUCT: SummitAgreement = {
   title: "Emerald Summit '27 Code of Conduct",
   whoAgrees: 'Everyone at the Summit agrees to the Code of Conduct.',
   intro: 'Emerald Summit is an EHS Academic Foundation (EAF) event. It is not a school or Dublin Unified School District (DUSD) event. Everyone who attends agrees to this code: participants, spectators, volunteers and organizers. Experts agree to the Speaker Policy instead.',
-  checkbox: "I've read the Code of Conduct and agree to follow it.",
+  checkbox: "I have read the Code of Conduct and agree to follow it.",
   sections: [
     {
       title: 'How everyone is expected to act',
@@ -56,13 +56,13 @@ export const CODE_OF_CONDUCT: SummitAgreement = {
       title: 'Photos and video',
       points: [
         { lead: 'The Summit is photographed', text: 'EHS and EAF take photos, video and audio during the event and may share them to promote it on social media, websites, newsletters and other materials, without payment.' },
-        { lead: 'Opting out', text: "If you don't want to appear in them, email contact@ehsacademics.org before the Summit or tell the front desk when you arrive." },
+        { lead: 'Opting out', text: "If you do not want to appear in them, email contact@ehsacademics.org before the Summit or tell the front desk when you arrive." },
       ],
     },
     {
       title: 'Agreeing',
       points: [
-        { lead: 'What the checkbox means', text: "By ticking the box, you confirm you've read this code, agree to follow it, and accept the liability and insurance terms above. If you're under 18, read it with a parent or guardian." },
+        { lead: 'What the checkbox means', text: "By ticking the box, you confirm you have read this code, agree to follow it, and accept the liability and insurance terms above. If you are under 18, read it with a parent or guardian." },
       ],
     },
   ],
@@ -74,14 +74,14 @@ export const SPEAKER_POLICY: SummitAgreement = {
   title: "Emerald Summit '27 Speaker Policy",
   whoAgrees: 'Every expert agrees to the Speaker Policy.',
   intro: 'Thank you for sharing your time and expertise with Emerald High School students. Experts give students a real look at careers and industries and feedback on their work. This policy keeps the Summit productive and respectful for everyone, and every expert agrees to it.',
-  checkbox: "I've read the Speaker Policy and agree to follow it.",
+  checkbox: "I have read the Speaker Policy and agree to follow it.",
   sections: [
     {
       title: 'Working with students',
       points: [
         { lead: 'Dress professionally', text: 'Please wear professional attire.' },
         { lead: 'Stay professional', text: 'Engage with students professionally and respectfully. Avoid personal questions and comments.' },
-        { lead: 'Respect student privacy', text: "Don't ask for or share any personal information about students." },
+        { lead: 'Respect student privacy', text: "Do not ask for or share any personal information about students." },
         { lead: 'Get materials approved', text: 'EAF has to approve any slides, videos, handouts or other materials before the event.' },
         { lead: 'Keep language right for high schoolers', text: 'Everything you say and show should suit a high school audience: clear, engaging and free of jargon. No crude humor, inappropriate pop culture references or slang.' },
       ],
@@ -114,7 +114,7 @@ export const SPEAKER_POLICY: SummitAgreement = {
     {
       title: 'Agreeing',
       points: [
-        { lead: 'What the checkbox means', text: "By ticking the box, you confirm you've read this policy, agree to follow it, and agree to being recorded and photographed as described above." },
+        { lead: 'What the checkbox means', text: "By ticking the box, you confirm you have read this policy, agree to follow it, and agree to being recorded and photographed as described above." },
       ],
     },
   ],

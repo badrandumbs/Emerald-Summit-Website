@@ -56,7 +56,7 @@ describe('removing someone from a session', () => {
     show();
     await user.click(await screen.findByRole('button', { name: 'Remove Totally Real Person from this session' }));
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText(/can't sign up for it again/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/cannot sign up for it again/)).toBeInTheDocument();
 
     api.remove.mockResolvedValue('removed');
     api.roster.mockResolvedValue([entry('ana', 'Ana Ruiz')]);

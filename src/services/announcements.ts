@@ -372,7 +372,7 @@ export async function deleteAnnouncement(id: string): Promise<void> {
   // row back, then clean up its files (the app does both).
   const { data, error } = await client().from('announcements').delete().eq('id', id).select('*');
   if (error) throw new Error(error.message);
-  if (!data || data.length === 0) throw new Error("This post wasn't deleted. Only admins can delete posts for everyone.");
+  if (!data || data.length === 0) throw new Error("This post was not deleted. Only admins can delete posts for everyone.");
   const paths = (data as AnnouncementRow[])
     .flatMap((row) => rowToAnnouncement(row).attachments ?? [])
     .map((a) => a.path)

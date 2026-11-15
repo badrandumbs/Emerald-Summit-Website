@@ -23,7 +23,7 @@ export default function RoomsPage() {
 
   const load = useCallback(() => {
     setError(null);
-    fetchRooms().then(setRooms).catch(() => setError("Couldn't load the rooms."));
+    fetchRooms().then(setRooms).catch(() => setError("Could not load the rooms."));
   }, []);
   useEffect(() => { if (ready) load(); }, [ready, load]);
 

@@ -25,8 +25,8 @@ const FAQ_ITEMS: FaqItem[] = [
     a: 'No. Do the best you can. Present your idea or project, where it stands so far, and your next steps toward the final goal, then get feedback and advice from experts. Use it as a stepping stone for Capstone, PLTW, or the March and April competitions, or put what you learn toward a passion project.',
   },
   {
-    q: 'Why doesn’t the Summit give out awards?',
-    a: 'Awards would only tell you who won. You’d lose the raw feedback: what you did well, where you can improve, and whether your roadmap needs a pivot. The Summit is about learning, picking up knowledge, and meeting experts and peers, so collaborate, share ideas, and grow. Every participant does receive a certificate of participation.',
+    q: 'Why does not the Summit give out awards?',
+    a: 'Awards would only tell you who won. You would lose the raw feedback: what you did well, where you can improve, and whether your roadmap needs a pivot. The Summit is about learning, picking up knowledge, and meeting experts and peers, so collaborate, share ideas, and grow. Every participant does receive a certificate of participation.',
   },
   {
     q: 'What are the six disciplines?',
@@ -45,7 +45,7 @@ const FAQ_ITEMS: FaqItem[] = [
     a: 'Not at all. The six disciplines span arts, business, civics, and science, as well as tech.',
   },
   {
-    q: 'What’s the difference between participating and spectating?',
+    q: 'What is the difference between participating and spectating?',
     a: 'Participants book a seat in a session to share their work and get feedback. Spectators sit in and watch. Both book seats in the schedule builder.',
   },
   {

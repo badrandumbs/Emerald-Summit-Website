@@ -99,7 +99,7 @@ describe('shared mobile profiles', () => {
 
   test('missing or failed profile reads fail closed instead of creating a fake account', async () => {
     db.profiles = [];
-    await expect(auth.getCurrentProfile(user)).rejects.toMatchObject({ name: 'SignInRefusedError', message: expect.stringContaining("couldn't load") });
+    await expect(auth.getCurrentProfile(user)).rejects.toMatchObject({ name: 'SignInRefusedError', message: expect.stringContaining("could not load") });
     db.profiles = [sharedProfile()];
     db.readError = true;
     await expect(auth.getCurrentProfile(user)).rejects.toMatchObject({ name: 'SignInRefusedError' });
@@ -127,7 +127,7 @@ describe('shared mobile profiles', () => {
   test('refuses a new role when the server keeps a different role', async () => {
     db.forcedRole = 'participant';
     auth.savePendingRole('admin');
-    await expect(auth.getCurrentProfile(user)).rejects.toMatchObject({ name: 'SignInRefusedError', role: 'admin', message: "You aren't eligible to sign up as an admin." });
+    await expect(auth.getCurrentProfile(user)).rejects.toMatchObject({ name: 'SignInRefusedError', role: 'admin', message: "You are not eligible to sign up as an admin." });
     expect(db.profiles[0].role).toBe('participant');
     expect(db.profiles).toHaveLength(1);
   });
@@ -181,7 +181,7 @@ describe('shared profile writes', () => {
     await expect(auth.saveProfile({ name: 'No session' })).rejects.toThrow('Not signed in');
     db.session = { user: { id: 'user-1' } };
     db.readError = true;
-    await expect(auth.updateProfileSettings({ name: 'Read failed' })).rejects.toThrow("couldn't load");
+    await expect(auth.updateProfileSettings({ name: 'Read failed' })).rejects.toThrow("could not load");
     expect(db.updates).toEqual([]);
   });
 });

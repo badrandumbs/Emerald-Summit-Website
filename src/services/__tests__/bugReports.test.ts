@@ -82,7 +82,7 @@ describe('submitReport', () => {
   });
 
   test('refuses files that are not images or are over 10 MB', async () => {
-    expect(screenshotProblem(new File(['x'], 'notes.txt', { type: 'text/plain' }))).toMatch(/isn't an image/);
+    expect(screenshotProblem(new File(['x'], 'notes.txt', { type: 'text/plain' }))).toMatch(/is not an image/);
     expect(screenshotProblem(png('big.png', 10 * 1024 * 1024 + 1))).toMatch(/over 10 MB/);
     expect(screenshotProblem(png())).toBeNull();
   });
@@ -92,7 +92,7 @@ describe('reportErrorMessage', () => {
   test("turns the server's codes into words", () => {
     expect(reportErrorMessage({ message: 'too_many_reports' })).toMatch(/last hour/);
     expect(reportErrorMessage(new Error('name_required'))).toBe('Please add your name.');
-    expect(reportErrorMessage('weird')).toMatch(/couldn't send/);
+    expect(reportErrorMessage('weird')).toMatch(/could not send/);
   });
 });
 

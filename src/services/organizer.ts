@@ -198,11 +198,11 @@ export function describeReplacement(item: ReplacedItem, who: 'they' | 'you'): st
   const doing = DOING[item.participationType ?? 'participant'];
   let line: string;
   if (item.kind === 'managing') {
-    line = `"${item.title}", which ${they ? 'they manage' : 'you manage'}. ${they ? 'They' : 'You'}'ll stop managing it.`;
+    line = `"${item.title}", which ${they ? 'they manage' : 'you manage'}. ${they ? 'They' : 'You'} will stop managing it.`;
   } else if (item.kind === 'registered_this') {
-    line = `${they ? 'Their' : 'Your'} sign-up to ${doing} in this session. ${they ? "They'll" : "You'll"} manage it instead.`;
+    line = `${they ? 'Their' : 'Your'} sign-up to ${doing} in this session. ${they ? "They will" : "You will"} manage it instead.`;
   } else {
-    line = `"${item.title}", where ${they ? "they're" : "you're"} signed up to ${doing}.`;
+    line = `"${item.title}", where ${they ? "they are" : "you are"} signed up to ${doing}.`;
   }
   const team = describeTeamEffect(item, who);
   return team ? `${line} ${team}` : line;
@@ -212,7 +212,7 @@ export function describeReplacement(item: ReplacedItem, who: 'they' | 'you'): st
 export function describeTeamEffect(item: ReplacedItem, who: 'they' | 'you'): string | null {
   if (!item.teamName) return null;
   const they = who === 'they';
-  if (item.teammates === 0) return `${they ? 'Their' : 'Your'} team "${item.teamName}" has no one else, so it's deleted.`;
+  if (item.teammates === 0) return `${they ? 'Their' : 'Your'} team "${item.teamName}" has no one else, so it is deleted.`;
   if (item.teamOwner) return `${they ? 'They own' : 'You own'} "${item.teamName}"; it passes to the teammate who joined first.`;
   return `${they ? 'Their' : 'Your'} teammates on "${item.teamName}" are told.`;
 }
@@ -291,13 +291,13 @@ export async function createRoom(name: string): Promise<void> {
 export async function renameRoom(id: string, name: string): Promise<void> {
   const { data, error } = await client().from('rooms').update({ name }).eq('id', id).select('id');
   if (error) throw new Error(error.message);
-  if (!data?.length) throw new Error("You don't have permission to change rooms.");
+  if (!data?.length) throw new Error("You do not have permission to change rooms.");
 }
 
 export async function deleteRoom(id: string): Promise<void> {
   const { data, error } = await client().from('rooms').delete().eq('id', id).select('id');
   if (error) throw new Error(error.message);
-  if (!data?.length) throw new Error("You don't have permission to change rooms.");
+  if (!data?.length) throw new Error("You do not have permission to change rooms.");
 }
 
 // ---------------------------------------------------------------------------

@@ -63,15 +63,15 @@ import { REGISTRATION_CLOSED_MESSAGE, TBD, useSiteSwitches } from '../../service
 
 /** Why Participate is greyed out for a middle schooler, in the chooser. */
 const GRADE_BLOCK_CHOICE_TEXT: Record<GradeBlock, string> = {
-  eighth_grade_not_allowed: "This session isn't open to 8th graders. You can spectate it.",
+  eighth_grade_not_allowed: "This session is not open to 8th graders. You can spectate it.",
   middle_school_not_allowed: 'Participating is for high schoolers. You can spectate.',
 };
 
 const MODE_TEXT: Record<AddMode, { title: string; blurb: string; icon: typeof Plus }> = {
-  participate: { title: 'Participate', blurb: "Join in and take part. You'll tell us about your project first.", icon: User },
+  participate: { title: 'Participate', blurb: "Join in and take part. You will tell us about your project first.", icon: User },
   spectate: { title: 'Spectate', blurb: 'Watch and follow along, without taking part.', icon: Eye },
   expert: { title: 'Serve as an expert', blurb: 'Lead or advise as the session expert.', icon: Award },
-  manage: { title: 'Manage this session', blurb: "Run this session. It's added to your schedule.", icon: Users },
+  manage: { title: 'Manage this session', blurb: "Run this session. It is added to your schedule.", icon: Users },
 };
 
 const TYPE_FOR: Record<Exclude<AddMode, 'manage'>, ParticipationType> = {
@@ -189,7 +189,7 @@ export default function SessionView({
     // The catalog may still be loading from the database.
     return MOCK_SESSIONS.length === 0
       ? <div className="mx-auto max-w-3xl space-y-4 px-6 py-16"><Skeleton className="h-10 w-64" /><Skeleton className="h-64 w-full rounded-2xl" /></div>
-      : <p className="py-16 text-center text-muted-foreground">This session isn't available anymore.</p>;
+      : <p className="py-16 text-center text-muted-foreground">This session is not available anymore.</p>;
   }
 
   const s = session;
@@ -225,7 +225,7 @@ export default function SessionView({
     try {
       return await call();
     } catch {
-      toast.error("Couldn't update your day. Check your connection and try again.");
+      toast.error("Could not update your day. Check your connection and try again.");
       return null;
     } finally {
       setBusy(false);
@@ -266,7 +266,7 @@ export default function SessionView({
         await afterChange();
         break;
       case 'invalid_project':
-        setBlocked({ title: "Couldn't register", body: result.message });
+        setBlocked({ title: "Could not register", body: result.message });
         break;
       case 'full':
         setBlocked({ title: 'Session full', body: `This session has reached its capacity of ${s.capacity}. You can still join the waitlist on the day.` });
@@ -297,13 +297,13 @@ export default function SessionView({
       setBlocked({
         title: 'Time conflict',
         body: result.conflictKind === 'registered_this'
-          ? "You're signed up for this session. Remove it from your day first to manage it."
+          ? "You are signed up for this session. Remove it from your day first to manage it."
           : `Managing this overlaps with "${result.conflictingTitle ?? 'another session'}", which is already on your schedule.`,
       });
       return;
     }
     await afterChange();
-    toast.success(manage ? `You're now managing "${s.title}"` : `Stopped managing "${s.title}"`);
+    toast.success(manage ? `You are now managing "${s.title}"` : `Stopped managing "${s.title}"`);
   };
 
   const manageInstead = async () => {
@@ -312,7 +312,7 @@ export default function SessionView({
     setReplacing(null);
     if (!done) return;
     await afterChange();
-    toast.success(`You're now managing "${s.title}"`);
+    toast.success(`You are now managing "${s.title}"`);
   };
 
   async function startAdd() {
@@ -344,7 +344,7 @@ export default function SessionView({
     const result = await guarded(() => toggleRegistration(s.id, { add: false, newOwnerId }));
     if (!result) return;
     if (result.outcome === 'invalid_project') {
-      setBlocked({ title: "Couldn't remove this session", body: result.message });
+      setBlocked({ title: "Could not remove this session", body: result.message });
       void loadProject();
       return;
     }
@@ -384,8 +384,8 @@ export default function SessionView({
       if (result.project.action === 'createTeam' && updated.teamCode) setNewTeamCode({ code: updated.teamCode, name: updated.projectName });
       else toast.success('Your registration was updated');
     } catch (e) {
-      if (e instanceof TeamCodeError) setBlocked({ title: "Couldn't update your team", body: e.message });
-      else toast.error("Couldn't save your changes. Try again.");
+      if (e instanceof TeamCodeError) setBlocked({ title: "Could not update your team", body: e.message });
+      else toast.error("Could not save your changes. Try again.");
     }
   };
 
@@ -399,12 +399,12 @@ export default function SessionView({
     } catch { /* keep none */ }
     try {
       setProject(await updateMyRegistration(s.id, answers, { action: 'solo', projectName: name }, handOff.newOwnerId));
-      toast.success("You left the team. You're now registered solo.");
+      toast.success("You left the team. You are now registered solo.");
     } catch (e) {
       if (e instanceof TeamCodeError) {
-        setBlocked({ title: "Couldn't leave the team", body: e.message });
+        setBlocked({ title: "Could not leave the team", body: e.message });
         void loadProject();
-      } else toast.error("Couldn't leave the team. Try again.");
+      } else toast.error("Could not leave the team. Try again.");
     }
   };
 
@@ -416,7 +416,7 @@ export default function SessionView({
     if (!mustHandOff(fresh)) return;
     const picked = await new Promise<string | null>((resolve) => setOwnerPick({
       title: 'Transfer ownership',
-      blurb: `Pick the teammate who'll own "${fresh!.projectName}". You'll stay on the team.`,
+      blurb: `Pick the teammate who will own "${fresh!.projectName}". You will stay on the team.`,
       project: fresh!,
       resolve,
     }));
@@ -425,8 +425,8 @@ export default function SessionView({
       await transferTeamOwnership(s.id, picked);
       toast.success(`${fresh!.members.find((m) => m.id === picked)?.name ?? 'Your teammate'} now owns the team`);
     } catch (e) {
-      if (e instanceof TeamCodeError) setBlocked({ title: "Couldn't transfer ownership", body: e.message });
-      else toast.error("Couldn't transfer ownership. Try again.");
+      if (e instanceof TeamCodeError) setBlocked({ title: "Could not transfer ownership", body: e.message });
+      else toast.error("Could not transfer ownership. Try again.");
     }
     void loadProject();
   };
@@ -437,8 +437,8 @@ export default function SessionView({
       await removeTeamMember(s.id, member.id);
       toast.success(`Removed ${member.name} from your team`);
     } catch (e) {
-      if (e instanceof TeamCodeError) setBlocked({ title: "Couldn't remove them", body: e.message });
-      else toast.error("Couldn't remove them. Try again.");
+      if (e instanceof TeamCodeError) setBlocked({ title: "Could not remove them", body: e.message });
+      else toast.error("Could not remove them. Try again.");
     }
     void loadProject();
   };
@@ -515,7 +515,7 @@ export default function SessionView({
           <p className="rounded-xl bg-muted/60 px-4 py-3 text-sm">An admin has to approve your expert account before you can add sessions.</p>
         ) : managing ? (
           <div className="space-y-3 rounded-2xl bg-emerald/10 p-4 text-sm">
-            <p>{role === 'admin' ? "You're managing this session." : "You're managing this session. It was added to your schedule by an admin."}</p>
+            <p>{role === 'admin' ? "You are managing this session." : "You are managing this session. It was added to your schedule by an admin."}</p>
             {role === 'admin' && <Button variant="outline" size="sm" disabled={busy} onClick={() => void setManage(false)}>Stop managing</Button>}
           </div>
         ) : registeredType ? (
@@ -668,7 +668,7 @@ export default function SessionView({
             {role === 'volunteer' && (
               <p className="flex gap-2 pt-1 text-xs text-muted-foreground">
                 <Info className="h-4 w-4 shrink-0" />
-                To manage this session, an admin has to assign you. You'll be notified if they do.
+                To manage this session, an admin has to assign you. You will be notified if they do.
               </p>
             )}
           </div>
@@ -737,7 +737,7 @@ export default function SessionView({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Leave team?</DialogTitle>
-            <DialogDescription>You'll stay registered for this session as a solo participant.</DialogDescription>
+            <DialogDescription>You will stay registered for this session as a solo participant.</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             <Label htmlFor="solo-name">{projectPromptOf(s)}</Label>
@@ -763,7 +763,7 @@ export default function SessionView({
           <DialogHeader>
             <DialogTitle>Remove {removing?.name}?</DialogTitle>
             <DialogDescription>
-              They'll be taken off your team but stay registered for this session, and they'll be notified. They won't be able to rejoin your team with its code.
+              They will be taken off your team but stay registered for this session, and they will be notified. They will not be able to rejoin your team with its code.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

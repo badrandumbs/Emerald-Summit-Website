@@ -77,7 +77,7 @@ const EXTENSION: Record<string, string> = {
  */
 export async function uploadSessionPhoto(sessionId: string, file: File): Promise<SessionPhoto> {
   if (!supabase) throw new Error('This needs the Summit database.');
-  if (!SESSION_PHOTO_TYPES.includes(file.type)) throw new Error(`${file.name} isn't a photo.`);
+  if (!SESSION_PHOTO_TYPES.includes(file.type)) throw new Error(`${file.name} is not a photo.`);
   const small = await shrink(file);
   const body: Blob = small ?? file;
   const type = small ? 'image/jpeg' : file.type;

@@ -28,10 +28,10 @@ beforeEach(() => {
   state.assigned = [];
 });
 
-describe("Sessions I'm managing", () => {
+describe("Sessions I am managing", () => {
   test('says how assignments work when there are none, like the app', () => {
     renderPage();
-    expect(screen.getByRole('heading', { name: "Sessions I'm managing" })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: "Sessions I am managing" })).toBeInTheDocument();
     expect(screen.getByText(/not assigned to any sessions yet/)).toBeInTheDocument();
   });
 

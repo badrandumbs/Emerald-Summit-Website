@@ -55,7 +55,7 @@ export default function SessionVolunteers({ session, canAssign }: { session: Ses
     setError(null);
     fetchSessionVolunteers(session.id)
       .then(setList)
-      .catch(() => setError("Couldn't load this session's volunteers. Try again."));
+      .catch(() => setError("Could not load this session's volunteers. Try again."));
     if (canAssign) {
       fetchSessionRoster(session.id)
         .then((roster) => setSignedUp(roster.filter((r) => r.role === 'volunteer')))
@@ -75,7 +75,7 @@ export default function SessionVolunteers({ session, canAssign }: { session: Ses
         setConverting({ userId, personName, type, items });
       } else {
         // Backend without volunteer_conflict_override.sql: the old refusal.
-        setBlocked(`${personName} is signed up for this session, so they can't manage it. They need to remove it from their day first.`);
+        setBlocked(`${personName} is signed up for this session, so they cannot manage it. They need to remove it from their day first.`);
       }
     } finally {
       setBusy(false);
@@ -89,7 +89,7 @@ export default function SessionVolunteers({ session, canAssign }: { session: Ses
     try {
       await assignManagerReplacingConflicts(session.id, userId);
       setConverting(null);
-      toast.success(`${personName} now manages this session and is off its roster. They've been told.`);
+      toast.success(`${personName} now manages this session and is off its roster. They have been told.`);
       load();
     } catch {
       toast.error('Could not make them a manager. Admins only.');
@@ -129,8 +129,8 @@ export default function SessionVolunteers({ session, canAssign }: { session: Ses
         } else {
           // Backend without volunteer_conflict_override.sql: the old refusal.
           setBlocked(result.conflictKind === 'registered_this'
-            ? `${name} is signed up for this session, so they can't manage it. They need to remove it from their day first.`
-            : `${name} has a schedule conflict and can't be added to this session. It overlaps with "${result.conflictingTitle ?? 'another session'}".`);
+            ? `${name} is signed up for this session, so they cannot manage it. They need to remove it from their day first.`
+            : `${name} has a schedule conflict and cannot be added to this session. It overlaps with "${result.conflictingTitle ?? 'another session'}".`);
         }
       } else {
         toast.success(`Assigned ${name} to this session`);
@@ -150,7 +150,7 @@ export default function SessionVolunteers({ session, canAssign }: { session: Ses
     try {
       const replaced = await assignManagerReplacingConflicts(session.id, v.id);
       setReplacing(null);
-      toast.success(`Assigned ${personName}. ${replaced.length} ${replaced.length === 1 ? 'thing was' : 'things were'} taken off their day, and they've been told.`);
+      toast.success(`Assigned ${personName}. ${replaced.length} ${replaced.length === 1 ? 'thing was' : 'things were'} taken off their day, and they have been told.`);
       load();
     } catch {
       toast.error('Could not assign. Admins only.');
@@ -206,7 +206,7 @@ export default function SessionVolunteers({ session, canAssign }: { session: Ses
       {canAssign && (
         <p className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
           Managers can see everyone signed up for this session (participants, spectators and experts) with their
-          contact details, mark attendance, and remove someone from the session. They can't edit the session's
+          contact details, mark attendance, and remove someone from the session. They cannot edit the session's
           details, like its description, time, room or photos.
         </p>
       )}
@@ -241,7 +241,7 @@ export default function SessionVolunteers({ session, canAssign }: { session: Ses
         <section aria-labelledby="signed-up-volunteers" className="space-y-2 pt-2">
           <h3 id="signed-up-volunteers" className="text-sm font-semibold">Volunteers signed up for this session</h3>
           <p className="text-sm text-muted-foreground">
-            They're on the roster. Assigning one to be a manager takes them off the roster so they can run the session instead.
+            They are on the roster. Assigning one to be a manager takes them off the roster so they can run the session instead.
           </p>
           <ul className="divide-y divide-border rounded-2xl border border-border px-4">
             {convertible.map((r) => (

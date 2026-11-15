@@ -38,7 +38,7 @@ export function ExpertPending() {
       if (status === 'approved') await refreshProfile();
       else toast('Not approved yet.');
     } catch {
-      toast.error("Couldn't check right now. Try again.");
+      toast.error("Could not check right now. Try again.");
     } finally {
       setChecking(false);
     }
@@ -49,7 +49,7 @@ export function ExpertPending() {
       <h1 className="font-display text-2xl font-bold">Your expert account is awaiting approval</h1>
       <p className="mt-3 text-muted-foreground">
         An admin checks every expert sign-up to make sure the person is who they say they are.
-        You'll be able to use the app as soon as your account is approved.
+        You will be able to use the app as soon as your account is approved.
       </p>
       {profile?.name && (
         <div className="mt-5 rounded-xl border border-border bg-card px-4 py-3">
@@ -57,7 +57,7 @@ export function ExpertPending() {
           {expertise && <div className="text-sm text-muted-foreground">{expertise}</div>}
         </div>
       )}
-      <p className="mt-5 text-sm text-muted-foreground">If your account isn't approved within 48 hours, email us at:</p>
+      <p className="mt-5 text-sm text-muted-foreground">If your account is not approved within 48 hours, email us at:</p>
       <a href={`mailto:${EXPERT_CONTACT_EMAIL}`} className="mt-1 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald hover:underline">
         <Mail className="h-4 w-4" /> {EXPERT_CONTACT_EMAIL}
       </a>
@@ -94,7 +94,7 @@ export function ExpertDeclinedDialog() {
     <Dialog open={open} onOpenChange={(next) => { if (!next) void close(); }}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Your expert request wasn't approved</DialogTitle>
+          <DialogTitle>Your expert request was not approved</DialogTitle>
           <DialogDescription>
             An admin reviewed your sign-up and did not approve it as an expert account, so your
             account is now a participant account. If you think this is a mistake, email {EXPERT_CONTACT_EMAIL}.

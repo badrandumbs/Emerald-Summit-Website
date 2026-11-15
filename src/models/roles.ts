@@ -86,7 +86,7 @@ export function roleByName(name: string | undefined): RoleInfo | undefined {
 export function notEligibleMessage(roleName: string): string {
   const label = (roleByName(roleName)?.label ?? roleName).toLowerCase();
   const article = /^[aeiou]/.test(label) ? 'an' : 'a';
-  return `You aren't eligible to sign up as ${article} ${label}.`;
+  return `You are not eligible to sign up as ${article} ${label}.`;
 }
 
 /** Labels for the Allowed Volunteers sheet's subtype column. */

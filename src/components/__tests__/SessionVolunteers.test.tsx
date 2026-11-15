@@ -59,11 +59,11 @@ describe('assigning someone who is busy at that time', () => {
     api.replace.mockResolvedValue(items);
     const user = await pickSam();
 
-    expect(await screen.findByText('Replace what they’re doing?')).toBeInTheDocument();
+    expect(await screen.findByText('Replace what they are doing?')).toBeInTheDocument();
     expect(screen.getByText(/Sam Lee can only do one thing at a time/)).toBeInTheDocument();
-    expect(screen.getByText(/Their sign-up to participate in this session. They'll manage it instead. They own "Rover"; it passes to the teammate who joined first./)).toBeInTheDocument();
-    expect(screen.getByText(/"Drone Lab", which they manage. They'll stop managing it./)).toBeInTheDocument();
-    expect(screen.getByText(/They'll get a notice/)).toBeInTheDocument();
+    expect(screen.getByText(/Their sign-up to participate in this session. They will manage it instead. They own "Rover"; it passes to the teammate who joined first./)).toBeInTheDocument();
+    expect(screen.getByText(/"Drone Lab", which they manage. They will stop managing it./)).toBeInTheDocument();
+    expect(screen.getByText(/They will get a notice/)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Assign and replace' }));
     await waitFor(() => expect(api.replace).toHaveBeenCalledWith('s1', 'sam'));
@@ -82,7 +82,7 @@ describe('assigning someone who is busy at that time', () => {
     api.assign.mockResolvedValue({ outcome: 'conflict', conflictingTitle: 'Bio Lab', conflictKind: 'registered' });
     api.preview.mockResolvedValue(null);
     await pickSam();
-    expect(await screen.findByText(/can't be added to this session/)).toBeInTheDocument();
+    expect(await screen.findByText(/cannot be added to this session/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Assign and replace' })).not.toBeInTheDocument();
   });
 
@@ -154,13 +154,13 @@ describe('volunteers signed up for this session', () => {
     render(<SessionVolunteers session={session} canAssign={false} />);
     await screen.findByText('No one has been assigned to manage this session yet.');
     expect(api.roster).not.toHaveBeenCalled();
-    expect(screen.queryByText(/They can't edit the session's details/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/They cannot edit the session's details/)).not.toBeInTheDocument();
   });
 
-  test('admins see what managers can and can\'t do', async () => {
+  test('admins see what managers can and cannot do', async () => {
     render(<SessionVolunteers session={session} canAssign />);
     expect(await screen.findByText('The people managing this session.')).toBeInTheDocument();
-    expect(screen.getByText(/mark attendance, and remove someone from the session. They can't edit the session's details/)).toBeInTheDocument();
+    expect(screen.getByText(/mark attendance, and remove someone from the session. They cannot edit the session's details/)).toBeInTheDocument();
     expect(screen.getByText('No volunteers assigned yet. Assign volunteers so they can manage this session.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Assign a volunteer to manage' })).toBeInTheDocument();
   });
@@ -169,16 +169,16 @@ describe('volunteers signed up for this session', () => {
 describe('describeReplacement', () => {
   test('a registration elsewhere, solo', () => {
     expect(describeReplacement(item({ participationType: 'spectator' }), 'they'))
-      .toBe('"Bio Lab", where they\'re signed up to spectate.');
+      .toBe('"Bio Lab", where they are signed up to spectate.');
   });
 
   test('a team member who is not the owner, said to the admin themself', () => {
     expect(describeReplacement(item({ teamName: 'Rover', teammates: 1 }), 'you'))
-      .toBe('"Bio Lab", where you\'re signed up to participate. Your teammates on "Rover" are told.');
+      .toBe('"Bio Lab", where you are signed up to participate. Your teammates on "Rover" are told.');
   });
 
   test('the last person on a team', () => {
     expect(describeReplacement(item({ teamName: 'Rover', teamOwner: true, teammates: 0 }), 'they'))
-      .toContain('Their team "Rover" has no one else, so it\'s deleted.');
+      .toContain('Their team "Rover" has no one else, so it is deleted.');
   });
 });

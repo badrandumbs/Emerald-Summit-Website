@@ -48,7 +48,7 @@ export default function MakeManagerDialog({ request, busy, onConfirm, onCancel }
             </ul>
           </div>
         )}
-        <p className="text-sm text-muted-foreground">They'll get a notice about the change.</p>
+        <p className="text-sm text-muted-foreground">They will get a notice about the change.</p>
         <DialogFooter>
           <Button variant="outline" onClick={onCancel}>Cancel</Button>
           <Button disabled={busy} onClick={onConfirm} className="bg-emerald text-white hover:bg-emerald-deep">
