@@ -1,5 +1,5 @@
 // Track lists per universe, sourced from the EHS Academic Foundation site:
-// https://sites.google.com/view/ehs-academic-foundation/programs/emerald-summit
+// https://emeraldsummit.ehsacademics.org (EAF's Emerald Summit '27 page)
 // and the app's knowledge base (genzarjun/Emerald-Summit-App-MOBILE,
 // supabase/archie/knowledge.md). These are Summit '26's tracks; the '27 list
 // isn't final. Keyed by DisciplineInfo.name (see disciplines.ts).

@@ -29,7 +29,7 @@ const FAQ_ITEMS: FaqItem[] = [
     a: 'Awards would only tell you who won. You’d lose the raw feedback: what you did well, where you can improve, and whether your roadmap needs a pivot. The Summit is about learning, picking up knowledge, and meeting experts and peers, so collaborate, share ideas, and grow. Every participant does receive a certificate of participation.',
   },
   {
-    q: 'What are the six universes?',
+    q: 'What are the six disciplines?',
     a: 'TechVerse, BioSphere, NovaSphere, ImagineX, VentureVerse, and CivicVerse, with 20+ tracks and 30+ visiting experts across them.',
   },
   {
@@ -42,7 +42,7 @@ const FAQ_ITEMS: FaqItem[] = [
   },
   {
     q: 'Do I need to be technical to join?',
-    a: 'Not at all. The six universes span arts, business, civics, and science, as well as tech.',
+    a: 'Not at all. The six disciplines span arts, business, civics, and science, as well as tech.',
   },
   {
     q: 'What’s the difference between participating and spectating?',

@@ -247,7 +247,7 @@ export function mixHex(a: string, b: string, t: number): string {
 /**
  * The six verses with `color` set to each verse's accent, for anything drawn
  * on a dark background (the landing hero's dots and orbit) so it matches
- * Explore the verses. The plain USER_DISCIPLINES colors stay for light
+ * Explore the disciplines. The plain USER_DISCIPLINES colors stay for light
  * surfaces, where these lighter accents would be too faint.
  */
 export const VERSE_DISCIPLINES: DisciplineInfo[] = USER_DISCIPLINES.map((d) => ({

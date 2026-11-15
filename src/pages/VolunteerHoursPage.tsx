@@ -1,5 +1,5 @@
 // Volunteer hours, ported from the app's volunteer_hours_screen.dart:
-// sessions managed on summit day count automatically once they end, and
+// sessions managed on Summit day count automatically once they end, and
 // everything else is logged by hand (volunteer_hour_logs, own rows only).
 import { useCallback, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
@@ -49,7 +49,7 @@ function sessionMinutes(s: Session): number {
   return Math.max(0, end - start);
 }
 
-/** True once the session has ended on summit day. */
+/** True once the session has ended on Summit day. */
 function counted(s: Session, date: string | null, now: Date): boolean {
   if (!date) return false;
   const end = localDay(date);
@@ -98,7 +98,7 @@ export default function VolunteerHoursPage() {
             <span className="text-sm">{total === 60 ? 'hour' : 'hours'}</span>
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {formatHours(loggedMinutes)} logged by you · {formatHours(summitMinutes)} on summit day
+            {formatHours(loggedMinutes)} logged by you · {formatHours(summitMinutes)} on Summit day
           </p>
         </section>
         <Button onClick={() => setEditing('new')} className="bg-emerald text-white hover:bg-emerald-deep"><Plus className="h-4 w-4" /> Add hours</Button>
@@ -111,7 +111,7 @@ export default function VolunteerHoursPage() {
           <p className="rounded-lg bg-muted/60 px-3 py-2 text-sm text-muted-foreground">
             {status.date
               ? `Each session you manage on ${formatDay(localDay(status.date))} is added to your total after it ends, counted from its start time to its end time.`
-              : 'Each session you manage on summit day is added to your total after it ends, counted from its start time to its end time. They will start counting once the summit date is set.'}
+              : 'Each session you manage on Summit day is added to your total after it ends, counted from its start time to its end time. They will start counting once the Summit date is set.'}
           </p>
           {sessions.length === 0 ? (
             <p className="text-sm text-muted-foreground">You aren't managing any sessions yet. When an admin assigns you one, its hours show up here.</p>
@@ -136,7 +136,7 @@ export default function VolunteerHoursPage() {
         <section className="space-y-3">
           <div>
             <h2 className="font-semibold">Your logs</h2>
-            <p className="text-sm text-muted-foreground">Planning, setup, and anything else outside summit day.</p>
+            <p className="text-sm text-muted-foreground">Planning, setup, and anything else outside Summit day.</p>
           </div>
           {error ? (
             <div className="space-y-2 text-sm"><p role="alert" className="text-destructive">{error}</p><Button variant="outline" size="sm" onClick={load}>Try again</Button></div>

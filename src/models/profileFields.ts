@@ -50,7 +50,7 @@ export function onboardingFields(role: string | undefined): ProfileField[] {
       return [
         { key: 'expertise', label: 'Area of expertise', required: true, hint: 'e.g. Robotics, Bioengineering' },
         { key: 'bio', label: 'One-line bio', required: true, multiline: true, hint: EXPERT_BIO_HINTS[0] },
-        { key: 'phone', label: 'Mobile number (optional)', helper: `Only used to reach you on the day of the summit if necessary. ${PHONE_PRIVACY_NOTE}`, type: 'tel' },
+        { key: 'phone', label: 'Mobile number (optional)', helper: `Only used to reach you on the day of the Summit if necessary. ${PHONE_PRIVACY_NOTE}`, type: 'tel' },
       ];
     case 'attendee':
       return [

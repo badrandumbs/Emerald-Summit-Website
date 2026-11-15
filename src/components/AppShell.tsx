@@ -54,7 +54,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   { to: '/disciplines', label: 'Discover', icon: Compass, group: 'My Summit' },
   { to: '/announcements', label: 'Announcements', icon: Megaphone, group: 'My Summit' },
-  { to: '/archie', label: 'Archie', icon: Sparkles, group: 'My Summit' },
+  { to: '/archie', label: 'Ask Archie', icon: Sparkles, group: 'My Summit' },
   { to: '/resources', label: 'Resources', icon: FolderOpen, group: 'Event' },
   { to: '/account', label: 'Profile', icon: UserRound, group: 'Account' },
 ];

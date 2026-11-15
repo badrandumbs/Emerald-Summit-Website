@@ -105,9 +105,9 @@ export default function ProfileSetupPage() {
     : roleChanged ? `Your details as ${/^[aeiou]/i.test(label) ? 'an' : 'a'} ${label}` : 'Tell us a bit about yourself';
   const intro = gateOnly
     ? gate === 'phone'
-      ? `${role.label}s need a mobile number on file so the summit team can reach you.`
+      ? `${role.label}s need a mobile number on file so the Summit team can reach you.`
       : 'Student volunteers and EAF ambassadors give a grade. It goes on your volunteer hours record.'
-    : 'Add your name and the details the summit team needs.';
+    : 'Add your name and the details the Summit team needs.';
 
   return (
     <AuthLayout

@@ -4,13 +4,10 @@ import {
   ArrowRight,
   BookUser,
   CalendarDays,
-  ChevronRight,
   Clock,
-  FolderOpen,
   Gavel,
   Megaphone,
   QrCode,
-  Settings,
   type LucideIcon,
 } from '@/components/icons';
 import { useAuth } from '../context/AuthContext';
@@ -97,12 +94,6 @@ interface AgendaItem {
   kind: AgendaKind;
 }
 
-const QUICK_LINKS: QuickAction[] = [
-  { to: '/resources', label: 'Resources', sub: 'Rubrics, guides, files', icon: FolderOpen },
-  { to: '/announcements', label: 'Announcements', sub: 'Updates and schedule changes', icon: Megaphone },
-  { to: '/account', label: 'Profile', sub: 'QR pass & preferences', icon: Settings },
-];
-
 /**
  * Counts down to summit day's first session, like the app's Home header.
  * Only shown once the summit date is set, and gone once the summit starts.
@@ -126,7 +117,7 @@ function SummitCountdown({ date }: { date: string }) {
   return (
     <div
       role="timer"
-      aria-label={`${left.days} days, ${left.hours} hours, ${left.minutes} minutes until the summit`}
+      aria-label={`${left.days} days, ${left.hours} hours, ${left.minutes} minutes until the Summit`}
       className="mt-3 flex gap-6"
     >
       {units.map(([value, label]) => (
@@ -511,38 +502,7 @@ export default function HomePage() {
 
       <hr className="my-8 border-t border-border/80" aria-hidden />
 
-      <section>
-        <h2 className="mb-3 font-display text-xl font-bold tracking-tight sm:text-2xl">
-          Quick access
-        </h2>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
-          {[...QUICK_LINKS, ...(['volunteer', 'admin', 'ambassador'].includes(roleName) ? [{ to: '/volunteer/contacts', label: 'Volunteer hub', sub: 'Volunteers, admins, and how to reach them', icon: BookUser }] : [])].map(({ to, label, sub, icon: Icon }) => (
-            <button
-              key={to}
-              type="button"
-              onClick={() => navigate(to)}
-              className="glass group flex flex-col items-start gap-2.5 rounded-2xl p-4 text-left transition-all hover:-translate-y-0.5 hover:border-emerald/40 sm:flex-row sm:items-center sm:gap-3"
-            >
-              {/* Phones stack the icon over the text so two tiles fit a row without cutting the words off. */}
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent text-emerald sm:h-11 sm:w-11">
-                <Icon className="h-5 w-5" />
-              </span>
-              <span className="w-full min-w-0 flex-1">
-                <span className="block text-[14px] font-semibold leading-snug sm:truncate">{label}</span>
-                <span className="line-clamp-2 text-xs text-muted-foreground sm:block sm:truncate">{sub}</span>
-              </span>
-              <ChevronRight className="hidden h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 sm:block" />
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <hr className="my-8 border-t border-border/80" aria-hidden />
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <AboutAppCard />
-        <SupportEafCard />
-      </div>
+      <SupportEafCard />
 
       <hr className="my-8 border-t border-border/80" aria-hidden />
 
@@ -551,6 +511,10 @@ export default function HomePage() {
       <hr className="my-8 border-t border-border/80" aria-hidden />
 
       <LinksCard />
+
+      <hr className="my-8 border-t border-border/80" aria-hidden />
+
+      <AboutAppCard />
     </AppShell>
   );
 }

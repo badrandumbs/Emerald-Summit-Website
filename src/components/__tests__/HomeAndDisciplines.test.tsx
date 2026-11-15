@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 const mocks = vi.hoisted(() => ({ gallery: vi.fn(), create: vi.fn() }));
@@ -52,7 +52,7 @@ describe('Home photo slideshow', () => {
 describe('Home links', () => {
   test("are the app's three", () => {
     render(<LinksCard />);
-    expect(screen.getByRole('link', { name: /Summit website/ })).toHaveAttribute('href', 'https://sites.google.com/view/ehs-academic-foundation/programs/emerald-summit');
+    expect(screen.getByRole('link', { name: /Summit website/ })).toHaveAttribute('href', 'https://emeraldsummit.ehsacademics.org');
     expect(screen.getByRole('link', { name: /Instagram/ })).toHaveAttribute('target', '_blank');
     expect(screen.getByRole('link', { name: /Contact/ })).toHaveAttribute('href', 'mailto:president@ehsacademics.org');
   });
@@ -74,9 +74,21 @@ describe('About, Support EAF and Sponsors', () => {
     expect(email).not.toHaveAttribute('target');
   });
 
-  test('About the app has a heading', () => {
+  test('Sponsors rank the tiers highest first and place each sponsor in its tier', () => {
+    render(<SponsorsCard sponsors={[{ name: 'Acme Co', tier: 'Capstone' }, { name: 'Corner Cafe', tier: 'Cornerstone' }]} />);
+    const tiers = within(screen.getByRole('list', { name: /Sponsor tiers/ })).getAllByRole('listitem', { name: /^[A-Z]/ });
+    expect(tiers.map((t) => t.getAttribute('aria-label'))).toEqual(SPONSOR_TIERS.map((t) => t.name));
+    expect(within(screen.getByRole('list', { name: 'Capstone sponsors' })).getByText('Acme Co')).toBeInTheDocument();
+    expect(within(screen.getByRole('list', { name: 'Cornerstone sponsors' })).getByText('Corner Cafe')).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Pillar sponsors' })).not.toBeInTheDocument();
+  });
+
+  test('About the app credits the student developers', () => {
     render(<AboutAppCard />);
-    expect(screen.getByRole('region', { name: 'About the app' })).toBeInTheDocument();
+    const about = screen.getByRole('region', { name: 'About the app' });
+    expect(about).toHaveTextContent('100% built by Emerald High School students');
+    expect(about).toHaveTextContent('Arjun Mahajan and Akhil Muthyala');
+    expect(about).toHaveTextContent('Nithali Anand, Arush Singh, Guhan Bala and Deep Shah');
   });
 });
 

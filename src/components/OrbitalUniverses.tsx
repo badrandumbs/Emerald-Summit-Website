@@ -75,7 +75,7 @@ function UniverseOrbit() {
 
   return (
     <section
-      id="universes"
+      id="disciplines"
       ref={sectionRef}
       className="lp lp-night lp-orbit"
       aria-labelledby="universes-title"
@@ -118,9 +118,9 @@ function UniverseOrbit() {
           </div>
 
           <div className="lp-orbit__panel">
-            <h2 id="universes-title">Which universe is yours?</h2>
+            <h2 id="universes-title">Which discipline is yours?</h2>
 
-            <nav className="lp-orbit__index" aria-label="Universes">
+            <nav className="lp-orbit__index" aria-label="Disciplines">
               {USER_DISCIPLINES.map((u, i) => (
                 <button
                   key={u.name}
@@ -161,10 +161,10 @@ function UniverseOrbit() {
 /** The same six universes and their tracks, as a plain index: phones and reduced motion. */
 function UniverseIndex() {
   return (
-    <section id="universes" className="lp-section lp-universes" aria-labelledby="universes-title">
+    <section id="disciplines" className="lp-section lp-universes" aria-labelledby="universes-title">
       <div className="container">
         <div className="lp-head">
-          <h2 id="universes-title">Which universe is yours?</h2>
+          <h2 id="universes-title">Which discipline is yours?</h2>
         </div>
         <ul className="lp-uni">
           {USER_DISCIPLINES.map((d) => (

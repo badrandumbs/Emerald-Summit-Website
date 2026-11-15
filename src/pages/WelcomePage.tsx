@@ -33,7 +33,7 @@ const FACTS: { label: string; text: string; href?: string }[] = [
 const ABOUT_STATS = [
   { value: '20+', label: 'Tracks', note: 'From Robothon to Mock Trial' },
   { value: '30+', label: 'Visiting experts', note: 'Giving feedback and leading the talks' },
-  { value: '6', label: 'Universes', note: 'TechVerse to CivicVerse' },
+  { value: '6', label: 'Disciplines', note: 'TechVerse to CivicVerse' },
   { value: '1', label: 'Day', note: 'One campus, Emerald High' },
 ];
 
@@ -335,7 +335,7 @@ export default function WelcomePage() {
               <p>
                 A day at Emerald High where students share project ideas,
                 work on them together, and get feedback from visiting experts
-                across six disciplines (universes).
+                across six disciplines.
               </p>
             </div>
             <PhotoMosaic className="lp-about__photo" />
@@ -374,7 +374,7 @@ export default function WelcomePage() {
           </div>
         </section>
 
-        {/* The lineup: a scroll-driven orbit of the six universes and their tracks. */}
+        {/* The lineup: a scroll-driven orbit of the six disciplines and their tracks. */}
         <OrbitalUniverses />
 
         {/* The day, in the owner's photographs. */}

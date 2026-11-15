@@ -25,7 +25,7 @@ export const USER_ROLES: RoleInfo[] = [
     name: 'participant',
     label: 'Participant',
     description:
-      'Build your schedule and follow your summit day.',
+      'Build your schedule and follow your Summit day.',
     icon: GraduationCap, // school_outlined
     color: '#0EA5E9',
   },
@@ -48,7 +48,7 @@ export const USER_ROLES: RoleInfo[] = [
     name: 'admin',
     label: 'Admin',
     description:
-      'Manage the summit, announcements, and content.',
+      'Manage the Summit, announcements, and content.',
     icon: ShieldCheck, // admin_panel_settings_outlined
     color: '#0C7A55',
   },
@@ -56,14 +56,14 @@ export const USER_ROLES: RoleInfo[] = [
     name: 'volunteer',
     label: 'Volunteer',
     description:
-      'Help run the summit: EAF ambassadors, parent and student volunteers.',
+      'Help run the Summit: EAF ambassadors, parent and student volunteers.',
     icon: Users,
     color: '#E11D48',
   },
   {
     name: 'expert',
     label: 'Expert / Speaker',
-    description: 'Lead a session or speak at the summit.',
+    description: 'Lead a session or speak at the Summit.',
     icon: Award, // workspace_premium_outlined
     color: '#7C3AED',
   },

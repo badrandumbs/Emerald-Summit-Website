@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 const SECTION_LINKS = [
   { id: 'about', label: 'About' },
-  { id: 'universes', label: 'Universes' },
+  { id: 'disciplines', label: 'Disciplines' },
   { id: 'faq', label: 'FAQ' },
   { id: 'contact', label: 'Contact' },
 ];

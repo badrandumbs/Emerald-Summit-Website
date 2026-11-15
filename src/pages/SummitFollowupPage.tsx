@@ -55,7 +55,7 @@ export default function SummitFollowupPage() {
         const mine = MOCK_SESSIONS.filter((s) => expertSchedule.includes(s.id));
         setItems([
           ...mine.map((s) => ({ kind: 'session' as const, sessionId: s.id, title: s.title, detail: [s.disciplineName, s.time].filter(Boolean).join(' · '), rating: find('session', s.id)?.rating ?? null, comment: find('session', s.id)?.comment ?? '' })),
-          { kind: 'summit', sessionId: null, title: 'The summit overall', rating: find('summit')?.rating ?? null, comment: find('summit')?.comment ?? '' },
+          { kind: 'summit', sessionId: null, title: 'The Summit overall', rating: find('summit')?.rating ?? null, comment: find('summit')?.comment ?? '' },
           { kind: 'app', sessionId: null, title: 'The Emerald Summit app', rating: find('app')?.rating ?? null, comment: find('app')?.comment ?? '' },
         ]);
       });
@@ -70,8 +70,8 @@ export default function SummitFollowupPage() {
   if (!status.feedbackOpen) {
     return (
       <AppShell>
-        <PageHeader label="After the summit" title={isExpert ? 'Summit feedback' : 'Volunteer for EAF again?'} />
-        <p className="mx-auto max-w-3xl text-sm text-muted-foreground">This opens after the last session of summit day ends.</p>
+        <PageHeader label="After the Summit" title={isExpert ? 'Summit feedback' : 'Volunteer for EAF again?'} />
+        <p className="mx-auto max-w-3xl text-sm text-muted-foreground">This opens after the last session of Summit day ends.</p>
       </AppShell>
     );
   }
@@ -103,7 +103,7 @@ export default function SummitFollowupPage() {
   if (!isExpert) {
     return (
       <AppShell>
-        <PageHeader label="After the summit" title="Thank you for volunteering" />
+        <PageHeader label="After the Summit" title="Thank you for volunteering" />
         <div className="mx-auto max-w-3xl space-y-4">
           <p>Would you like to volunteer for EAF in the future?</p>
           {interest !== undefined && interest !== null && (
@@ -120,7 +120,7 @@ export default function SummitFollowupPage() {
 
   return (
     <AppShell>
-      <PageHeader label="After the summit" title="Summit feedback" />
+      <PageHeader label="After the Summit" title="Summit feedback" />
       <div className="mx-auto max-w-3xl space-y-5">
         <p className="text-sm text-muted-foreground">
           Thank you for serving as an expert. Rate each one from 1 to 5 and add a comment if you like. Your feedback on your session goes on the volunteer hours record of the students who ran it.

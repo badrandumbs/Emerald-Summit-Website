@@ -3,7 +3,7 @@
 import { ArrowRight, Globe, Instagram, Mail, type AppIcon } from '@/components/icons';
 
 export const SUMMIT_LINKS: { label: string; url: string; icon: AppIcon }[] = [
-  { label: 'Summit website', url: 'https://sites.google.com/view/ehs-academic-foundation/programs/emerald-summit', icon: Globe },
+  { label: 'Summit website', url: 'https://emeraldsummit.ehsacademics.org', icon: Globe },
   { label: 'Instagram', url: 'https://www.instagram.com/emeraldsummit27?stkn=MzRlODBiNWFlZA==', icon: Instagram },
   { label: 'Contact', url: 'mailto:president@ehsacademics.org', icon: Mail },
 ];

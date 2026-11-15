@@ -5,7 +5,7 @@ import BrandMark from './BrandMark';
 const SITE_LINKS = [
   { to: '/', label: 'Home', anchor: null },
   { to: '/#about', label: 'About', anchor: 'about' },
-  { to: '/#universes', label: 'Universes', anchor: 'universes' },
+  { to: '/#disciplines', label: 'Disciplines', anchor: 'disciplines' },
   { to: '/#faq', label: 'FAQ', anchor: 'faq' },
 ];
 
@@ -36,7 +36,7 @@ export default function LandingFooter() {
           />
           <p>
             A student-run STEAM Summit for Tri-Valley high schoolers, with six
-            universes, one day, 100% free.
+            disciplines, one day, 100% free.
           </p>
         </div>
 
