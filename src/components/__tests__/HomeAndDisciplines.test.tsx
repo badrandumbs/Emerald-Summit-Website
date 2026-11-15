@@ -18,7 +18,9 @@ import PhotoSlideshow from '../home/PhotoSlideshow';
 import LinksCard from '../home/LinksCard';
 import {
   AboutAppCard,
+  EAF_DONATE_EMBED_URL,
   EAF_DONATE_URL,
+  EAF_VOLUNTEER_URL,
   SPONSOR_EMAIL,
   SPONSOR_TIERS,
   SponsorsCard,
@@ -59,11 +61,36 @@ describe('Home links', () => {
 });
 
 describe('About, Support EAF and Sponsors', () => {
-  test('Support EAF links to the donate and volunteer pages', () => {
+  test('Donate opens the Zeffy form in a popup, and Volunteer goes to the parent volunteering page', async () => {
+    const user = userEvent.setup();
     render(<SupportEafCard />);
     expect(screen.getByRole('region', { name: 'Support EAF' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Donate/ })).toHaveAttribute('href', EAF_DONATE_URL);
-    expect(screen.getByRole('link', { name: /Volunteer with EAF/ })).toHaveAttribute('target', '_blank');
+    const volunteer = screen.getByRole('link', { name: /Volunteer with EAF/ });
+    expect(volunteer).toHaveAttribute('href', EAF_VOLUNTEER_URL);
+    expect(volunteer).toHaveAttribute('target', '_blank');
+    await user.click(screen.getByRole('button', { name: /Donate/ }));
+    const dialog = screen.getByRole('dialog', { name: 'Donate to EAF' });
+    expect(within(dialog).getByTitle('Donation form powered by Zeffy')).toHaveAttribute('src', EAF_DONATE_EMBED_URL);
+    expect(within(dialog).getByRole('link', { name: /Open in a new tab/ })).toHaveAttribute('href', EAF_DONATE_URL);
+  });
+
+  test('On a phone, Donate opens the Zeffy page in a new tab instead', () => {
+    const matchMedia = vi.fn((query: string) => ({
+      matches: query === '(max-width: 48rem)',
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
+    vi.stubGlobal('matchMedia', matchMedia);
+    try {
+      render(<SupportEafCard />);
+      const donate = screen.getByRole('link', { name: /Donate/ });
+      expect(donate).toHaveAttribute('href', EAF_DONATE_URL);
+      expect(donate).toHaveAttribute('target', '_blank');
+      expect(screen.queryByRole('button', { name: /Donate/ })).not.toBeInTheDocument();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   test('Sponsors shows every tier and an email to sign on', () => {
@@ -74,13 +101,37 @@ describe('About, Support EAF and Sponsors', () => {
     expect(email).not.toHaveAttribute('target');
   });
 
-  test('Sponsors rank the tiers highest first and place each sponsor in its tier', () => {
-    render(<SponsorsCard sponsors={[{ name: 'Acme Co', tier: 'Capstone' }, { name: 'Corner Cafe', tier: 'Cornerstone' }]} />);
+  test('Sponsors rank the tiers highest first, link each logo to its site, and leave an open spot in every tier', () => {
+    render(
+      <SponsorsCard
+        sponsors={[
+          { name: 'Acme Co', tier: 'Capstone', url: 'https://acme.example/', logo: '/sponsors/acme.png' },
+          { name: 'Corner Cafe', tier: 'Cornerstone', url: 'https://cafe.example/', logo: '/sponsors/cafe.png' },
+        ]}
+      />,
+    );
     const tiers = within(screen.getByRole('list', { name: /Sponsor tiers/ })).getAllByRole('listitem', { name: /^[A-Z]/ });
     expect(tiers.map((t) => t.getAttribute('aria-label'))).toEqual(SPONSOR_TIERS.map((t) => t.name));
-    expect(within(screen.getByRole('list', { name: 'Capstone sponsors' })).getByText('Acme Co')).toBeInTheDocument();
-    expect(within(screen.getByRole('list', { name: 'Cornerstone sponsors' })).getByText('Corner Cafe')).toBeInTheDocument();
-    expect(screen.queryByRole('list', { name: 'Pillar sponsors' })).not.toBeInTheDocument();
+    const capstone = screen.getByRole('list', { name: 'Capstone sponsors' });
+    const acme = within(capstone).getByRole('link', { name: 'Acme Co' });
+    expect(acme).toHaveAttribute('href', 'https://acme.example/');
+    expect(acme).toHaveAttribute('target', '_blank');
+    expect(within(acme).getByRole('img', { name: 'Acme Co' })).toHaveAttribute('src', '/sponsors/acme.png');
+    expect(within(screen.getByRole('list', { name: 'Cornerstone sponsors' })).getByRole('link', { name: 'Corner Cafe' })).toBeInTheDocument();
+    for (const t of SPONSOR_TIERS) {
+      const open = within(screen.getByRole('list', { name: `${t.name} sponsors` })).getByRole('link', { name: /Your company logo could go here/ });
+      expect(open).toHaveTextContent('Your company logo could go here');
+      expect(open.getAttribute('href')).toMatch(new RegExp(`^mailto:${SPONSOR_EMAIL}\\?subject=`));
+    }
+  });
+
+  test("EAF's sponsors are listed, with Brightfox at Keystone", () => {
+    render(<SponsorsCard />);
+    expect(within(screen.getByRole('list', { name: 'Keystone sponsors' })).getByRole('link', { name: 'Brightfox' })).toHaveAttribute('href', 'https://gobrightfox.com/');
+    const cornerstone = screen.getByRole('list', { name: 'Cornerstone sponsors' });
+    for (const name of ['Prepaze Academy', 'YoungWonks', 'Praan Health']) {
+      expect(within(cornerstone).getByRole('link', { name })).toBeInTheDocument();
+    }
   });
 
   test('About the app credits the student developers', () => {

@@ -11,7 +11,6 @@ import {
   Megaphone,
   ArrowLeftRight,
   LogOut,
-  FolderOpen,
   QrCode,
   Search,
   Bell,
@@ -30,7 +29,7 @@ import BrandMark from './BrandMark';
 import QrPassModal from './QrPassModal';
 import { cn } from '@/lib/utils';
 
-type NavGroup = 'My Summit' | 'Event' | 'Account';
+type NavGroup = 'My Summit' | 'Account';
 
 interface NavItem {
   to: string;
@@ -55,11 +54,10 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/disciplines', label: 'Discover', icon: Compass, group: 'My Summit' },
   { to: '/announcements', label: 'Announcements', icon: Megaphone, group: 'My Summit' },
   { to: '/archie', label: 'Ask Archie', icon: Sparkles, group: 'My Summit' },
-  { to: '/resources', label: 'Resources', icon: FolderOpen, group: 'Event' },
   { to: '/account', label: 'Profile', icon: UserRound, group: 'Account' },
 ];
 
-const NAV_GROUPS: NavGroup[] = ['My Summit', 'Event', 'Account'];
+const NAV_GROUPS: NavGroup[] = ['My Summit', 'Account'];
 
 export function navItemsForRole(roleName: string): NavItem[] {
   return NAV_ITEMS.filter((n) => !n.roles || n.roles.includes(roleName));

@@ -3,12 +3,22 @@
 // ehsacademics.org (Initiatives → Emerald Summit '27 → Sponsor; checked
 // Nov 14, 2026). The old Google Sites page (sites.google.com/view/
 // ehs-academic-foundation) is out of date: don't use it.
-import { ArrowRight, HeartHandshake, Mail, type AppIcon } from '@/components/icons';
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { ArrowRight, HeartHandshake, Loader2, Mail, Plus, type AppIcon } from '@/components/icons';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useIsPhoneScreen } from '@/lib/device';
+import SummitLogo from '../SummitLogo';
 import { cn } from '@/lib/utils';
 
 const EAF_SITE = 'https://www.ehsacademics.org';
-/** The Donate button on EAF's Emerald Summit '27 page goes to this Zeffy form. */
-export const EAF_DONATE_URL = 'https://www.zeffy.com/en-US/donation-form/6938c617-88ca-483d-ab7d-997e94ed8b6c';
+/**
+ * EAF's Zeffy donation form, "Be the catalyst for learning and discovery".
+ * Computers and tablets get it embedded in a popup (the embed's iframe, the
+ * same URL Zeffy's embed code falls back to); phones open the full page.
+ */
+const ZEFFY_FORM = 'be-the-catalyst-for-learning-and-discovery';
+export const EAF_DONATE_URL = `https://www.zeffy.com/en-US/donation-form/${ZEFFY_FORM}`;
+export const EAF_DONATE_EMBED_URL = `https://www.zeffy.com/embed/donation-form/${ZEFFY_FORM}`;
 export const EAF_VOLUNTEER_URL = `${EAF_SITE}/get-involved/parent-volunteering`;
 export const SPONSORSHIP_DETAILS_URL = `${EAF_SITE}/initiatives/emerald-summit-27/sponsor`;
 /** The sponsor page says "Questions? Email contact@ehsacademics.org" (its sign-up form is closed). */
@@ -31,11 +41,23 @@ export const SPONSOR_TIERS: { name: SponsorTierName; amount: string; perks: stri
 export interface Sponsor {
   name: string;
   tier: SponsorTierName;
-  url?: string;
+  /** Their website; the logo links straight to it. */
+  url: string;
+  /** Logo under public/, on a white background. */
+  logo: string;
 }
 
-/** This year's sponsors. Add one here and it shows up under its tier. */
-export const SPONSORS: Sponsor[] = [];
+/**
+ * EAF's current sponsors (from the organizers, Nov 14, 2026). Add one here
+ * with its logo in public/sponsors/ and it shows up under its tier. Logos are
+ * cut from EAF's "Our Cornerstone Sponsors" graphic.
+ */
+export const SPONSORS: Sponsor[] = [
+  { name: 'Brightfox', tier: 'Keystone', url: 'https://gobrightfox.com/', logo: '/sponsors/brightfox.png' },
+  { name: 'Prepaze Academy', tier: 'Cornerstone', url: 'https://prepazeacademy.com/', logo: '/sponsors/prepaze-academy.png' },
+  { name: 'YoungWonks', tier: 'Cornerstone', url: 'https://www.youngwonks.com/', logo: '/sponsors/youngwonks.png' },
+  { name: 'Praan Health', tier: 'Cornerstone', url: 'https://praan.health/', logo: '/sponsors/praan-health.png' },
+];
 
 /**
  * Each step of the ladder, top to bottom: how wide it is from sm up (the
@@ -52,6 +74,13 @@ const TIER_STEPS: { width: string; band: string; solid: boolean }[] = [
 
 function SectionTitle({ id, children }: { id: string; children: string }) {
   return <h2 id={id} className="mb-3 font-display text-xl font-bold tracking-tight sm:text-2xl">{children}</h2>;
+}
+
+function buttonClass(primary?: boolean) {
+  return cn(
+    'inline-flex items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-[13px] font-semibold transition-colors',
+    primary ? 'bg-emerald text-white hover:bg-emerald-deep' : 'border border-border bg-card hover:border-emerald/40',
+  );
 }
 
 function LinkButton({
@@ -71,16 +100,74 @@ function LinkButton({
       href={href}
       target={external ? '_blank' : undefined}
       rel="noreferrer"
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-[13px] font-semibold transition-colors',
-        primary
-          ? 'bg-emerald text-white hover:bg-emerald-deep'
-          : 'border border-border bg-card hover:border-emerald/40',
-      )}
+      className={buttonClass(primary)}
     >
       {children}
       <Icon className={cn('h-3.5 w-3.5', external && Icon === ArrowRight && '-rotate-45')} aria-hidden />
     </a>
+  );
+}
+
+/**
+ * Donate: on a phone, a link that opens Zeffy's page in a new tab (an
+ * embedded payment form in a popup is cramped there); anywhere else, a
+ * popup with the Zeffy form embedded, so people give without leaving.
+ */
+function DonateButton() {
+  const phone = useIsPhoneScreen();
+  const [open, setOpen] = useState(false);
+  // Zeffy's form takes a few seconds to appear; say so instead of a blank box.
+  const [loaded, setLoaded] = useState(false);
+  const revealTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(revealTimer.current), []);
+  const openChange = (next: boolean) => {
+    setOpen(next);
+    if (!next) {
+      window.clearTimeout(revealTimer.current);
+      setLoaded(false);
+    }
+  };
+  if (phone) return <LinkButton href={EAF_DONATE_URL} primary icon={HeartHandshake}>Donate</LinkButton>;
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)} className={buttonClass(true)}>
+        Donate
+        <HeartHandshake className="h-3.5 w-3.5" aria-hidden />
+      </button>
+      <Dialog open={open} onOpenChange={openChange}>
+        <DialogContent className="flex max-h-[92vh] max-w-2xl flex-col gap-0 overflow-hidden p-0">
+          <DialogHeader className="border-b border-border px-5 py-4 pr-12 text-left">
+            <DialogTitle className="font-display text-lg">Donate to EAF</DialogTitle>
+            <DialogDescription className="text-[13px]">
+              Secure form by Zeffy. EAF is a 501(c)(3) nonprofit, so your gift is tax-deductible.{' '}
+              <a href={EAF_DONATE_URL} target="_blank" rel="noreferrer" className="font-semibold text-emerald underline-offset-2 hover:underline">
+                Open in a new tab
+              </a>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="relative h-[min(72vh,760px)] w-full">
+            {!loaded && (
+              <p className="absolute inset-0 flex items-center justify-center gap-2 text-sm text-muted-foreground" role="status">
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                Loading the donation form…
+              </p>
+            )}
+            <iframe
+              title="Donation form powered by Zeffy"
+              src={EAF_DONATE_EMBED_URL}
+              allow="payment"
+              // Zeffy's page reports loaded before it draws the form (about
+              // 2 s more), so the message stays up a little past onLoad.
+              onLoad={() => {
+                window.clearTimeout(revealTimer.current);
+                revealTimer.current = window.setTimeout(() => setLoaded(true), 2000);
+              }}
+              className={cn('absolute inset-0 h-full w-full border-0 transition-opacity', loaded ? 'opacity-100' : 'opacity-0')}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -90,9 +177,7 @@ export function SupportEafCard() {
       <SectionTitle id="support-eaf">Support EAF</SectionTitle>
       <div className="rounded-3xl border border-emerald/20 bg-gradient-to-br from-emerald/10 to-emerald/[0.03] p-5 sm:p-6">
         <div className="flex flex-col items-start gap-4 sm:flex-row">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald text-white">
-            <HeartHandshake className="h-5 w-5" />
-          </span>
+          <SummitLogo size={64} className="shrink-0" />
           <div className="max-w-3xl space-y-3 text-[14.5px] leading-relaxed">
             <p>
               This Emerald Summit App is brought to you 100% built by students and free for all to use.
@@ -105,8 +190,8 @@ export function SupportEafCard() {
             <p className="font-semibold">Please consider supporting EAF and its mission.</p>
           </div>
         </div>
-        <div className="mt-5 flex flex-wrap gap-2.5 sm:pl-[60px]">
-          <LinkButton href={EAF_DONATE_URL} primary>Donate</LinkButton>
+        <div className="mt-5 flex flex-wrap gap-2.5 sm:pl-[80px]">
+          <DonateButton />
           <LinkButton href={EAF_VOLUNTEER_URL}>Volunteer with EAF</LinkButton>
         </div>
       </div>
@@ -114,15 +199,103 @@ export function SupportEafCard() {
   );
 }
 
-function SponsorChip({ sponsor, solid }: { sponsor: Sponsor; solid: boolean }) {
-  const cls = cn(
-    'inline-flex items-center rounded-full px-3 py-1 text-[13px] font-semibold',
-    solid ? 'bg-white/15 text-white' : 'border border-border bg-card',
-  );
-  if (!sponsor.url) return <span className={cls}>{sponsor.name}</span>;
+const TILE = 'flex h-16 w-full items-center justify-center rounded-xl';
+
+/**
+ * How many tiles fit across a tier's row. The row is a CSS grid that fits
+ * as many 9rem columns as it can (6.75rem on phones, so two fit), so this reads the column count back
+ * from the browser and follows it as the window resizes. 1 where there's no
+ * layout (tests).
+ */
+function useGridColumns(ref: RefObject<HTMLElement>): number {
+  const [columns, setColumns] = useState(1);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const update = () => {
+      const n = getComputedStyle(el).gridTemplateColumns.split(' ').filter((c) => c.endsWith('px')).length;
+      setColumns(Math.max(1, n));
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref]);
+  return columns;
+}
+
+/**
+ * A tier's logos, then open spots filling out the last row so every row is
+ * full (a whole row of them when the tier is empty or its logos end a row).
+ * Only the first open spot is announced to screen readers; the rest repeat it.
+ */
+function TierRow({ tier, sponsors, solid }: { tier: SponsorTierName; sponsors: Sponsor[]; solid: boolean }) {
+  const ref = useRef<HTMLUListElement>(null);
+  const columns = useGridColumns(ref);
+  const open = columns - (sponsors.length % columns);
   return (
-    <a href={sponsor.url} target="_blank" rel="noreferrer" className={cn(cls, 'hover:underline')}>
-      {sponsor.name}
+    <ul
+      ref={ref}
+      className="mt-3.5 grid grid-cols-[repeat(auto-fill,minmax(6.75rem,1fr))] gap-3 sm:grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] sm:gap-4"
+      aria-label={`${tier} sponsors`}
+    >
+      {sponsors.map((s) => (
+        <li key={s.name}>
+          <SponsorLogo sponsor={s} />
+        </li>
+      ))}
+      {Array.from({ length: open }, (_, k) => (
+        <li key={`open-${k}`} aria-hidden={k > 0 || undefined}>
+          <OpenSpot tier={tier} solid={solid} first={k === 0} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** A sponsor's logo on a white tile, linking straight to their website. */
+function SponsorLogo({ sponsor }: { sponsor: Sponsor }) {
+  return (
+    <a
+      href={sponsor.url}
+      target="_blank"
+      rel="noreferrer"
+      title={sponsor.name}
+      className={cn(TILE, 'border border-black/5 bg-white px-3 py-2 shadow-sm transition-transform hover:-translate-y-0.5')}
+    >
+      <img src={sponsor.logo} alt={sponsor.name} loading="lazy" className="max-h-full max-w-full object-contain" />
+    </a>
+  );
+}
+
+/**
+ * An open spot in a tier; it emails EAF about sponsoring at that level. The
+ * first open spot in a tier says "Your company logo could go here"; the rest
+ * are quieter empty slots with a small +, so a row of them doesn't repeat
+ * the same words.
+ */
+function OpenSpot({ tier, solid, first }: { tier: SponsorTierName; solid: boolean; first: boolean }) {
+  const subject = encodeURIComponent(`${tier} sponsorship, Emerald Summit '27`);
+  return (
+    <a
+      href={`mailto:${SPONSOR_EMAIL}?subject=${subject}`}
+      aria-label={first ? `Your company logo could go here: become a ${tier} sponsor` : undefined}
+      title={first ? undefined : `Your company logo could go here: become a ${tier} sponsor`}
+      tabIndex={first ? undefined : -1}
+      className={cn(
+        TILE,
+        'border-dashed px-3 text-center transition-colors',
+        first ? 'border-[1.5px] text-[12px] font-semibold leading-tight' : 'border',
+        solid
+          ? first
+            ? 'border-white/45 text-white/85 hover:border-white/75 hover:text-white'
+            : 'border-white/20 text-white/35 hover:border-white/50 hover:text-white/70'
+          : first
+            ? 'border-emerald/40 text-emerald/85 hover:border-emerald/65 hover:text-emerald'
+            : 'border-emerald/20 text-emerald/35 hover:border-emerald/45 hover:text-emerald/70',
+      )}
+    >
+      {first ? 'Your company logo could go here' : <Plus className="h-4 w-4" aria-hidden />}
     </a>
   );
 }
@@ -136,7 +309,6 @@ export function SponsorsCard({ sponsors = SPONSORS }: { sponsors?: Sponsor[] }) 
           <p className="flex-1 text-[14.5px] leading-relaxed text-muted-foreground">
             Local businesses and organizations help make the Summit happen. Funds go through EAF, so
             sponsorships are fully tax-deductible.
-            {sponsors.length === 0 && ' Sponsors are listed here by tier as they sign on.'}
           </p>
           <div className="flex shrink-0 flex-wrap gap-2.5">
             <LinkButton href={`mailto:${SPONSOR_EMAIL}`} primary icon={Mail}>Become a sponsor</LinkButton>
@@ -183,15 +355,7 @@ export function SponsorsCard({ sponsors = SPONSORS }: { sponsors?: Sponsor[] }) 
                     >
                       {t.perks}
                     </p>
-                    {inTier.length > 0 && (
-                      <ul className="mt-2.5 flex flex-wrap gap-1.5" aria-label={`${t.name} sponsors`}>
-                        {inTier.map((s) => (
-                          <li key={s.name}>
-                            <SponsorChip sponsor={s} solid={step.solid} />
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                    <TierRow tier={t.name} sponsors={inTier} solid={step.solid} />
                   </div>
                 </div>
               </li>
