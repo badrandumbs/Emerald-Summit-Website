@@ -39,7 +39,7 @@ HOW TO EDIT (this comment is stripped before Archie sees the file)
 
 | Topic | What is known | What to tell users |
 | ----- | ----- | ----- |
-| Exact date and hours of Summit '27 | Only "January 2027." | The exact date and times haven't been announced yet. |
+| Hours of Summit '27 | The date is Saturday, January 23, 2027. Start and end times haven't been set. | The date is confirmed (Saturday, January 23, 2027), but the hours haven't been announced yet. |
 | Registration deadline | None announced. Last year's deadlines were March 25 (for '25) and February 7 (for '26). | The '27 deadline hasn't been announced. Check the News tab. |
 | Whether session sign-up is open yet | Not stated. | Don't say it is open or closed. Send them to the Discover tab, and to the News tab for updates. |
 | Check-in opening time | Check-in is at the front of the school near the office. No time set. | The opening time hasn't been confirmed. |
@@ -55,7 +55,7 @@ HOW TO EDIT (this comment is stripped before Archie sees the file)
 ## 1. Quick facts
 
 * **What:** The Tri-Valley's student-run STEAM summit with exhibits, presentations, and hands-on workshops (solo and team), with expert mentors who review work and give feedback.
-* **When:** January 2027. UNCONFIRMED: exact date and hours.
+* **When:** Saturday, January 23, 2027. UNCONFIRMED: hours.
 * **Where:** Emerald High School, 3600 Central Pkwy, Dublin, CA 94568.
 * **Cost:** Free.
 * **Who can attend:** All high school students who want to participate. Parents, family, younger siblings, and other non-student guests are allowed.
@@ -106,7 +106,7 @@ The Student Ambassadors program is not currently open to new members.
 
 | Topic | Details |
 | ----- | ----- |
-| **Date and time** | UNCONFIRMED for '27. (Last year's Summit ran 7:45 a.m. to 3 p.m.) |
+| **Date and time** | Saturday, January 23, 2027. Hours UNCONFIRMED. (Last year's Summit ran 7:45 a.m. to 3 p.m.) |
 | **Check-in** | At the front of the school near the office. Opening time UNCONFIRMED. |
 | **Parking** | In front of the school near the flagpole and the check-in center, and along the sides of the school. Parking areas are easy to spot when you arrive. |
 | **Food** | Not provided. Bring your own. |
@@ -233,7 +233,7 @@ When giving this advice, make clear it is a suggestion, not a Summit requirement
 A student-run STEAM summit in the Tri-Valley where students present work, join hands-on workshops, and get feedback from expert mentors.
 
 **When is Summit '27?**
-January 2027. The exact date and hours are not confirmed yet. Updates will be in the News tab and on @emeraldsummit27.
+Saturday, January 23, 2027. The hours aren't confirmed yet. Updates will be in the News tab and on @emeraldsummit27.
 
 **Where is it?**
 Emerald High School, 3600 Central Pkwy, Dublin, CA 94568.

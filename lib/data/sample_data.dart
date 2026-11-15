@@ -7,7 +7,7 @@ import '../models/models.dart';
 /// details here are sample data only.
 class SampleData {
   static const eventName = 'Emerald Summit \'27';
-  static const eventDate = 'January 2027';
+  static const eventDate = 'Sat, Jan 23';
   static const eventVenue = 'Emerald High · Dublin, CA';
 
   static const List<Discipline> disciplines = [

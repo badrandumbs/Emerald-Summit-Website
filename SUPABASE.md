@@ -306,8 +306,8 @@ permissions, rooms, session assignments, and attendance). Run these in order,
     shows a load error. Safe to re-run.
 
 45. `supabase/summit_followup_setup.sql`: the **summit date** and the
-    post-summit follow-ups. `summit_settings` (one row; `summit_date` null
-    until the organizers confirm it; set with
+    post-summit follow-ups. `summit_settings` (one row; `summit_date` is
+    `2027-01-23` on dev since Nov 14, 2026; set with
     `update public.summit_settings set summit_date = 'YYYY-MM-DD';`),
     `summit_feedback_open()` (true once the last session of summit day has
     ended, Pacific) and `fetch_summit_status()`; `expert_feedback` (1 to 5

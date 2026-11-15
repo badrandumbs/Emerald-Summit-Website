@@ -1,7 +1,7 @@
 # Emerald Summit '27
 
 The companion app for **Emerald Summit '27** — the Tri-Valley's student-run
-STEAM summit at Emerald High, Dublin CA (January 2027). This repo is the
+STEAM summit at Emerald High, Dublin CA (Saturday, January 23, 2027). This repo is the
 production app: Flutter, for iOS and Android.
 
 **Website (separate project, on this backend).** The Emerald Summit website
@@ -529,9 +529,9 @@ Home header** (Uber-style), not a bottom-bar tab.
     cp supabase/archie/knowledge.md ss:///archie/knowledge.md --linked
     --experimental` (`cp` refuses to overwrite). (A file bundled with the
     function was avoided because dashboard and CLI deploys handle extra files
-    differently.) *(Dev has the 2026-10-19 version: expert approval with
-    nysha.singhal@ehsacademics.org, and changing roles. The function was
-    redeployed the same day without the old `expert_name` column.)*
+    differently.) *(Dev has the 2026-11-14 version: the confirmed date, Saturday,
+    January 23, 2027, with the hours still unconfirmed. The function was
+    redeployed the same day with the date in the persona.)*
     Don't copy session times/rooms/seats into it; those come live from the app.
   - **The persona** is the `PERSONA` constant in
     [index.ts](supabase/functions/archie-chat/index.ts) (identity, sources and
@@ -621,9 +621,9 @@ summit day" breakdown. There is no certificate (the old placeholder button was
 removed on purpose). The old `profiles.volunteer_hours` column is no longer
 read by the app.
 
-> **Summit date: not set yet.** Until it's set, summit-day hours don't count,
-> the sheet has no summit-day rows, and post-summit feedback never opens. Every
-> feature tied to the date, and how to set it, is in
+> **Summit date: Saturday, January 23, 2027 (set on dev Nov 14, 2026).**
+> Summit-day hours count, summit-day sheet rows appear and post-summit feedback
+> opens once each session ends that day. Every feature tied to the date is in
 > [Summit date: what changes when it's set](#summit-date-what-changes-when-its-set).
 
 **Hours spreadsheet (Google Sheet, synced automatically).** Every volunteer's
@@ -917,9 +917,11 @@ Setting the constant to `true` restores both the dropdown and the room row.
 
 ## Summit date: what changes when it's set
 
-**Status: not set.** `summit_settings.summit_date` is null on dev. The organizers
-haven't confirmed the day (only "January 2027"). This section lists everything
-that depends on it, so the date can go in with one pass.
+**Status: set to Saturday, January 23, 2027** (confirmed by the organizers;
+`summit_date = '2027-01-23'` on dev since Nov 14, 2026). Steps 1 to 4 below
+are done on dev. The hours of the day are still not announced. When the prod
+project is set up, run step 2 there too and upload the same knowledge.md.
+This section stays as the reference for what the date drives.
 
 **1. Check session times.** `start_time` / `end_time` are plain text and
 everything that compares them assumes 24-hour time (`14:00`, not `2:00`). The
@@ -949,7 +951,7 @@ the app to see it.
 | Feedback and "volunteer again?" | `summit_feedback_open()` in [summit_followup_setup.sql](supabase/summit_followup_setup.sql), [summit_followup_screen.dart](lib/screens/summit_followup_screen.dart), Profile → Settings | Opens on summit day once the latest `end_time` across **all** sessions has passed (Pacific); today that's 3:30 PM, set by Engineering Exhibit. Adding a later session moves it. The app re-checks at launch, at sign-in and every time it comes back to the foreground (`didChangeAppLifecycleState` in [root_nav.dart](lib/screens/root_nav.dart)), and the auth gate then asks the question. Planned: a push notification / announcement the moment it opens (see Roadmap). |
 | Archie's live context | `archie-chat` function | Tells volunteers and admins the date and which sessions count yet; tells experts whether they've sent feedback once it opens. |
 
-**4. Edit these by hand** (they still say "January 2027"):
+**4. Edit these by hand** (done Nov 14, 2026; they said "January 2027"):
 - **Archie's fact sheet** [knowledge.md](supabase/archie/knowledge.md): the
   *When* line, the UNCONFIRMED row about the date and hours, and the FAQ
   answer. Upload it to the `archie` Storage bucket as `knowledge.md` (no
@@ -964,7 +966,9 @@ the app to see it.
   Home does (either needs an app release).
 - The sample-mode Archie reply in
   [sample_archie_repository.dart](lib/backend/sample/sample_archie_repository.dart),
-  this README's intro line, and the website (a separate project).
+  this README's intro line, and the website (a separate project; its
+  countdown and date line read `fetch_summit_status()`, so they turn on by
+  themselves, but check its own copy for "January 2027").
 
 **Not tied to the summit date:** per-session participant deadlines
 (`sessions.participant_deadline`, their own timestamps) and front-desk
@@ -2096,7 +2100,7 @@ production build" below), so the website only needs the form and the call.
   text and show them in 12-hour form like the app (`to12HourTime` in
   [models.dart](lib/models/models.dart)). When the website writes a time, keep
   two-digit hours.
-- `fetch_summit_status()` gives the summit date (still null) and whether
+- `fetch_summit_status()` gives the summit date (`2027-01-23`) and whether
   feedback is open. Use it for the countdown and the date line; don't hard-code
   a date.
 - Realtime: subscribe to `announcements` (the app's channel is
