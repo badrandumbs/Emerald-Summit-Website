@@ -37,6 +37,8 @@ export type Profile = {
   /** The Code of Conduct version agreed to; absent until code_of_conduct.sql runs. */
   code_of_conduct_version?: string | null;
   code_of_conduct_agreed_at?: string | null;
+  /** The Code of Conduct's photo permission answer; null if not answered. */
+  photo_consent?: boolean | null;
 };
 
 /** What a student adds at registration, beyond the basic profile. */
@@ -586,10 +588,16 @@ export async function saveProfileDetails(
   if (error || !data) throw error ?? new Error(LOAD_FAILED_MESSAGE);
 }
 
-/** Records that the signed-in account agreed to Code of Conduct `version`. */
-export async function agreeToCodeOfConduct(version: string): Promise<void> {
+/**
+ * Records that the signed-in account agreed to agreement `version`, with the
+ * Code of Conduct's photo permission answer (null for the Guest Expert Policy).
+ */
+export async function agreeToCodeOfConduct(version: string, photoConsent: boolean | null = null): Promise<void> {
   await requireRealSession();
-  const { error } = await requireSupabase().rpc('agree_to_code_of_conduct', { p_version: version });
+  const { error } = await requireSupabase().rpc('agree_to_code_of_conduct', {
+    p_version: version,
+    p_photo_consent: photoConsent,
+  });
   if (error) throw error;
 }
 

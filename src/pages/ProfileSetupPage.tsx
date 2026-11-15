@@ -46,6 +46,8 @@ export default function ProfileSetupPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  // The Code of Conduct's photo permission: true grants, false does not.
+  const [photoConsent, setPhotoConsent] = useState<boolean | null>(null);
 
   const roleName = profile?.role as string | undefined;
   const subtype = profile?.volunteer_subtype as string | null | undefined;
@@ -54,6 +56,7 @@ export default function ProfileSetupPage() {
   const conductDue = needsCodeOfConduct(profile);
   // Experts agree to the Speaker Policy; everyone else to the Code of Conduct.
   const agreement = agreementFor(profile?.role as string | undefined);
+  const media = agreement.mediaChoice;
 
   useEffect(() => {
     if (prefilled || loadingProfile) return;
@@ -98,10 +101,11 @@ export default function ProfileSetupPage() {
   const save = async () => {
     setError(null);
     if (conductOnly) {
+      if (media && photoConsent == null) return setError('Please choose whether you grant photo permission.');
       if (!agreed) return setError(`Please tick the box to agree to the ${agreement.name}.`);
       setIsSaving(true);
       try {
-        await agreeToCodeOfConduct(agreement.version);
+        await agreeToCodeOfConduct(agreement.version, media ? photoConsent : null);
         await refreshProfile();
         navigate('/home', { replace: true });
       } catch {
@@ -116,12 +120,13 @@ export default function ProfileSetupPage() {
     if (missing) {
       return setError(missing.key === 'phone' ? 'Mobile number is required.' : `Please answer "${missing.label}".`);
     }
+    if (askConduct && media && photoConsent == null) return setError('Please choose whether you grant photo permission.');
     if (askConduct && !agreed) return setError(`Please tick the box to agree to the ${agreement.name}.`);
     setIsSaving(true);
     try {
       const out = Object.fromEntries(fields.map((f) => [f.key, answers[f.key] ?? '']));
       await saveProfileDetails(gateOnly ? (profile?.name as string) ?? name : name, out, onboarding);
-      if (askConduct) await agreeToCodeOfConduct(agreement.version);
+      if (askConduct) await agreeToCodeOfConduct(agreement.version, media ? photoConsent : null);
       await refreshProfile();
       navigate('/home', { replace: true });
     } catch {
@@ -206,6 +211,24 @@ export default function ProfileSetupPage() {
           <div className="space-y-3">
             {!conductOnly && <h2 className="text-[13px] font-semibold">{agreement.name}</h2>}
             <CodeOfConductWindow agreement={agreement} />
+            {media && (
+              <fieldset className="space-y-2">
+                <legend className="text-[13px] font-semibold">{media.section}</legend>
+                <p className="text-sm font-semibold">{media.prompt}</p>
+                {([[true, media.grant], [false, media.doNotGrant]] as const).map(([value, label]) => (
+                  <label key={String(value)} className="flex cursor-pointer items-start gap-3 text-sm">
+                    <input
+                      type="radio"
+                      name="photo-consent"
+                      checked={photoConsent === value}
+                      onChange={() => setPhotoConsent(value)}
+                      className="mt-1 h-4 w-4 accent-emerald"
+                    />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </fieldset>
+            )}
             <label className="flex cursor-pointer items-start gap-3 text-sm">
               <Checkbox
                 checked={agreed}
@@ -223,7 +246,7 @@ export default function ProfileSetupPage() {
         <Button
           type="submit"
           className="glow-emerald h-12 w-full rounded-xl bg-primary text-[15px] font-semibold hover:bg-emerald"
-          disabled={isSaving || (askConduct && !agreed)}
+          disabled={isSaving || (askConduct && (!agreed || (media != null && photoConsent == null)))}
         >
           {isSaving ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : conductOnly ? 'Agree and continue' : gateOnly ? 'Save and continue' : 'Continue'}
         </Button>

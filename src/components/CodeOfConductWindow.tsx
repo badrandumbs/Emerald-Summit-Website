@@ -1,26 +1,61 @@
-// An agreement (the Code of Conduct, or the Speaker Policy for experts) in a
-// bordered, scrollable window, with Expand to read it in a large popup. Used by the last sign-up step (ProfileSetupPage), like the
-// app's CodeOfConductWindow.
+// An agreement (the Code of Conduct, or the Guest Expert Policy for experts)
+// in a bordered, scrollable window, with Expand to read it in a large popup.
+// Used by the last sign-up step (ProfileSetupPage), like the app's
+// CodeOfConductWindow. The text is laid out as the document is.
 import { useState } from 'react';
 import { Maximize2 } from '@/components/icons';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import type { SummitAgreement } from '../models/codeOfConduct';
+import type { AgreementBlock, SummitAgreement } from '../models/codeOfConduct';
+
+function Block({ block }: { block: AgreementBlock }) {
+  const lead = block.lead && (
+    <span className={block.italicLead ? 'italic' : 'font-semibold'}>
+      {block.text ? `${block.lead}: ` : `${block.lead}:`}
+    </span>
+  );
+  if (block.bullet) {
+    return (
+      <p className="flex gap-2 pl-1">
+        <span aria-hidden>•</span>
+        <span>
+          {lead}
+          {block.text}
+        </span>
+      </p>
+    );
+  }
+  return (
+    <p>
+      {lead}
+      {block.text}
+    </p>
+  );
+}
 
 export function CodeOfConductText({ agreement, showTitle = true }: { agreement: SummitAgreement; showTitle?: boolean }) {
+  const media = agreement.mediaChoice;
   return (
     <div className="space-y-4 text-[14px] leading-relaxed">
-      {showTitle && <h3 className="font-display text-lg font-bold">{agreement.title}</h3>}
-      <p>{agreement.intro}</p>
+      {(showTitle || agreement.preamble.length > 0) && (
+        <div className="space-y-1">
+          {showTitle && <h3 className="font-display text-lg font-bold">{agreement.title}</h3>}
+          {agreement.preamble.map((line) => <p key={line} className="text-muted-foreground">{line}</p>)}
+        </div>
+      )}
       {agreement.sections.map((section) => (
         <section key={section.title} className="space-y-1.5">
           <h4 className="font-semibold text-emerald">{section.title}</h4>
-          {section.points.map((p) => (
-            <p key={p.lead}>
-              <span className="font-semibold">{p.lead}.</span> {p.text}
-            </p>
-          ))}
+          {section.blocks.map((b, i) => <Block key={i} block={b} />)}
+          {media && media.section === section.title && (
+            <div className="space-y-1.5">
+              <p className="font-semibold">{media.prompt}</p>
+              <p>___ {media.grant}</p>
+              <p>___ {media.doNotGrant}</p>
+            </div>
+          )}
         </section>
       ))}
+      {agreement.footer && <p className="text-[12px] text-muted-foreground">{agreement.footer}</p>}
     </div>
   );
 }

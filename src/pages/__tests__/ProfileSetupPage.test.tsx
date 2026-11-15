@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import ProfileSetupPage from '../ProfileSetupPage';
-import { CODE_OF_CONDUCT, SPEAKER_POLICY } from '../../models/codeOfConduct';
+import { CODE_OF_CONDUCT, GUEST_EXPERT_POLICY } from '../../models/codeOfConduct';
 
 const state = vi.hoisted(() => ({
   role: 'volunteer',
@@ -116,9 +116,12 @@ test('sign-up ends with the Code of Conduct box, once the columns exist', async 
   const continueButton = screen.getByRole('button', { name: 'Continue' });
   expect(continueButton).toBeDisabled();
   await user.click(screen.getByRole('checkbox', { name: CODE_OF_CONDUCT.checkbox }));
+  // The photo permission question has to be answered too.
+  expect(continueButton).toBeDisabled();
+  await user.click(screen.getByRole('radio', { name: CODE_OF_CONDUCT.mediaChoice!.grant }));
   await user.click(continueButton);
   expect(state.save).toHaveBeenCalled();
-  expect(state.agree).toHaveBeenCalledWith(CODE_OF_CONDUCT.version);
+  expect(state.agree).toHaveBeenCalledWith(CODE_OF_CONDUCT.version, true);
 });
 
 test('no Code of Conduct box before the SQL adds the columns', () => {
@@ -127,7 +130,7 @@ test('no Code of Conduct box before the SQL adds the columns', () => {
   expect(screen.queryByRole('checkbox', { name: CODE_OF_CONDUCT.checkbox })).toBeNull();
 });
 
-test('an existing expert who has not agreed sees only the Speaker Policy', async () => {
+test('an existing expert who has not agreed sees only the Guest Expert Policy', async () => {
   state.role = 'expert';
   state.onboarding = false;
   state.conduct = { code_of_conduct_version: null };
@@ -135,9 +138,10 @@ test('an existing expert who has not agreed sees only the Speaker Policy', async
   render(<MemoryRouter><ProfileSetupPage /></MemoryRouter>);
   expect(screen.getByText('One last step')).toBeInTheDocument();
   expect(screen.queryByLabelText('Area of expertise')).toBeNull();
-  expect(screen.getAllByText(SPEAKER_POLICY.title).length).toBeGreaterThan(0);
-  await user.click(screen.getByRole('checkbox', { name: SPEAKER_POLICY.checkbox }));
+  expect(screen.getAllByText(GUEST_EXPERT_POLICY.title).length).toBeGreaterThan(0);
+  await user.click(screen.getByRole('checkbox', { name: GUEST_EXPERT_POLICY.checkbox }));
   await user.click(screen.getByRole('button', { name: 'Agree and continue' }));
-  expect(state.agree).toHaveBeenCalledWith(SPEAKER_POLICY.version);
+  expect(screen.queryByRole('radio')).toBeNull();
+  expect(state.agree).toHaveBeenCalledWith(GUEST_EXPERT_POLICY.version, null);
   expect(state.save).not.toHaveBeenCalled();
 });

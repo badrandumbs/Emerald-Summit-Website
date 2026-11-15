@@ -1,128 +1,177 @@
 // What each account agrees to once, by ticking a box (code_of_conduct.sql in
-// the app repo): experts agree to the Speaker Policy, every other role to the
-// Code of Conduct. Both are rewritten from EAF's forms (the "Emerald Summit
-// 2026 Code of Conduct" field trip waiver, version 11.02.2025.1, and the
-// "Emerald Summit '26 Speaker Policy Document" v1.0, Jan 28, 2026). The app
-// has the same text in lib/models/code_of_conduct.dart: change both together
-// and bump the version, which asks everyone who agreed to agree again.
+// the app repo): experts agree to the Guest Expert Policy, every other role
+// to the Code of Conduct. The text is word for word from EAF's documents,
+// nothing summarized: "Emerald Summit 2026 Code of Conduct" (EAF Field Trip
+// Waiver Form Version 11.02.2025.1) and "Guest Expert Policy: Emerald Summit
+// '27" (Nov 14, 2026). The only changes: the signature lines are replaced by
+// the checkbox, and the Code of Conduct's two media options say "of me"
+// instead of "of my child", because the account holder picks one, not a
+// parent. The app has the same text in lib/models/code_of_conduct.dart:
+// change both together and bump the version, which asks everyone who agreed
+// to agree again.
+
+/** A paragraph or bullet, optionally led by a bold (or italic) label; a label with no text is a small heading. */
+export interface AgreementBlock {
+  text: string;
+  lead?: string;
+  bullet?: boolean;
+  italicLead?: boolean;
+}
 
 export interface ConductSection {
   title: string;
-  points: { lead: string; text: string }[];
+  blocks: AgreementBlock[];
+}
+
+/** A grant / do-not-grant question, answered with a radio button (profiles.photo_consent). */
+export interface MediaChoice {
+  /** The section it belongs to; it shows right after it. */
+  section: string;
+  prompt: string;
+  grant: string;
+  doNotGrant: string;
 }
 
 export interface SummitAgreement {
   /** Stored in profiles.code_of_conduct_version; prefixed so the two never share one. */
   version: string;
-  /** "Code of Conduct" / "Speaker Policy". */
+  /** "Code of Conduct" / "Guest Expert Policy". */
   name: string;
   title: string;
-  intro: string;
+  /** The lines under the title, before the first section. */
+  preamble: string[];
   sections: ConductSection[];
   checkbox: string;
   /** The sentence above the window. */
   whoAgrees: string;
+  footer?: string;
+  mediaChoice?: MediaChoice;
 }
 
 export const CODE_OF_CONDUCT: SummitAgreement = {
-  version: 'conduct-2026-11-14',
+  version: 'conduct-2026-11-15',
   name: 'Code of Conduct',
-  title: "Emerald Summit '27 Code of Conduct",
+  title: 'Emerald Summit 2026 Code of Conduct',
   whoAgrees: 'Everyone at the Summit agrees to the Code of Conduct.',
-  intro: 'Emerald Summit is an EHS Academic Foundation (EAF) event. It is not a school or Dublin Unified School District (DUSD) event. Everyone who attends agrees to this code: participants, spectators, volunteers and organizers. Experts agree to the Speaker Policy instead.',
-  checkbox: "I have read the Code of Conduct and agree to follow it.",
+  preamble: [
+    'This is an EAF event. It is NOT a school/DUSD-sponsored event.',
+    'IMPORTANT: PLEASE REVIEW ALL SECTIONS OF THIS FORM CAREFULLY.',
+  ],
+  checkbox: 'I have read the Code of Conduct and agree to it.',
+  footer: 'EAF Field Trip Waiver Form Version 11.02.2025.1',
   sections: [
     {
-      title: 'How everyone is expected to act',
-      points: [
-        { lead: 'Be respectful and responsible', text: 'Act in a way that reflects well on Emerald High School, your family and yourself.' },
-        { lead: 'No alcohol, tobacco, drugs or vaping', text: 'These are not allowed anywhere at the event, the same as under DUSD policy.' },
-        { lead: 'Treat people well', text: 'No inappropriate language, bullying, harassment or disruptive behavior.' },
-        { lead: 'No violence', text: 'Fighting and threats are not tolerated.' },
-        { lead: 'Respect the building', text: 'Take care of the school and everything in it. Damage, littering and vandalism break this code.' },
-        { lead: 'Chaperones and organizers can step in', text: 'They keep the event safe and respectful, and may step in whenever someone breaks these rules.' },
+      title: 'Student Code of Conduct',
+      blocks: [
+        { lead: 'General Conduct', text: 'As ambassadors for Emerald High School, all students must conduct themselves respectfully, responsibly, and in a manner that reflects positively on the school, their families, and themselves.' },
+        { lead: 'Behavior Expectations', text: '' },
+        { lead: 'No Alcohol, Tobacco, Drugs, or Vaping Devices', text: 'Strictly prohibited, as per DUSD policy.' },
+        { lead: 'Respectful Behavior', text: 'No inappropriate language, bullying, harassment, or disruptive behavior.' },
+        { lead: 'Violence and Aggression', text: 'Physical altercations or threats will not be tolerated.' },
+        { lead: 'Property Respect', text: 'Students are expected to respect all property and event venues. Any damage, littering or vandalism is a violation of policy.' },
+        { lead: 'Chaperones', text: 'Chaperones are empowered to maintain a safe and respectful environment. They may intervene if any student behavior violates the event guidelines.' },
       ],
     },
     {
-      title: 'Liability and insurance',
-      points: [
-        { lead: 'Not a district event', text: 'DUSD does not sponsor the Summit and is not liable for any injury, loss or property damage during it. By attending, you (and, for students, your parents or guardians) accept this responsibility.' },
-        { lead: 'District staff and chaperones', text: 'DUSD staff who attend are not covered by district insurance for this event. Chaperones and sponsors are not acting for DUSD and are not covered by its liability insurance.' },
-        { lead: 'Hold harmless', text: 'By attending, you agree to hold harmless and indemnify Emerald High School, EAF, and the event staff and chaperones for any personal injury, loss or property damage during the event.' },
-        { lead: 'Insurance', text: "Neither DUSD nor EAF provides insurance for the Summit. Your own insurance, or your parents' or guardians', applies." },
+      title: 'Liability & Legal Disclaimer',
+      blocks: [
+        { lead: 'Non-School Event', text: 'This event is not sponsored by DUSD. As such, the district will not be liable for any injuries, loss, or property damage that may occur during the event. By attending, all students and parents acknowledge and accept this responsibility.' },
+        { lead: 'Individual Liability', text: 'DUSD staff, if present, will not be covered by district insurance for this event. Chaperones and sponsors are not acting as agents of DUSD, and therefore, they are not covered by district liability insurance.' },
+        { lead: 'Hold Harmless', text: 'By attending this event, students and parents agree to hold harmless and indemnify Emerald High School, EAF, and any event staff or chaperones from any personal injury, loss, or damage to property that may occur during the event.' },
+        { lead: 'Insurance', text: 'DUSD does not provide insurance for non-school sponsored events. Insurance coverage must be provided by parents/guardians or through the travel agency. Students will not be covered by district or EAF insurance during this trip.' },
       ],
     },
+    { title: 'Media Rights and Consent', blocks: [] },
     {
-      title: 'Photos and video',
-      points: [
-        { lead: 'The Summit is photographed', text: 'EHS and EAF take photos, video and audio during the event and may share them to promote it on social media, websites, newsletters and other materials, without payment.' },
-        { lead: 'Opting out', text: "If you do not want to appear in them, email contact@ehsacademics.org before the Summit or tell the front desk when you arrive." },
-      ],
-    },
-    {
-      title: 'Agreeing',
-      points: [
-        { lead: 'What the checkbox means', text: "By ticking the box, you confirm you have read this code, agree to follow it, and accept the liability and insurance terms above. If you are under 18, read it with a parent or guardian." },
+      title: 'Acknowledgment and Signature',
+      blocks: [
+        { text: 'By signing this form, I acknowledge that I have read and understood the details of this waiver, including the event guidelines, the code of conduct, and the liability and insurance information. I agree to abide by the conduct expectations and acknowledge that Emerald High School, the EHS PFSO, and any event staff are not responsible for any injuries, loss, or damage that may occur during this event.' },
       ],
     },
   ],
+  mediaChoice: {
+    section: 'Media Rights and Consent',
+    prompt: 'Please check one:',
+    grant: 'I GRANT permission for Emerald High School (EHS) and the EAF to take photos, videos, and audio recordings of me during the event. These may be used to share and promote the event on social media, websites, newsletters, or other materials. I waive the right to inspect and understand that these photos and videos may be shared publicly without any payment or consent for further approval.',
+    doNotGrant: 'I DO NOT GRANT permission for Emerald High School (EHS) and the EAF to take photos, videos, and audio recordings of me during the event.',
+  },
 };
 
-export const SPEAKER_POLICY: SummitAgreement = {
-  version: 'speaker-2026-11-14',
-  name: 'Speaker Policy',
-  title: "Emerald Summit '27 Speaker Policy",
-  whoAgrees: 'Every expert agrees to the Speaker Policy.',
-  intro: 'Thank you for sharing your time and expertise with Emerald High School students. Experts give students a real look at careers and industries and feedback on their work. This policy keeps the Summit productive and respectful for everyone, and every expert agrees to it.',
-  checkbox: "I have read the Speaker Policy and agree to follow it.",
+export const GUEST_EXPERT_POLICY: SummitAgreement = {
+  version: 'guest-expert-2026-11-14',
+  name: 'Guest Expert Policy',
+  title: 'Guest Expert Policy: Emerald Summit ’27',
+  whoAgrees: 'Every expert agrees to the Guest Expert Policy.',
+  preamble: ['Nov 14, 2026'],
+  checkbox: 'I have read the Guest Expert Policy and agree to it.',
   sections: [
     {
-      title: 'Working with students',
-      points: [
-        { lead: 'Dress professionally', text: 'Please wear professional attire.' },
-        { lead: 'Stay professional', text: 'Engage with students professionally and respectfully. Avoid personal questions and comments.' },
-        { lead: 'Respect student privacy', text: "Do not ask for or share any personal information about students." },
-        { lead: 'Get materials approved', text: 'EAF has to approve any slides, videos, handouts or other materials before the event.' },
-        { lead: 'Keep language right for high schoolers', text: 'Everything you say and show should suit a high school audience: clear, engaging and free of jargon. No crude humor, inappropriate pop culture references or slang.' },
+      title: 'The short version',
+      blocks: [
+        { bullet: true, text: 'Dress professionally and keep conversations respectful.' },
+        { bullet: true, text: 'Do not ask for or share personal information about students.' },
+        { bullet: true, text: 'Avoid politics, religion and culture, equity and social justice, and gender and race. CivicVerse tracks may cover civics, law and rights in an educational, nonpartisan way.' },
+        { bullet: true, text: 'Share any slides or handouts with EAF before the event for review.' },
+        { bullet: true, text: 'Sessions may be recorded and photographed.' },
+      ],
+    },
+    {
+      title: 'Purpose and scope',
+      blocks: [
+        { text: 'This policy sets out what Emerald Summit ’27 expects of Experts, the invited guests who share their time and expertise with students at Emerald High School (EHS). Your participation enriches our students’ educational experience and gives them valuable insights into careers and industries.' },
+        { text: 'It applies to every Expert, before and during the Summit. To keep the event productive and respectful for everyone, all Experts are asked to follow the guidelines below.' },
+      ],
+    },
+    {
+      title: 'Conduct and interaction with students',
+      blocks: [
+        { text: 'To keep a focus on professional development and a positive experience for everyone, Experts are expected to follow these guidelines:' },
+        { bullet: true, lead: 'Dress code', text: 'professional attire.' },
+        { bullet: true, lead: 'Maintain professionalism', text: 'Always engage with students in a professional and respectful manner. Avoid personal questions and/or comments.' },
+        { bullet: true, lead: 'Respect student privacy', text: 'Do not request or share any personal information about students.' },
+        { bullet: true, lead: 'Materials', text: 'Experts typically do not need materials. If you plan to use a presentation, handouts or other resources, please share them with EAF before the event for review.' },
+        { bullet: true, lead: 'Appropriate language', text: 'All spoken and written content must be suitable for a high school audience. Please keep language clear, engaging, and free from jargon or complex terminology. Crude humor, inappropriate pop culture references, and slang are not permitted.' },
       ],
     },
     {
       title: 'Topics to avoid',
-      points: [
-        { lead: 'Why', text: 'The Summit focuses on careers and learning, and its students come from many backgrounds. Please leave these topics out.' },
-        { lead: 'Politics', text: 'Political parties, affiliations or current political events.' },
-        { lead: 'Religion and culture', text: 'Religious beliefs or cultural practices.' },
-        { lead: 'Equity and social justice', text: 'Equity, social justice movements or advocacy initiatives.' },
-        { lead: 'Gender and race', text: 'Gender identity, gender roles or related issues.' },
-        { lead: 'Exceptions', text: 'If one of these topics is part of your field (a career in politics, for example), email contact@ehsacademics.org before the Summit to ask for an exception. It needs a signed agreement with the organizing committee.' },
+      blocks: [
+        { text: 'The Summit stays focused on career development and respects the diverse backgrounds of participants, so Experts should avoid these topics:' },
+        { bullet: true, lead: 'Politics', text: 'Discussions of political parties, affiliations, or current political events are prohibited.' },
+        { bullet: true, lead: 'Religion and culture', text: 'Conversations regarding religious beliefs or cultural practices should be avoided.' },
+        { bullet: true, lead: 'Equity and social justice', text: 'Topics related to equity, social justice movements, or advocacy initiatives should not be discussed.' },
+        { bullet: true, lead: 'Gender and race', text: 'Discussions surrounding gender identity, roles, or related issues should be avoided.' },
+        { lead: 'CivicVerse tracks', text: 'Experts in the CivicVerse tracks (mock trial, Law and Rights Seminar, Civic Engagement) may discuss how law, rights and civic participation work. Please keep it educational and nonpartisan. Do not promote or oppose political parties, candidates or specific causes.' },
+        { lead: 'Exemptions', italicLead: true, text: 'If an Expert plans to discuss any of these topics for valid educational purposes (for example, a political career), please reach out to the organizers to discuss.' },
       ],
     },
     {
-      title: 'Recording and photos',
-      points: [
-        { lead: 'Recording', text: 'Sessions may be recorded for educational purposes, and the recordings may be shared with students and affiliated school organizations.' },
-        { lead: 'Photos', text: 'Photos taken during the event may be used to promote it on social media run by Emerald High School and affiliated school organizations.' },
+      title: 'Recording, photography and your Expert profile',
+      blocks: [
+        { bullet: true, lead: 'Recording', text: 'Sessions may be recorded for educational purposes. By participating, Experts consent to being recorded and understand that recordings may be shared with students and affiliated school organizations.' },
+        { bullet: true, lead: 'Photography', text: 'Photographs may be taken during the event and used for promotional purposes on social media platforms managed by Emerald High School and affiliated school organizations.' },
+        { bullet: true, lead: 'Public profile', text: 'When signing up, Experts add the details for their profile. Name, title and organization, area of expertise, short bio, LinkedIn link (optional) and headshot appear on the Summit experts page. Email address and mobile number stay private. The mobile number is only used to reach an Expert on the day of the Summit if necessary.' },
       ],
     },
     {
-      title: 'If the policy is broken',
-      points: [
-        { lead: 'EAF can cancel', text: 'EAF may cancel the event at its discretion for unforeseen situations, including a speaker breaking this policy before or during the event.' },
-        { lead: 'Questions', text: 'Email contact@ehsacademics.org about anything in this policy.' },
+      title: 'Enforcement and contact',
+      blocks: [
+        { text: 'EAF reserves the right to end an Expert’s participation, before or during the event, if the Expert violates these rules of engagement or in other unforeseen situations, at its discretion. We appreciate your cooperation in following these guidelines. Your support helps create a constructive and enriching experience for our students.' },
+        { text: 'For any questions or concerns about this policy, contact contact@ehsacademics.org.' },
       ],
     },
     {
-      title: 'Agreeing',
-      points: [
-        { lead: 'What the checkbox means', text: "By ticking the box, you confirm you have read this policy, agree to follow it, and agree to being recorded and photographed as described above." },
+      title: 'Expert acknowledgment',
+      blocks: [
+        { text: 'You are reading this policy as a step in the sign-up wizard. Continue once you have read it; no signature is needed. Thank you for your understanding and commitment to fostering an inclusive educational environment.' },
       ],
     },
   ],
 };
 
-/** The Speaker Policy for experts, the Code of Conduct for everyone else. */
+/** The Guest Expert Policy for experts, the Code of Conduct for everyone else. */
 export function agreementFor(role: string | undefined): SummitAgreement {
-  return role === 'expert' ? SPEAKER_POLICY : CODE_OF_CONDUCT;
+  return role === 'expert' ? GUEST_EXPERT_POLICY : CODE_OF_CONDUCT;
 }
 
 type ConductProfile = {
@@ -133,7 +182,7 @@ type ConductProfile = {
 
 /**
  * True when the profile row has the agreement columns (the SQL has been
- * run). Until then nobody is asked, since the agreement couldn't be saved.
+ * run). Until then nobody is asked, since the agreement could not be saved.
  */
 export function tracksCodeOfConduct(profile: ConductProfile): boolean {
   return profile != null && 'code_of_conduct_version' in profile;
