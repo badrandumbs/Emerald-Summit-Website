@@ -16,8 +16,8 @@
 --   * auth: sign-in email, account age, last sign-in, providers (Google vs
 --     code). Sign-in bugs depend on these.
 --   * profile: every profiles column (role, subtype, capabilities, expert
---     status, onboarded…) and the sign-up answers, MINUS phone and student
---     id, which no bug needs.
+--     status, onboarded…) and the sign-up answers, MINUS phone, student
+--     id, school, grade and emergency contact, which no bug needs.
 --   * registrations: each session on their day with its time, room,
 --     participation type, team and answers. Most bugs are about a schedule.
 --   * managing: sessions they're assigned to run.
@@ -133,7 +133,8 @@ language sql stable security definer set search_path = public as $$
         from auth.users u where u.id = p_user),
     'profile', (
       select (to_jsonb(p) - 'details')
-             || jsonb_build_object('details', coalesce(p.details, '{}'::jsonb) - array['phone', 'student_id'])
+             || jsonb_build_object('details', coalesce(p.details, '{}'::jsonb)
+                    - array['phone', 'student_id', 'school', 'grade', 'emergency_contact', 'emergency_phone'])
         from public.profiles p where p.id = p_user),
     'registrations', coalesce((
       select jsonb_agg(
@@ -191,6 +192,13 @@ language sql stable security definer set search_path = public as $$
 $$;
 
 revoke all on function private.bug_report_snapshot(uuid) from public, anon, authenticated;
+
+-- Reports saved before school, grade and emergency contact were left out
+-- (2026-11-14) lose them too. Does nothing on a re-run.
+update public.bug_reports
+   set snapshot = jsonb_set(snapshot, '{profile,details}',
+         (snapshot #> '{profile,details}') - array['school', 'grade', 'emergency_contact', 'emergency_phone'])
+ where snapshot #> '{profile,details}' ?| array['school', 'grade', 'emergency_contact', 'emergency_phone'];
 
 -- 4. Sending a report --------------------------------------------------------------
 create or replace function public.submit_bug_report(

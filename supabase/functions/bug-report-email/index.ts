@@ -105,8 +105,8 @@ Deno.serve(async (req) => {
         await sendMail({
           to: [user.email],
           subject: report.kind === "feedback"
-            ? `Your Emerald Summit feedback (Feedback #${report.ticket_no})`
-            : `Your Emerald Summit bug report (Bug #${report.ticket_no})`,
+            ? `Your Emerald Summit Feedback (Feedback #${report.ticket_no})`
+            : `Your Emerald Summit Bug Report (Bug #${report.ticket_no})`,
           html: renderHtml(report, links, "copy"),
           text: renderText(report, links, "copy"),
           replyTo: teamAddresses()[0],
@@ -198,7 +198,6 @@ function summary(report: Report): { title: string; rows: [string, string][] }[] 
   const snap = asObject(report.snapshot);
   const auth = asObject(snap.auth);
   const profile = asObject(snap.profile);
-  const details = asObject(profile.details);
   const client = asObject(report.client);
   const device = asObject(client.device);
   const build = asObject(client.build);
@@ -214,7 +213,6 @@ function summary(report: Report): { title: string; rows: [string, string][] }[] 
   const account: [string, string][] = [
     ["Email", String(auth.email ?? "")],
     ["Role", [profile.role, profile.volunteer_subtype].filter(Boolean).join(" · ")],
-    ["School / grade", [details.school, details.grade].filter(Boolean).join(" · ")],
     ["Account created", String(auth.created_at ?? "")],
     ["Signs in with", asArray(auth.providers).join(", ")],
   ];
@@ -256,7 +254,7 @@ function renderHtml(report: Report, links: { name: string; url: string }[], audi
   const label = report.kind === "feedback" ? "Feedback" : "Bug";
   const site = (Deno.env.get("SITE_URL") ?? "").replace(/\/$/, "");
   const intro = audience === "copy"
-    ? `<p style="margin:0 0 16px">Thanks, ${esc(report.reporter_name)}. We got your ${report.kind === "feedback" ? "feedback" : "bug report"}. This is a copy of everything that was sent, including what the Summit app attached from your account to help us fix it. Only the Summit's admins can see it. Reply to this email if you have more to add.</p>`
+    ? `<p style="margin:0 0 16px">Thanks, ${esc(report.reporter_name)}. We got your ${report.kind === "feedback" ? "feedback" : "bug report"}. This is a copy of everything that was sent, including what the Summit app attached from your account to help us fix it. Only Summit app developers can read reports. Reply to this email if you have more to add.</p>`
     : `<p style="margin:0 0 16px">From ${esc(report.reporter_name)} (${esc(asObject(asObject(report.snapshot).auth).email)}).${site ? ` <a href="${esc(site)}/admin/reports?ticket=${report.ticket_no}">Open in Reports</a>` : ""}</p>`;
   const shots = links.length
     ? `<p style="margin:12px 0 0"><b>Screenshots</b><br>${links.map((l) => `<a href="${esc(l.url)}">${esc(l.name)}</a>`).join("<br>")}</p>`
@@ -287,7 +285,7 @@ function renderText(report: Report, links: { name: string; url: string }[], audi
   const lines = [
     `${label} #${report.ticket_no}`,
     audience === "copy"
-      ? "This is a copy of everything that was sent, including what the Summit app attached from your account. Only the Summit's admins can see it."
+      ? "This is a copy of everything that was sent, including what the Summit app attached from your account. Only Summit app developers can read reports."
       : `From ${report.reporter_name}`,
     "",
     `Name: ${report.reporter_name}`,

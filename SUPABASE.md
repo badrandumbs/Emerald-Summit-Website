@@ -483,7 +483,8 @@ permissions, rooms, session assignments, and attendance). Run these in order,
     the private `bug_report_screenshots` bucket (10 MB images, each person
     uploads into their own `<user_id>/` folder), `submit_bug_report(...)`,
     which saves a report with a server-built snapshot of the sender's
-    account (profile minus phone and student id, sessions, teams, managed
+    account (profile minus phone, student ID, school, grade and emergency
+    contact, sessions, teams, managed
     sessions, removals, check-in, allowlist rows, last 10 notifications and
     hour logs, summit_settings) and allows 10 an hour, and the admin-only
     `set_bug_report_status(p_id, p_status)`. Then deploy the
@@ -732,7 +733,8 @@ Auth's own email only covers sign-in messages, so bug reports go through the
 
 **2. Bug report emails.** `bug-report-email` is deployed (2026-11-14, with
 `--no-verify-jwt` like the other functions; it checks the session itself),
-and `BUG_REPORT_TO` (the team inbox that gets every ticket) and `SITE_URL`
+and `BUG_REPORT_TO` (the team inbox that gets every ticket:
+`support@ehsacademics.org` since 2026-11-14) and `SITE_URL`
 (`https://emerald-summit.vercel.app`, for the "Open in Reports" link) are
 set. **Done 2026-11-14:** `RESEND_API_KEY` and `BUG_REPORT_FROM`
 (`Emerald Summit <app@ehsacademics.org>`) are set, and test Bug #2 sent its

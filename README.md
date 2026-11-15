@@ -1935,8 +1935,9 @@ has it too since Nov 14, 2026; see below.
   switch at the top moves it to the other one): name (filled in,
   required), description (required), up to 5 screenshots (10 MB each,
   images only) and **Email me a copy** (on by default). A "What else is
-  sent with your report" list says what's attached, and that phone number
-  and student ID aren't. After sending it shows the ticket, e.g. "Bug #12"
+  sent with your report" list says what's attached, that phone number,
+  student ID, school, grade and emergency contact aren't, and "Only Summit
+  app developers can read reports." The app's form should say the same. After sending it shows the ticket, e.g. "Bug #12"
   or "Feedback #13". Admins get **Bug reports and feedback**
   (`/admin/reports` on the website): Bugs and Feedback tabs with open
   counts, open / resolved, screenshots, the attached data, and **Copy as
