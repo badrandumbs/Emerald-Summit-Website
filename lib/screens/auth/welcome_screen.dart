@@ -184,30 +184,35 @@ class _RoleChooser extends StatelessWidget {
                     roles: _helping,
                     onOpen: onOpen,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
+                  Divider(height: 1, color: scheme.outlineVariant),
+                  const SizedBox(height: 16),
+                  // Centered footer: help line, then the quieter organizer
+                  // link under it.
                   Wrap(
-                    alignment: WrapAlignment.spaceBetween,
+                    alignment: WrapAlignment.center,
                     crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 12,
-                    runSpacing: 4,
                     children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('Not sure?', style: muted),
-                          TextButton(
-                            onPressed: () => _contact(context),
-                            child: const Text('Contact the EAF team'),
-                          ),
-                        ],
-                      ),
+                      Text('Not sure?', style: muted),
                       TextButton(
-                        onPressed: () => onOpen(SummitRole.admin),
+                        onPressed: () => _contact(context),
                         style: TextButton.styleFrom(
-                            foregroundColor: scheme.onSurfaceVariant),
-                        child: const Text('Organizer sign in'),
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                        ),
+                        child: const Text('Contact the EAF team'),
                       ),
                     ],
+                  ),
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: () => onOpen(SummitRole.admin),
+                      style: TextButton.styleFrom(
+                        foregroundColor: scheme.onSurfaceVariant,
+                        textStyle: theme.textTheme.bodySmall,
+                      ),
+                      icon: const Icon(Icons.lock_outline, size: 16),
+                      label: const Text('Organizer sign in'),
+                    ),
                   ),
                 ],
               ),
