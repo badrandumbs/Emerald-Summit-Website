@@ -1,7 +1,8 @@
 // An agreement (the Code of Conduct, or the Guest Expert Policy for experts)
 // in a bordered, scrollable window, with Expand to read it in a large popup.
 // Used by the last sign-up step (ProfileSetupPage), like the app's
-// CodeOfConductWindow. The text is laid out as the document is.
+// CodeOfConductWindow. The text is laid out as the document is, minus the
+// photo question, which ProfileSetupPage asks below the window.
 import { useState } from 'react';
 import { Maximize2 } from '@/components/icons';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -33,7 +34,6 @@ function Block({ block }: { block: AgreementBlock }) {
 }
 
 export function CodeOfConductText({ agreement, showTitle = true }: { agreement: SummitAgreement; showTitle?: boolean }) {
-  const media = agreement.mediaChoice;
   return (
     <div className="space-y-4 text-[14px] leading-relaxed">
       {(showTitle || agreement.preamble.length > 0) && (
@@ -46,13 +46,6 @@ export function CodeOfConductText({ agreement, showTitle = true }: { agreement: 
         <section key={section.title} className="space-y-1.5">
           <h4 className="font-semibold text-emerald">{section.title}</h4>
           {section.blocks.map((b, i) => <Block key={i} block={b} />)}
-          {media && media.section === section.title && (
-            <div className="space-y-1.5">
-              <p className="font-semibold">{media.prompt}</p>
-              <p>___ {media.grant}</p>
-              <p>___ {media.doNotGrant}</p>
-            </div>
-          )}
         </section>
       ))}
       {agreement.footer && <p className="text-[12px] text-muted-foreground">{agreement.footer}</p>}

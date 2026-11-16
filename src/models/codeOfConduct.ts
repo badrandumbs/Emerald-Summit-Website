@@ -4,9 +4,10 @@
 // nothing summarized: "Emerald Summit 2026 Code of Conduct" (EAF Field Trip
 // Waiver Form Version 11.02.2025.1) and "Guest Expert Policy: Emerald Summit
 // '27" (Nov 14, 2026). The only changes: the signature lines are replaced by
-// the checkbox, and the Code of Conduct's two media options say "of me"
-// instead of "of my child", because the account holder picks one, not a
-// parent. The app has the same text in lib/models/code_of_conduct.dart:
+// the checkbox, and the Code of Conduct's "Media Rights and Consent" section
+// is not in the document window: it is asked below it as a radio button,
+// with the two options saying "of me" instead of "of my child", because the
+// account holder picks one, not a parent. The app has the same text in lib/models/code_of_conduct.dart:
 // change both together and bump the version, which asks everyone who agreed
 // to agree again.
 
@@ -25,7 +26,7 @@ export interface ConductSection {
 
 /** A grant / do-not-grant question, answered with a radio button (profiles.photo_consent). */
 export interface MediaChoice {
-  /** The section it belongs to; it shows right after it. */
+  /** The heading it is asked under, below the document window. */
   section: string;
   prompt: string;
   grant: string;
@@ -81,7 +82,6 @@ export const CODE_OF_CONDUCT: SummitAgreement = {
         { lead: 'Insurance', text: 'DUSD does not provide insurance for non-school sponsored events. Insurance coverage must be provided by parents/guardians or through the travel agency. Students will not be covered by district or EAF insurance during this trip.' },
       ],
     },
-    { title: 'Media Rights and Consent', blocks: [] },
     {
       title: 'Acknowledgment and Signature',
       blocks: [

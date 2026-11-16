@@ -115,6 +115,9 @@ test('sign-up ends with the Code of Conduct box, once the columns exist', async 
   render(<MemoryRouter><ProfileSetupPage /></MemoryRouter>);
   const continueButton = screen.getByRole('button', { name: 'Continue' });
   expect(continueButton).toBeDisabled();
+  // The photo question is asked once, as the radio, not again in the window.
+  expect(screen.queryByText(/___/)).toBeNull();
+  expect(screen.getAllByText(CODE_OF_CONDUCT.mediaChoice!.grant)).toHaveLength(1);
   await user.click(screen.getByRole('checkbox', { name: CODE_OF_CONDUCT.checkbox }));
   // The photo permission question has to be answered too.
   expect(continueButton).toBeDisabled();
