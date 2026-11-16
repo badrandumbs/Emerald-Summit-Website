@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeftRight, Award, Bug, CalendarDays, ChartLine, ChevronLeft, ChevronRight, Clock, HeartHandshake, LogOut, MapPin,
-  MessageSquare, Palette, QrCode, ScanLine, ShieldCheck, UserRound, Users, Inbox,
+  MessageSquare, Palette, QrCode, ScanLine, ShieldCheck, UserRound, Users, Inbox, CameraOff,
 } from '@/components/icons';
 import { useSummitStatus } from '../services/summitStatus';
 import { toast } from 'sonner';
@@ -207,6 +207,7 @@ function ProfileHub({ profile }: { profile: Profile }) {
           {canOpenVolunteerHub && <SettingsRow icon={Users} title="Volunteer hub" subtitle="Volunteers, admins, and how to reach them" onClick={() => navigate('/volunteer/contacts')} />}
           {canCheckIn && <AppOnlyRow icon={ScanLine} title="Front desk check-in" subtitle="Scanning QR passes needs the phone camera, so check people in from the Emerald Summit app." />}
           {isAdmin && <SettingsRow icon={ChartLine} title="Metrics" subtitle="Who signed up, from which schools, for what" onClick={() => navigate('/admin/metrics')} />}
+          {isAdmin && <SettingsRow icon={CameraOff} title="Photo permission" subtitle="Who did not allow photos" onClick={() => navigate('/admin/photo-permission')} />}
           {isAdmin && <SettingsRow icon={ShieldCheck} title="Expert approvals" subtitle="Approve or decline expert sign-ups" onClick={() => navigate('/admin/experts')} />}
           {isAdmin && <SettingsRow icon={Inbox} title="Bug reports and feedback" subtitle="What people reported, with their details" onClick={() => navigate('/admin/reports')} />}
           {isAdmin && <SettingsRow icon={MapPin} title="Manage rooms" subtitle="The rooms sessions can be held in" onClick={() => navigate('/admin/rooms')} />}

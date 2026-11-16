@@ -17,6 +17,7 @@ import {
   CalendarBlank,
   CalendarCheck,
   Camera as PhCamera,
+  CameraSlash,
   CaretDown,
   CaretUp,
   CaretLeft,
@@ -151,6 +152,7 @@ export const BookUser = duotone(AddressBook, 'BookUser');
 export const CalendarCog = duotone(CalendarCheck, 'CalendarCog');
 export const CalendarDays = duotone(CalendarBlank, 'CalendarDays');
 export const Camera = duotone(PhCamera, 'Camera');
+export const CameraOff = duotone(CameraSlash, 'CameraOff');
 export const ChartLine = duotone(PhChartLine, 'ChartLine');
 export const Check = plain(PhCheck, 'Check');
 export const CheckCheck = plain(Checks, 'CheckCheck');
