@@ -1868,6 +1868,17 @@ has it too since Nov 14, 2026; see below.
     db query --linked`). Three test accounts had agreed to an earlier,
     summarized draft; their old versions don't match, so they are asked
     again. Run it on prod too when prod exists.
+  - **Admins see who did not allow photos** (app and website, Nov 15,
+    2026): Profile → **Photo permission** in the app
+    ([photo_permission_screen.dart](lib/screens/photo_permission_screen.dart)),
+    `/admin/photo-permission` on the website (Profile → Photo permission).
+    Three lists, searchable by name, email or school: **Did not allow
+    photos** first (with Copy names, for photographers), **Not answered
+    yet** (has not agreed to the current Code of Conduct), and **Allowed
+    photos** collapsed. Experts are not listed; they are not asked. Reads
+    `fetch_photo_permissions()` in
+    [photo_permission_list.sql](supabase/photo_permission_list.sql), admin
+    only (run on the dev project Nov 15, 2026).
   - Not built yet: the Guest Expert Policy says expert profiles show title
     and organization, a LinkedIn link and a headshot on a Summit experts
     page. The app's expert sign-up asks for area of expertise, a bio and a

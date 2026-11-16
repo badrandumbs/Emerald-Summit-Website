@@ -1168,6 +1168,28 @@ class SampleMetricsRepository implements MetricsRepository {
   final SampleStore _store;
 
   @override
+  Future<List<PhotoPermission>> fetchPhotoPermissions() async => const [
+        PhotoPermission(
+            userId: 'demo-1',
+            name: 'Ava Thompson',
+            email: 'ava@example.com',
+            role: SummitRole.participant,
+            school: 'Emerald High School',
+            granted: false),
+        PhotoPermission(
+            userId: 'demo-2',
+            name: 'Ben Ortiz',
+            email: 'ben@example.com',
+            role: SummitRole.parentSpectator,
+            granted: true),
+        PhotoPermission(
+            userId: 'demo-3',
+            name: 'Chloe Park',
+            email: 'chloe@example.com',
+            role: SummitRole.volunteer),
+      ];
+
+  @override
   Future<SummitMetrics> fetchSummitMetrics() async {
     final people = <String, MetricsPerson>{};
     final registrations = <MetricsRegistration>[];

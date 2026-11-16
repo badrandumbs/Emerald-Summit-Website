@@ -1319,6 +1319,15 @@ class SupabaseMetricsRepository implements MetricsRepository {
     final res = await _client.rpc('fetch_summit_metrics');
     return SummitMetrics.fromMap((res as Map).cast<String, dynamic>());
   }
+
+  @override
+  Future<List<PhotoPermission>> fetchPhotoPermissions() async {
+    final res = await _client.rpc('fetch_photo_permissions');
+    return [
+      for (final r in res as List)
+        PhotoPermission.fromMap((r as Map).cast<String, dynamic>()),
+    ];
+  }
 }
 
 /// Bug reports and feedback: screenshots in the private

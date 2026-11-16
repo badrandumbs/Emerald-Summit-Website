@@ -16,6 +16,9 @@ class _FakeMetrics implements MetricsRepository {
 
   @override
   Future<SummitMetrics> fetchSummitMetrics() async => data;
+
+  @override
+  Future<List<PhotoPermission>> fetchPhotoPermissions() async => const [];
 }
 
 MetricsPerson _person(

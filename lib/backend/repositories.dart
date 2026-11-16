@@ -992,6 +992,50 @@ abstract interface class MetricsRepository {
   /// Every onboarded account (role, school, grade; no names) and every
   /// registration. Admins only; anyone else gets an error.
   Future<SummitMetrics> fetchSummitMetrics();
+
+  /// Every onboarded non-expert account with its Code of Conduct photo
+  /// permission answer (photo_permission_list.sql). Admins only.
+  Future<List<PhotoPermission>> fetchPhotoPermissions();
+}
+
+/// One account's answer to the Code of Conduct's "Media Rights and Consent"
+/// question.
+class PhotoPermission {
+  const PhotoPermission({
+    required this.userId,
+    required this.name,
+    required this.email,
+    required this.role,
+    this.school,
+    this.granted,
+    this.agreedAt,
+  });
+
+  factory PhotoPermission.fromMap(Map<String, dynamic> m) => PhotoPermission(
+        userId: m['user_id'].toString(),
+        name: (m['full_name'] as String?) ?? '',
+        email: (m['email'] as String?) ?? '',
+        role: SummitRoleX.fromId(m['role'] as String?),
+        school: switch ((m['school'] as String?)?.trim()) {
+          final String s when s.isNotEmpty => s,
+          _ => null,
+        },
+        granted: m['photo_consent'] as bool?,
+        agreedAt: switch (m['agreed_at']) {
+          final String t => DateTime.tryParse(t)?.toLocal(),
+          _ => null,
+        },
+      );
+
+  final String userId;
+  final String name;
+  final String email;
+  final SummitRole role;
+  final String? school;
+
+  /// True: granted. False: did not grant. Null: has not answered yet.
+  final bool? granted;
+  final DateTime? agreedAt;
 }
 
 // ---- Bug reports and feedback ---------------------------------------------

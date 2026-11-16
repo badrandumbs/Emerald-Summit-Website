@@ -12,6 +12,7 @@ import 'bug_reports_screen.dart';
 import 'edit_profile_screen.dart';
 import 'expert_approvals_screen.dart';
 import 'metrics_screen.dart';
+import 'photo_permission_screen.dart';
 import 'report_screen.dart';
 import 'front_desk_screen.dart';
 import 'my_assignments_screen.dart';
@@ -292,6 +293,18 @@ class _VisibilityCard extends StatelessWidget {
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
                           builder: (_) => const MetricsScreen()),
+                    ),
+                  ),
+                if (appState.isAdmin)
+                  ListTile(
+                    leading: Icon(Icons.no_photography_outlined,
+                        color: theme.colorScheme.primary),
+                    title: const Text('Photo permission'),
+                    subtitle: const Text('Who did not allow photos'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                          builder: (_) => const PhotoPermissionScreen()),
                     ),
                   ),
                 if (appState.isAdmin)
