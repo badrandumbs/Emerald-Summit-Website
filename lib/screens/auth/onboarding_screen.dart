@@ -154,8 +154,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         setState(() {
           _busy = false;
           _error = _role == SummitRole.admin
-              ? "You aren't eligible to sign up as an admin."
-              : "You aren't eligible to sign up as a volunteer.";
+              ? "You are not eligible to sign up as an admin."
+              : "You are not eligible to sign up as a volunteer.";
         });
         return;
       }

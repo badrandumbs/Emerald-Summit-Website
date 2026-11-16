@@ -65,7 +65,7 @@ class _ChangeRoleSheetState extends State<_ChangeRoleSheet> {
       if (!eligible) {
         setState(() {
           _busy = false;
-          _error = "You aren't eligible to sign up as a "
+          _error = "You are not eligible to sign up as a "
               '${role.label.toLowerCase()}.';
         });
         return;

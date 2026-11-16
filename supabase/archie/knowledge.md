@@ -312,7 +312,7 @@ At the front of the school near the office. The opening time isn't confirmed yet
 In front of the school near the flagpole and the check-in center, or along the sides of the school. If the front fills up, park along the sides.
 
 **Is there accessible parking, a drop-off lane, or bike parking?**
-Those details aren't confirmed. For accessibility needs, email president@ehsacademics.org.
+Those details are not confirmed. For accessibility needs, email president@ehsacademics.org.
 
 **Can I take BART or a bus?**
 Look into Wheels bus routes (wheelsbus.com) and Dublin/Pleasanton BART options.

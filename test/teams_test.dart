@@ -668,7 +668,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Solo only (no teams)').last);
       await tester.pumpAndSettle();
-      expect(find.text("Teams aren't allowed for this session."), findsOneWidget);
+      expect(find.text("Teams are not allowed for this session."), findsOneWidget);
       expect(
         find.textContaining('1 team already registered for this session',
             skipOffstage: false),

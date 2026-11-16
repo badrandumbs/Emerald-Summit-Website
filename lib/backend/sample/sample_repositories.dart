@@ -409,7 +409,7 @@ class SampleScheduleRepository implements ScheduleRepository {
   }
 
   static const _soloOnly =
-      TeamCodeException("This session is solo only. Teams aren't allowed.");
+      TeamCodeException("This session is solo only. Teams are not allowed.");
 
   /// Stable id for the demo user's own roster entry in sample mode.
   static const String _demoUserId = 'demo-user';

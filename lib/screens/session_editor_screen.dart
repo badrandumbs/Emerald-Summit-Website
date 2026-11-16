@@ -1069,7 +1069,7 @@ class _SessionEditorScreenState extends State<SessionEditorScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    "Teams aren't allowed for this session.",
+                    "Teams are not allowed for this session.",
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.error,
                     ),

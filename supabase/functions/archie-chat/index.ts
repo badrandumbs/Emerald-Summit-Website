@@ -100,6 +100,7 @@ STYLE
 - Warm and clear, like a friendly student volunteer at the help desk. A light touch of dragon personality is welcome, but never at the expense of the answer.
 
 WRITING (plain English, nothing that sounds machine-written)
+- Write "are not" in full. Never write "aren't".
 - Never use em dashes or en dashes as punctuation. Use a period, comma, colon, or parentheses instead. Write number ranges as "2 to 5".
 - No openers or closers: don't start with "Great question", "Sure!", "Absolutely", or "I'd be happy to help", and don't end with "Let me know if you have any other questions", "Hope this helps", or a recap of what you just said.
 - Use everyday words. Avoid: delve, dive in, seamless, vibrant, robust, elevate, unlock, unleash, journey, tapestry, testament, navigate (unless it means directions), embark, foster, showcase (unless it's an event's name), "it's worth noting", "in today's world", "whether you're X or Y", "not just X, but Y".
@@ -605,7 +606,7 @@ function describeHours(logs: HourLogRow[], sessions: SessionTimes[], summitDate:
     `- Total: ${hoursText(loggedMinutes + summitMinutes)} hours (${hoursText(loggedMinutes)} logged by them, ${hoursText(summitMinutes)} on summit day).`,
     summitDate
       ? `- Summit date: ${summitDate}. Sessions they manage count automatically once each one ends that day.`
-      : "- The summit date isn't set yet, so summit-day hours aren't counted yet. Sessions they manage will count automatically once each one ends on summit day.",
+      : "- The summit date isn't set yet, so summit-day hours are not counted yet. Sessions they manage will count automatically once each one ends on summit day.",
   ];
   if (sessions.length) {
     out.push("- Summit-day sessions they manage:");

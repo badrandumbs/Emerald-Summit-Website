@@ -1985,6 +1985,15 @@ has it too since Nov 14, 2026; see below.
     website's `NAV_ITEMS` in `src/components/AppShell.tsx`).
   - "Summit" is always capitalized in app text ("Summit day", "the Summit
     team", "questions about the Summit", role blurbs, the phone-number
+- [x] **"are not", never "aren't"** (website and app, Nov 15, 2026). App
+  text writes "are not" in full ("You are not eligible to sign up as a
+  volunteer.", "Teams are not allowed."), the same as the website. Other
+  contractions ("You're", "can't", "Let's") stay. The Home greetings ("What's
+  up", "What's poppin'", "Let's build something") are now on the website too.
+  - Still open: redeploy `archie-chat` (its prompt now says to write "are
+    not", never "aren't") with
+    `supabase functions deploy archie-chat --no-verify-jwt --use-api`, and
+    upload the edited `supabase/archie/knowledge.md`.
     helper, volunteer hours, the follow-up screens).
   - Never "Explore the verses"; it's always **Explore the disciplines**.
   - Home's **Quick access** row (Resources, Announcements, Profile, Volunteer

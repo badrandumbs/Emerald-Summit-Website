@@ -177,7 +177,7 @@ void main() {
       await pump(tester, const VolunteerHoursScreen());
       expect(find.text('0'), findsOneWidget);
       expect(
-        find.textContaining("You aren't managing any sessions"),
+        find.textContaining("You are not managing any sessions"),
         findsOneWidget,
       );
       expect(find.textContaining('Nothing logged yet'), findsOneWidget);

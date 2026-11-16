@@ -167,7 +167,7 @@ class _VolunteerHoursScreenState extends State<VolunteerHoursScreen> {
         const SizedBox(height: 8),
         if (sessions.isEmpty)
           _EmptyNote(
-            "You aren't managing any sessions yet. When an admin assigns you "
+            "You are not managing any sessions yet. When an admin assigns you "
             'one, its hours show up here.',
           )
         else

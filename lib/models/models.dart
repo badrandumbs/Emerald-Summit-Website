@@ -374,7 +374,7 @@ class TeamLookup {
           "The owner of \"${projectName ?? 'that team'}\" removed you from "
               "it, so you can't rejoin with this code.",
         TeamLookupOutcome.teamsNotAllowed =>
-          "This session is solo only. Teams aren't allowed.",
+          "This session is solo only. Teams are not allowed.",
         TeamLookupOutcome.notFound =>
           "We couldn't find a team with that code. Check it with your teammate.",
         TeamLookupOutcome.tooManyTries =>

@@ -132,7 +132,7 @@ class _RosterPersonSheet extends StatelessWidget {
             if (e.role == null)
               const _InfoRow(
                 label: 'Mobile number',
-                value: "Profile details aren't available yet.",
+                value: "Profile details are not available yet.",
               )
             else
               ListTile(
