@@ -15,17 +15,16 @@ UserProfile _profile({
   String? grade = '11',
   bool tracks = true,
   String? version,
-}) =>
-    UserProfile(
-      id: 'u1',
-      email: 'alex@example.com',
-      fullName: 'Alex Rivera',
-      role: role,
-      onboarded: true,
-      details: {'grade': ?grade},
-      tracksCodeOfConduct: tracks,
-      codeOfConductVersion: version,
-    );
+}) => UserProfile(
+  id: 'u1',
+  email: 'alex@example.com',
+  fullName: 'Alex Rivera',
+  role: role,
+  onboarded: true,
+  details: {'grade': ?grade},
+  tracksCodeOfConduct: tracks,
+  codeOfConductVersion: version,
+);
 
 void main() {
   setUp(() async {
@@ -42,11 +41,15 @@ void main() {
     appState.profile = _profile(version: codeOfConduct.version);
     expect(appState.needsCodeOfConduct, isFalse);
     // Experts agree to the Guest Expert Policy, not the Code of Conduct.
-    appState.profile =
-        _profile(role: SummitRole.expert, version: codeOfConduct.version);
+    appState.profile = _profile(
+      role: SummitRole.expert,
+      version: codeOfConduct.version,
+    );
     expect(appState.needsCodeOfConduct, isTrue);
-    appState.profile =
-        _profile(role: SummitRole.expert, version: guestExpertPolicy.version);
+    appState.profile = _profile(
+      role: SummitRole.expert,
+      version: guestExpertPolicy.version,
+    );
     expect(appState.needsCodeOfConduct, isFalse);
     appState.profile = _profile(version: 'an-older-version');
     expect(appState.needsCodeOfConduct, isTrue);
@@ -60,8 +63,11 @@ void main() {
   test('the profile row says whether the columns exist', () {
     final before = UserProfile.fromMap({'id': 'a', 'email': 'x'});
     expect(before.tracksCodeOfConduct, isFalse);
-    final after = UserProfile.fromMap(
-        {'id': 'a', 'email': 'x', 'code_of_conduct_version': null});
+    final after = UserProfile.fromMap({
+      'id': 'a',
+      'email': 'x',
+      'code_of_conduct_version': null,
+    });
     expect(after.tracksCodeOfConduct, isTrue);
     expect(after.codeOfConductVersion, isNull);
   });
@@ -72,10 +78,12 @@ void main() {
     addTearDown(tester.view.reset);
     appState.profile = _profile();
     await profileRepository.save(appState.profile!);
-    await tester.pumpWidget(
-        const MaterialApp(home: CodeOfConductScreen()));
+    await tester.pumpWidget(const MaterialApp(home: CodeOfConductScreen()));
 
     expect(find.text(codeOfConduct.title), findsOneWidget);
+    // The photo question is asked once, as the radio, not again in the window.
+    expect(find.text(codeOfConduct.mediaChoice!.grant), findsOneWidget);
+    expect(find.textContaining('___'), findsNothing);
     final button = find.widgetWithText(FilledButton, 'Agree and continue');
     expect(tester.widget<FilledButton>(button).onPressed, isNull);
 
@@ -83,7 +91,9 @@ void main() {
     await tester.pump();
     // The photo question has to be answered too.
     expect(tester.widget<FilledButton>(button).onPressed, isNull);
-    await tester.ensureVisible(find.text(codeOfConduct.mediaChoice!.doNotGrant));
+    await tester.ensureVisible(
+      find.text(codeOfConduct.mediaChoice!.doNotGrant),
+    );
     await tester.tap(find.text(codeOfConduct.mediaChoice!.doNotGrant));
     await tester.pump();
     expect(tester.widget<FilledButton>(button).onPressed, isNotNull);
@@ -97,8 +107,7 @@ void main() {
 
   testWidgets('Expand opens the whole code full screen', (tester) async {
     appState.profile = _profile();
-    await tester.pumpWidget(
-        const MaterialApp(home: CodeOfConductScreen()));
+    await tester.pumpWidget(const MaterialApp(home: CodeOfConductScreen()));
     await tester.tap(find.text('Expand'));
     await tester.pumpAndSettle();
     expect(find.text('Liability & Legal Disclaimer'), findsOneWidget);
@@ -111,8 +120,7 @@ void main() {
       expect(appState.isEighthGradeParticipant, isTrue);
       appState.profile = _profile(grade: '9');
       expect(appState.isEighthGradeParticipant, isFalse);
-      appState.profile =
-          _profile(grade: '8', role: SummitRole.parentSpectator);
+      appState.profile = _profile(grade: '8', role: SummitRole.parentSpectator);
       expect(appState.isEighthGradeParticipant, isFalse);
     });
 
@@ -122,30 +130,34 @@ void main() {
       tester.platformDispatcher.accessibilityFeaturesTestValue =
           const FakeAccessibilityFeatures(disableAnimations: true);
       addTearDown(
-          tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
       await appState.loadCatalog();
       appState.profile = _profile(grade: '8');
       final base = appState.allSessions.first;
       Session withFlag(bool allow) => Session.fromMap({
-            'id': base.id,
-            'discipline_id': base.disciplineId,
-            'title': base.title,
-            'discipline_name': base.disciplineName,
-            'start_time': base.start,
-            'end_time': base.end,
-            'capacity': base.capacity,
-            'allow_eighth_graders': allow,
-          });
+        'id': base.id,
+        'discipline_id': base.disciplineId,
+        'title': base.title,
+        'discipline_name': base.disciplineName,
+        'start_time': base.start,
+        'end_time': base.end,
+        'capacity': base.capacity,
+        'allow_eighth_graders': allow,
+      });
 
       await tester.pumpWidget(
-          MaterialApp(home: SessionDetailScreen(session: withFlag(false))));
+        MaterialApp(home: SessionDetailScreen(session: withFlag(false))),
+      );
       await tester.pump();
       expect(find.byType(EighthGradeBadge), findsNothing);
       expect(find.textContaining('Not open to 8th graders'), findsOneWidget);
     });
   });
 
-  testWidgets('experts see the Guest Expert Policy, with no photo question', (tester) async {
+  testWidgets('experts see the Guest Expert Policy, with no photo question', (
+    tester,
+  ) async {
     appState.profile = _profile(role: SummitRole.expert);
     await tester.pumpWidget(const MaterialApp(home: CodeOfConductScreen()));
     expect(find.text(guestExpertPolicy.title), findsOneWidget);
@@ -156,20 +168,22 @@ void main() {
 
   test('the texts are the documents, not summaries', () {
     String all(SummitAgreement a) => [
-          a.title,
-          ...a.preamble,
-          for (final s in a.sections) ...[
-            s.title,
-            for (final b in s.blocks) '${b.lead ?? ''} ${b.text}',
-          ],
-          ?a.mediaChoice?.grant,
-        ].join(' ');
+      a.title,
+      ...a.preamble,
+      for (final s in a.sections) ...[
+        s.title,
+        for (final b in s.blocks) '${b.lead ?? ''} ${b.text}',
+      ],
+      ?a.mediaChoice?.grant,
+    ].join(' ');
     final conduct = all(codeOfConduct);
     expect(conduct, contains('It is NOT a school/DUSD-sponsored event.'));
     expect(conduct, contains('through the travel agency'));
     expect(conduct, contains('the EHS PFSO'));
-    expect(codeOfConduct.mediaChoice!.grant,
-        contains('I waive the right to inspect'));
+    expect(
+      codeOfConduct.mediaChoice!.grant,
+      contains('I waive the right to inspect'),
+    );
     final expert = all(guestExpertPolicy);
     expect(expert, contains('CivicVerse tracks may cover civics'));
     expect(expert, contains('LinkedIn link (optional) and headshot'));

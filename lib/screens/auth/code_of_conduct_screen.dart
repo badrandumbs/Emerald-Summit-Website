@@ -46,8 +46,9 @@ class _CodeOfConductScreenState extends State<CodeOfConductScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final agreement =
-        agreementFor(appState.profile?.role ?? SummitRole.participant);
+    final agreement = agreementFor(
+      appState.profile?.role ?? SummitRole.participant,
+    );
     final media = agreement.mediaChoice;
     final ready = _agreed && (media == null || _photoConsent != null);
     return Scaffold(
@@ -62,16 +63,14 @@ class _CodeOfConductScreenState extends State<CodeOfConductScreen> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
               children: [
-                Text(
-                  'One last step',
-                  style: theme.textTheme.headlineSmall,
-                ),
+                Text('One last step', style: theme.textTheme.headlineSmall),
                 const SizedBox(height: 6),
                 Text(
                   '${agreement.whoAgrees} Read it below, or expand it to '
                   'read it full screen.',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant),
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 CodeOfConductWindow(agreement: agreement),
@@ -79,9 +78,12 @@ class _CodeOfConductScreenState extends State<CodeOfConductScreen> {
                   const SizedBox(height: 20),
                   Text(media.section, style: theme.textTheme.titleSmall),
                   const SizedBox(height: 4),
-                  Text(media.prompt,
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(fontWeight: FontWeight.w700)),
+                  Text(
+                    media.prompt,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                   RadioGroup<bool>(
                     groupValue: _photoConsent,
                     onChanged: (v) {
@@ -92,14 +94,18 @@ class _CodeOfConductScreenState extends State<CodeOfConductScreen> {
                         RadioListTile<bool>(
                           value: true,
                           contentPadding: EdgeInsets.zero,
-                          title: Text(media.grant,
-                              style: theme.textTheme.bodyMedium),
+                          title: Text(
+                            media.grant,
+                            style: theme.textTheme.bodyMedium,
+                          ),
                         ),
                         RadioListTile<bool>(
                           value: false,
                           contentPadding: EdgeInsets.zero,
-                          title: Text(media.doNotGrant,
-                              style: theme.textTheme.bodyMedium),
+                          title: Text(
+                            media.doNotGrant,
+                            style: theme.textTheme.bodyMedium,
+                          ),
                         ),
                       ],
                     ),
@@ -117,9 +123,12 @@ class _CodeOfConductScreenState extends State<CodeOfConductScreen> {
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: 4),
-                  Text(_error!,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: theme.colorScheme.error)),
+                  Text(
+                    _error!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
                 ],
                 const SizedBox(height: 12),
                 FilledButton(
@@ -149,8 +158,11 @@ class _CodeOfConductScreenState extends State<CodeOfConductScreen> {
 /// An agreement in a bordered, scrollable window, with Expand to read it
 /// full screen.
 class CodeOfConductWindow extends StatefulWidget {
-  const CodeOfConductWindow(
-      {super.key, required this.agreement, this.height = 260});
+  const CodeOfConductWindow({
+    super.key,
+    required this.agreement,
+    this.height = 260,
+  });
 
   final SummitAgreement agreement;
   final double height;
@@ -169,18 +181,20 @@ class _CodeOfConductWindowState extends State<CodeOfConductWindow> {
   }
 
   void _expand(BuildContext context) {
-    Navigator.of(context).push(MaterialPageRoute<void>(
-      fullscreenDialog: true,
-      builder: (context) => Scaffold(
-        appBar: AppBar(title: Text(widget.agreement.name)),
-        body: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-            children: [CodeOfConductText(agreement: widget.agreement)],
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (context) => Scaffold(
+          appBar: AppBar(title: Text(widget.agreement.name)),
+          body: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+              children: [CodeOfConductText(agreement: widget.agreement)],
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 
   @override
@@ -220,8 +234,8 @@ class _CodeOfConductWindowState extends State<CodeOfConductWindow> {
 }
 
 /// A whole agreement as the document lays it out: title, the lines under it,
-/// each section's paragraphs and bullets, the photo question's two options,
-/// and the footer.
+/// each section's paragraphs and bullets, and the footer. The photo question
+/// is left out: [CodeOfConductScreen] asks it below the window.
 class CodeOfConductText extends StatelessWidget {
   const CodeOfConductText({super.key, required this.agreement});
 
@@ -232,21 +246,22 @@ class CodeOfConductText extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final body = theme.textTheme.bodyMedium?.copyWith(height: 1.45);
-    final media = agreement.mediaChoice;
 
     Widget block(AgreementBlock b) {
       final lead = b.lead;
       final text = Text.rich(
-        TextSpan(children: [
-          if (lead != null)
-            TextSpan(
-              text: b.text.isEmpty ? '$lead:' : '$lead: ',
-              style: b.italicLead
-                  ? const TextStyle(fontStyle: FontStyle.italic)
-                  : const TextStyle(fontWeight: FontWeight.w700),
-            ),
-          TextSpan(text: b.text),
-        ]),
+        TextSpan(
+          children: [
+            if (lead != null)
+              TextSpan(
+                text: b.text.isEmpty ? '$lead:' : '$lead: ',
+                style: b.italicLead
+                    ? const TextStyle(fontStyle: FontStyle.italic)
+                    : const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            TextSpan(text: b.text),
+          ],
+        ),
         style: body,
       );
       return Padding(
@@ -269,30 +284,24 @@ class CodeOfConductText extends StatelessWidget {
         Text(agreement.title, style: theme.textTheme.titleMedium),
         for (final line in agreement.preamble) ...[
           const SizedBox(height: 6),
-          Text(line,
-              style: body?.copyWith(color: scheme.onSurfaceVariant)),
+          Text(line, style: body?.copyWith(color: scheme.onSurfaceVariant)),
         ],
         for (final section in agreement.sections) ...[
           const SizedBox(height: 16),
-          Text(section.title,
-              style: theme.textTheme.titleSmall
-                  ?.copyWith(color: scheme.primary)),
+          Text(
+            section.title,
+            style: theme.textTheme.titleSmall?.copyWith(color: scheme.primary),
+          ),
           for (final b in section.blocks) block(b),
-          if (media != null && media.section == section.title) ...[
-            const SizedBox(height: 6),
-            Text(media.prompt,
-                style: body?.copyWith(fontWeight: FontWeight.w700)),
-            for (final option in [media.grant, media.doNotGrant]) ...[
-              const SizedBox(height: 6),
-              Text('___ $option', style: body),
-            ],
-          ],
         ],
         if (agreement.footer != null) ...[
           const SizedBox(height: 16),
-          Text(agreement.footer!,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: scheme.onSurfaceVariant)),
+          Text(
+            agreement.footer!,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ],
     );
