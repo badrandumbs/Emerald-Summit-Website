@@ -7,9 +7,10 @@
 // the checkbox, and the Code of Conduct's "Media Rights and Consent" section
 // is not in the document window: it is asked below it as a radio button,
 // with the two options saying "of me" instead of "of my child", because the
-// account holder picks one, not a parent. The app has the same text in lib/models/code_of_conduct.dart:
-// change both together and bump the version, which asks everyone who agreed
-// to agree again.
+// account holder picks one, not a parent. The waiver form's version line at
+// the bottom is left out. The app has the same text in
+// lib/models/code_of_conduct.dart: change both together and bump the
+// version, which asks everyone who agreed to agree again.
 
 /** A paragraph or bullet, optionally led by a bold (or italic) label; a label with no text is a small heading. */
 export interface AgreementBlock {
@@ -45,7 +46,6 @@ export interface SummitAgreement {
   checkbox: string;
   /** The sentence above the window. */
   whoAgrees: string;
-  footer?: string;
   mediaChoice?: MediaChoice;
 }
 
@@ -59,7 +59,6 @@ export const CODE_OF_CONDUCT: SummitAgreement = {
     'IMPORTANT: PLEASE REVIEW ALL SECTIONS OF THIS FORM CAREFULLY.',
   ],
   checkbox: 'I have read the Code of Conduct and agree to it.',
-  footer: 'EAF Field Trip Waiver Form Version 11.02.2025.1',
   sections: [
     {
       title: 'Student Code of Conduct',

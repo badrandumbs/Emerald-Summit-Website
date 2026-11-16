@@ -48,7 +48,6 @@ export function CodeOfConductText({ agreement, showTitle = true }: { agreement: 
           {section.blocks.map((b, i) => <Block key={i} block={b} />)}
         </section>
       ))}
-      {agreement.footer && <p className="text-[12px] text-muted-foreground">{agreement.footer}</p>}
     </div>
   );
 }
