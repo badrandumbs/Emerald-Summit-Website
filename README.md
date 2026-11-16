@@ -1542,8 +1542,7 @@ date ("Thu, Nov 12", or "Nov 12, 2025" for another year) instead of "2d ago". Th
 Both are on the to-do list below.
 
 ### Website changes to bring into the app (to-do)
-Still open: running [code_of_conduct.sql](supabase/code_of_conduct.sql)
-(see **Code of Conduct and Guest Expert Policy**) · uploading Archie's edited knowledge file and
+Still open: uploading Archie's edited knowledge file and
 redeploying `archie-chat` (see **Archie and the FAQ**). Everything else
 below landed in the app on Nov 14, 2026 and is ticked, with a note where the
 app does it differently from the website. Checked against the website on
@@ -1832,8 +1831,8 @@ has it too since Nov 14, 2026; see below.
   `appState.pendingSignUpRole`, which onboarding starts on ("Signing up as
   …" with a Change link). Google sign-in from either mode makes the account
   if it's new and onboarding runs, as on the website.
-- [ ] **Code of Conduct and Guest Expert Policy** (app and website, Nov
-  14-15, 2026; built, waiting on the SQL). Every account agrees once by
+- [x] **Code of Conduct and Guest Expert Policy** (app and website, Nov
+  14-15, 2026; live on dev since Nov 15, 2026). Every account agrees once by
   ticking a box; no signatures. **Experts agree to the Guest Expert
   Policy**; participants, spectators, volunteers and admins agree to the
   **Code of Conduct** (`agreementFor(role)`). Someone who changes role to or
@@ -1865,8 +1864,10 @@ has it too since Nov 14, 2026; see below.
   - Backend: [code_of_conduct.sql](supabase/code_of_conduct.sql) adds
     `profiles.code_of_conduct_version`, `code_of_conduct_agreed_at` and
     `photo_consent`, and `agree_to_code_of_conduct(p_version,
-    p_photo_consent)`. **Not run yet.** Until it is, the profile row has no
-    such column and neither client asks anyone.
+    p_photo_consent)`. Run on the dev project Nov 15, 2026 (through `supabase
+    db query --linked`). Three test accounts had agreed to an earlier,
+    summarized draft; their old versions don't match, so they are asked
+    again. Run it on prod too when prod exists.
   - Not built yet: the Guest Expert Policy says expert profiles show title
     and organization, a LinkedIn link and a headshot on a Summit experts
     page. The app's expert sign-up asks for area of expertise, a bio and a
