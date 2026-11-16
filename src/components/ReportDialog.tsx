@@ -136,7 +136,7 @@ export default function ReportDialog({ open, onOpenChange, kind: initialKind = '
               <DialogDescription>Your ticket is {kind === 'bug' ? 'Bug' : 'Feedback'} #{result.ticketNo}.</DialogDescription>
             </DialogHeader>
             {result.emailed === true && <p className="text-sm text-muted-foreground">We emailed a copy to {email}, with everything that was sent.</p>}
-            {result.emailed === false && <p className="text-sm text-muted-foreground">Your report was saved, but we could not email your copy.</p>}
+            {result.emailed === false && <p className="text-sm text-muted-foreground">Your report was saved, but we couldn't email your copy.</p>}
             <Button onClick={() => close(false)}>Done</Button>
           </div>
         ) : (
@@ -145,8 +145,8 @@ export default function ReportDialog({ open, onOpenChange, kind: initialKind = '
               <DialogTitle>{kind === 'bug' ? 'Report a bug' : 'Send feedback'}</DialogTitle>
               <DialogDescription>
                 {kind === 'bug'
-                  ? "Tell us what happened. We will attach the details we need to fix it."
-                  : 'Tell us what works, what does not, or what you would add.'}
+                  ? "Tell us what happened. We'll attach the details we need to fix it."
+                  : 'Tell us what works, what doesn\'t, or what you\'d add.'}
               </DialogDescription>
             </DialogHeader>
 

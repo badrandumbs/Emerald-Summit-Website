@@ -34,7 +34,7 @@ describe('registration rules ported from the app', () => {
   test('conflict wording follows the role, like the app', () => {
     expect(conflictMessage('managing', 'Robots', 'admin')).toContain('Stop managing that one first');
     expect(conflictMessage('managing', 'Robots', 'volunteer')).toContain('Ask an admin to take you off');
-    expect(conflictMessage('managing_this', null, 'participant')).toBe("You are managing this session, so you cannot also sign up for it.");
+    expect(conflictMessage('managing_this', null, 'participant')).toBe("You're managing this session, so you can't also sign up for it.");
   });
 
   test('each role gets the app\'s add choices', () => {

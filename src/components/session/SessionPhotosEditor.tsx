@@ -63,7 +63,7 @@ export default function SessionPhotosEditor({
       if (asHero) onHeroChange(photo.url);
     } catch (err) {
       const msg = err instanceof Error ? err.message : '';
-      toast.error(/is not a photo|larger than/.test(msg) ? msg : UPLOAD_FAILED);
+      toast.error(/isn't a photo|larger than/.test(msg) ? msg : UPLOAD_FAILED);
     } finally {
       setBusy(false);
     }

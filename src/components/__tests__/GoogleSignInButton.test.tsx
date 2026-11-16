@@ -50,7 +50,7 @@ test("Google's button signs in with the ID token, the raw nonce and the page's r
 });
 
 test('a refused token shows the reason and sets the button up again', async () => {
-  google.idToken.mockRejectedValue(new Error("Google sign-in did not finish (bad audience). Try again, or use your email."));
+  google.idToken.mockRejectedValue(new Error("Google sign-in didn't finish (bad audience). Try again, or use your email."));
   const onSignedIn = vi.fn();
   render(<GoogleSignInButton roleName="participant" onSignedIn={onSignedIn} />);
   await waitFor(() => expect(google.api!.initialize).toHaveBeenCalledTimes(1));

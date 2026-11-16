@@ -16,9 +16,9 @@ export const CHIP_LABEL: Record<ParticipationType, string> = {
 };
 
 export const STATUS_LABEL: Record<ParticipationType, string> = {
-  participant: "You are participating in this session.",
-  spectator: "You are spectating this session.",
-  expert: "You are serving as an expert here.",
+  participant: "You're participating in this session.",
+  spectator: "You're spectating this session.",
+  expert: "You're serving as an expert here.",
 };
 
 /** One organizer-written question a participant answers when joining. */
@@ -36,9 +36,9 @@ export interface SessionPageBlock {
 export const DEFAULT_QUESTIONS = {
   soloOrTeam: 'Are you participating in a team, or solo?',
   projectName: 'What is your project name?',
-  teamCode: "What is your team code?",
+  teamCode: "What's your team code?",
   unsureNote:
-    "Not sure yet whether you will have a team? Register as solo for now. You can change your answer later on the session page.",
+    "Not sure yet whether you'll have a team? Register as solo for now. You can change your answer later on the session page.",
 };
 
 export const DEFAULT_MAX_TEAM_SIZE = 4;
@@ -184,14 +184,14 @@ export function projectProblemMessage(outcome: string | null | undefined): strin
   switch (outcome) {
     case 'team_not_found':
     case 'no_team':
-      return "That team does not exist anymore. Check the code with your teammate.";
+      return "That team doesn't exist anymore. Check the code with your teammate.";
     case 'team_wrong_session': return 'That team code is for a different session.';
     case 'team_full': return 'That team is already full.';
     case 'teams_not_allowed': return "This session is solo only. Teams are not allowed.";
-    case 'removed_from_team': return "That team's owner removed you from it, so you cannot rejoin it.";
+    case 'removed_from_team': return "That team's owner removed you from it, so you can't rejoin it.";
     case 'project_name_required': return 'Please enter your project name.';
     case 'choose_new_owner': return 'You own this team. Choose a teammate to take over before you leave.';
-    case 'invalid_new_owner': return "That person is not on your team anymore. Pick someone else.";
+    case 'invalid_new_owner': return "That person isn't on your team anymore. Pick someone else.";
     case 'expert_not_approved': return 'Only approved expert accounts can serve as an expert.';
     default: return null;
   }
@@ -239,14 +239,14 @@ export function conflictMessage(
   role: string | undefined,
 ): string {
   const title = conflictingTitle ?? 'another session';
-  if (kind === 'managing_this') return "You are managing this session, so you cannot also sign up for it.";
+  if (kind === 'managing_this') return "You're managing this session, so you can't also sign up for it.";
   if (kind === 'managing') {
     const hint = role === 'admin'
       ? ' Stop managing that one first to add this.'
       : role === 'volunteer'
         ? ' Ask an admin to take you off that one first.'
         : '';
-    return `This overlaps with "${title}", which you are managing.${hint}`;
+    return `This overlaps with "${title}", which you're managing.${hint}`;
   }
   return `This overlaps with "${title}", which is already on your schedule. Remove that one first to add this.`;
 }
@@ -284,14 +284,14 @@ export function teamLookupProblem(l: TeamLookup): string | null {
     case 'found': return null;
     case 'full': return `"${l.projectName ?? 'That team'}" is full (${l.memberCount} of ${l.maxTeamSize} members).`;
     case 'removed':
-      return `The owner of "${l.projectName ?? 'that team'}" removed you from it, so you cannot rejoin with this code.`;
+      return `The owner of "${l.projectName ?? 'that team'}" removed you from it, so you can't rejoin with this code.`;
     case 'teams_not_allowed': return "This session is solo only. Teams are not allowed.";
-    case 'too_many_tries': return "That is a lot of codes that did not match. Wait 15 minutes and try again.";
+    case 'too_many_tries': return "That's a lot of codes that didn't match. Wait 15 minutes and try again.";
     case 'wrong_session':
       return l.sessionTitle == null
         ? 'That code is for a different session.'
         : `That code is for "${l.sessionTitle}", not this session.`;
-    default: return "We could not find a team with that code. Check it with your teammate.";
+    default: return "We couldn't find a team with that code. Check it with your teammate.";
   }
 }
 
@@ -353,7 +353,7 @@ export function isEighthGradeParticipant(profile: { role?: string; details?: Rec
 export const EIGHTH_GRADE_BADGE = 'Open to 8th grade';
 
 export const GRADE_BLOCK_MESSAGE: Record<GradeBlock, string> = {
-  eighth_grade_not_allowed: "This session is not open to 8th graders for participating. You can still add it as a spectator.",
+  eighth_grade_not_allowed: "This session isn't open to 8th graders for participating. You can still add it as a spectator.",
   middle_school_not_allowed: 'Participating is for high schoolers, and 8th graders in some sessions. You can still add this session as a spectator.',
 };
 

@@ -71,7 +71,7 @@ export default function ChangeRolePanel({
     try {
       const kept = await changeRole(role.name);
       await refreshProfile();
-      toast.success(`You are now a ${roleLabelFor(kept.role, kept.volunteer_subtype)}.`);
+      toast.success(`You’re now a ${roleLabelFor(kept.role, kept.volunteer_subtype)}.`);
       onDone?.();
       // Like the app, the new role's sign-up questions come next.
       navigate('/profile', { replace: true, state: { roleChanged: true } });
@@ -84,7 +84,7 @@ export default function ChangeRolePanel({
   return (
     <div className="space-y-3 rounded-xl border border-border bg-card px-4 py-4 text-[13px]">
       <p className="text-muted-foreground">
-        You are signed in as <span className="font-semibold text-foreground">{current}</span>.
+        You're signed in as <span className="font-semibold text-foreground">{current}</span>.
       </p>
       {changes === null && autoPreview && !error ? (
         <div className="flex items-center gap-2 text-muted-foreground">
@@ -101,7 +101,7 @@ export default function ChangeRolePanel({
             <div className="font-semibold">Switching to {role.label}</div>
             {role.name === 'expert' && (
               <p className="mt-2">
-                Expert accounts need an admin to approve them. Until then, you will only see a screen
+                Expert accounts need an admin to approve them. Until then, you'll only see a screen
                 saying your account is awaiting approval.
               </p>
             )}
@@ -113,7 +113,7 @@ export default function ChangeRolePanel({
                 </ul>
                 {changes.some((c) => c.from === 'managing') && (
                   <p className="mt-2">
-                    The admins will be told you are no longer managing these sessions, so they can find someone else.
+                    The admins will be told you're no longer managing these sessions, so they can find someone else.
                   </p>
                 )}
               </>

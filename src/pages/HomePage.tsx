@@ -32,6 +32,7 @@ import RolesPage from './RolesPage';
 import AnnouncementsPanel from '../components/AnnouncementsPanel';
 import PhotoSlideshow from '../components/home/PhotoSlideshow';
 import QuoteCard from '../components/home/QuoteCard';
+import { pickGreeting } from '../models/greetings';
 import LinksCard from '../components/home/LinksCard';
 import { ExpertDeclinedDialog, ExpertPending, needsExpertApproval } from '../components/ExpertStatus';
 import { AboutAppCard, SponsorsCard, SupportEafCard } from '../components/home/AboutSections';
@@ -79,7 +80,7 @@ const QUICK_ACTIONS: Record<string, QuickAction[]> = {
     },
     {
       to: '/volunteer',
-      label: "Sessions I am managing",
+      label: "Sessions I'm managing",
       sub: 'Take attendance for sessions you run',
       icon: BookUser,
     },
@@ -135,13 +136,6 @@ function SummitCountdown({ date }: { date: string }) {
       ))}
     </div>
   );
-}
-
-function greetingFor(date: Date) {
-  const hour = date.getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
 }
 
 function StatTile({
@@ -237,6 +231,8 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { listFor, spectating } = useSchedule();
   const { announcements, canPost, isUnread, markRead } = useAnnouncements();
+  // Picked once per visit to Home, like the app, so it doesn't change on every re-render.
+  const [greeting] = useState(() => pickGreeting(new Date()));
 
   const isSignedIn = session != null;
 
@@ -341,7 +337,7 @@ export default function HomePage() {
             </div>
             {summitDate && showTimes && <SummitCountdown date={summitDate} />}
             <h1 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-[40px] sm:leading-[1.12]">
-              {greetingFor(new Date())}, {firstName}.
+              {greeting}, {firstName}.
             </h1>
             {heroSub && (
               <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-white/75">

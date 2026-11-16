@@ -119,7 +119,7 @@ export default function GetTheAppBanner() {
               onClick={(e) => {
                 if (!offer.url) {
                   e.preventDefault();
-                  toast(`The ${store} link is not set yet. Add it in src/lib/appStores.ts.`);
+                  toast(`The ${store} link isn't set yet. Add it in src/lib/appStores.ts.`);
                   return;
                 }
                 snooze();

@@ -135,7 +135,7 @@ export async function updateMyRegistration(
   const outcome = typeof row.outcome === 'string' ? row.outcome : null;
   const problem = projectProblemMessage(outcome);
   if (problem) throw new TeamCodeError(problem);
-  if (outcome !== 'updated') throw new TeamCodeError("You are not registered as a participant here.");
+  if (outcome !== 'updated') throw new TeamCodeError("You're not registered as a participant here.");
   return (await fetchMyProject(sessionId)) ?? {
     isTeam: row.team_code != null,
     projectName: typeof row.project_name === 'string' ? row.project_name : '',
@@ -167,7 +167,7 @@ export async function removeTeamMember(sessionId: string, userId: string): Promi
   if (error) throw new Error(error.message);
   switch ((data as Record<string, unknown> | null)?.outcome) {
     case 'removed': return;
-    case 'not_member': throw new TeamCodeError("That person is not on your team anymore.");
+    case 'not_member': throw new TeamCodeError("That person isn't on your team anymore.");
     case 'cannot_remove_self': throw new TeamCodeError('To leave your own team, use "Leave team / go solo".');
     default: throw new TeamCodeError("Only the team's owner can remove members.");
   }

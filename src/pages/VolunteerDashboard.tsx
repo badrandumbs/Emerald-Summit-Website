@@ -37,11 +37,11 @@ export default function VolunteerDashboard() {
 
   return (
     <AppShell>
-      <PageHeader label="Volunteering" title="Sessions I am managing" />
+      <PageHeader label="Volunteering" title="Sessions I'm managing" />
       <section className="glass mx-auto max-w-3xl rounded-2xl p-2 sm:p-4">
         {managed.length === 0 ? (
           <p className="p-6 text-center text-sm text-muted-foreground">
-            You are not assigned to any sessions yet. An admin assigns volunteers to sessions. Once you are, they show up here with their rosters.
+            You're not assigned to any sessions yet. An admin assigns volunteers to sessions. Once you are, they show up here with their rosters.
           </p>
         ) : (
           <ul className="divide-y divide-border">

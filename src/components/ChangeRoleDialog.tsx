@@ -39,8 +39,8 @@ export default function ChangeRoleDialog({
         <DialogHeader>
           <DialogTitle className="font-display text-xl">Change your role</DialogTitle>
           <DialogDescription>
-            You are a {roleLabelFor(currentRole ?? undefined, profile?.volunteer_subtype)}. Pick the
-            role you want instead. You will see what changes before anything is switched.
+            You're a {roleLabelFor(currentRole ?? undefined, profile?.volunteer_subtype)}. Pick the
+            role you want instead. You'll see what changes before anything is switched.
           </DialogDescription>
         </DialogHeader>
 

@@ -200,7 +200,7 @@ function ProfileHub({ profile }: { profile: Profile }) {
             <span className="min-w-0 flex-1"><span className="block text-[14px] font-semibold">Appearance</span><span className="mt-0.5 block text-[12px] text-muted-foreground">System is dark from 7 PM to 7 AM</span></span>
             <ThemeToggle labels />
           </div>
-          {isVolunteer && <SettingsRow icon={CalendarDays} title="Sessions I am managing" subtitle="Take attendance for sessions you run" onClick={() => navigate('/volunteer')} />}
+          {isVolunteer && <SettingsRow icon={CalendarDays} title="Sessions I'm managing" subtitle="Take attendance for sessions you run" onClick={() => navigate('/volunteer')} />}
           {status.feedbackOpen && roleName === 'expert' && <SettingsRow icon={Award} title="Summit feedback" subtitle="Rate your sessions, the Summit and the app" onClick={() => navigate('/follow-up')} />}
           {status.feedbackOpen && (isVolunteer || isAdmin) && <SettingsRow icon={HeartHandshake} title="Volunteer for EAF again?" subtitle="Let us know" onClick={() => navigate('/follow-up')} />}
           {(isVolunteer || isAdmin) && <SettingsRow icon={Clock} title="Track volunteer hours" subtitle="Your logged hours and Summit-day hours" onClick={() => navigate('/volunteer/hours')} />}

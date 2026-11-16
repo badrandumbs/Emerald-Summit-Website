@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSignInError(
         err instanceof SignInRefusedError
           ? err.message
-          : "We could not load your account. Try signing in again.",
+          : "We couldn't load your account. Try signing in again.",
       );
       await signOut().catch(() => {});
     } finally {

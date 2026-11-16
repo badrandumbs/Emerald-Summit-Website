@@ -23,7 +23,7 @@ export default function MetricsPage() {
 
   const load = useCallback(() => {
     setError(null);
-    fetchSummitMetrics().then(setData).catch(() => setError("Could not load metrics. Try again."));
+    fetchSummitMetrics().then(setData).catch(() => setError("Couldn't load metrics. Try again."));
   }, []);
   useEffect(() => { if (ready) load(); }, [ready, load]);
 

@@ -29,7 +29,7 @@ export default function ArchiePage() {
         </span>
         <h2 className="font-display text-2xl font-semibold">Coming soon</h2>
         <p className="max-w-md text-sm text-muted-foreground">
-          Archie answers questions about the Summit: what is on, where it is and when. It is not on the website yet.
+          Archie answers questions about the Summit: what's on, where it is and when. It isn't on the website yet.
         </p>
       </section>
     </AppShell>

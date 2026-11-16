@@ -38,12 +38,12 @@ describe('Remove from my feed', () => {
     expect(screen.queryByRole('menuitem', { name: /Delete for everyone/ })).toBeNull();
   });
 
-  test('warns that it cannot be undone, and only removes after Remove', async () => {
+  test('warns that it can’t be undone, and only removes after Remove', async () => {
     render(<MemoryRouter><AnnouncementsPage /></MemoryRouter>);
     await userEvent.click(screen.getByRole('button', { name: 'More options for Parking' }));
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Remove this announcement from my feed' }));
     const dialog = await screen.findByRole('dialog');
-    expect(dialog).toHaveTextContent("you cannot get it back in your feed");
+    expect(dialog).toHaveTextContent("you can't get it back in your feed");
     expect(state.hide).not.toHaveBeenCalled();
     await userEvent.click(within(dialog).getByRole('button', { name: 'Remove' }));
     expect(state.hide).toHaveBeenCalledWith('p1');

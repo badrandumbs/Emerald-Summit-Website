@@ -50,15 +50,15 @@ export function describeRoleChange(c: RoleChangeItem): string {
   const title = `"${c.title}"`;
   let base: string;
   if (c.from === 'managing' && c.to === 'dropped') {
-    base = `${title}: you will stop managing it. It is full, so it will be removed from your day.`;
+    base = `${title}: you'll stop managing it. It's full, so it will be removed from your day.`;
   } else if (c.from === 'managing' && c.to === 'unchanged') {
-    base = `${title}: you will stop managing it. You stay registered for it.`;
+    base = `${title}: you'll stop managing it. You stay registered for it.`;
   } else if (c.from === 'managing') {
-    base = `${title}: you will stop managing it and spectate instead.`;
+    base = `${title}: you'll stop managing it and spectate instead.`;
   } else if (c.from === 'expert') {
-    base = `${title}: you will go from serving as an expert to spectating.`;
+    base = `${title}: you'll go from serving as an expert to spectating.`;
   } else {
-    base = `${title}: you will go from participating to spectating.`;
+    base = `${title}: you'll go from participating to spectating.`;
   }
   const team = c.team;
   if (!team) return base;
@@ -67,7 +67,7 @@ export function describeRoleChange(c: RoleChangeItem): string {
   if (team.action === 'deleted') {
     return `${base} Nobody else has joined your team ${project}, so it will be deleted and its code ${team.code ? `${team.code} ` : ''}will stop working.`;
   }
-  return `${base} You will leave the team ${project}.`;
+  return `${base} You'll leave the team ${project}.`;
 }
 
 const PLURAL: Record<string, string> = {
@@ -82,7 +82,7 @@ const PLURAL: Record<string, string> = {
 export function roleChangeLeadIn(role: string, label: string): string {
   return role === 'attendee'
     ? `As a ${label}, you can only spectate. These sessions change:`
-    : `Some of your sessions change, because ${PLURAL[role] ?? `${label.toLowerCase()}s`} cannot take part in them the way you do now:`;
+    : `Some of your sessions change, because ${PLURAL[role] ?? `${label.toLowerCase()}s`} can't take part in them the way you do now:`;
 }
 
 /**

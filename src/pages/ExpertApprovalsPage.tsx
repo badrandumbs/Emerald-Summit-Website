@@ -24,7 +24,7 @@ export default function ExpertApprovalsPage() {
 
   const load = useCallback(() => {
     setError(null);
-    fetchExpertRequests().then(setRequests).catch(() => setError("Could not load the requests."));
+    fetchExpertRequests().then(setRequests).catch(() => setError("Couldn't load the requests."));
   }, []);
   useEffect(() => {
     if (!ready) return;
@@ -45,7 +45,7 @@ export default function ExpertApprovalsPage() {
       setRequests((list) => list?.filter((x) => x.userId !== r.userId) ?? list);
       toast(!done ? `${name} was already reviewed or changed roles.` : approve ? `Approved ${name}.` : `Declined ${name}.`);
     } catch {
-      toast.error("Could not save that. Try again.");
+      toast.error("Couldn't save that. Try again.");
     } finally {
       setBusy(null);
     }
@@ -84,7 +84,7 @@ export default function ExpertApprovalsPage() {
           <DialogHeader>
             <DialogTitle>Decline {declining?.fullName || declining?.email}?</DialogTitle>
             <DialogDescription>
-              Their account becomes a participant account, and any sessions they signed up for as an expert are removed. They will see a note saying their expert request was not approved.
+              Their account becomes a participant account, and any sessions they signed up for as an expert are removed. They'll see a note saying their expert request was not approved.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

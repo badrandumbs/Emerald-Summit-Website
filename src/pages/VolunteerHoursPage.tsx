@@ -73,7 +73,7 @@ export default function VolunteerHoursPage() {
 
   const load = useCallback(() => {
     setError(null);
-    fetchMyHourLogs().then(setLogs).catch(() => setError("Could not load your hours."));
+    fetchMyHourLogs().then(setLogs).catch(() => setError("Couldn't load your hours."));
   }, []);
   useEffect(() => { if (ready) load(); }, [ready, load]);
 
@@ -183,14 +183,14 @@ function HourEditor({ log, onClose }: { log: HourLog | null; onClose: (changed: 
   const save = async () => {
     if (!s || !e) return setError('Pick a start and end time.');
     if (e <= s) return setError('The end time has to be after the start.');
-    if (e > new Date()) return setError("You cannot log hours that have not happened yet.");
+    if (e > new Date()) return setError("You can't log hours that haven't happened yet.");
     if (!description.trim()) return setError('Add a short description of what you did.');
     setSaving(true);
     try {
       await saveHourLog({ startedAt: s, endedAt: e, description: description.trim() }, log?.id);
       onClose(true);
     } catch {
-      setError("Could not save. Try again.");
+      setError("Couldn't save. Try again.");
       setSaving(false);
     }
   };
@@ -202,7 +202,7 @@ function HourEditor({ log, onClose }: { log: HourLog | null; onClose: (changed: 
       await deleteHourLog(log.id);
       onClose(true);
     } catch {
-      toast.error("Could not delete. Try again.");
+      toast.error("Couldn't delete. Try again.");
       setSaving(false);
     }
   };

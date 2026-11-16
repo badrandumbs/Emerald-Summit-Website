@@ -62,7 +62,7 @@ export default function GoogleSignInButton({ roleName, disabled, onStart, onSign
         itp_support: true,
         callback: async ({ credential }) => {
           if (!credential) {
-            toast.error("Google sign-in did not finish. Try again, or use your email.");
+            toast.error("Google sign-in didn't finish. Try again, or use your email.");
             return;
           }
           latest.current.onStart?.();

@@ -26,7 +26,7 @@ export function gradeOptionLabel(grade: string): string {
   return `${grade}th grade`;
 }
 
-const PHONE_PRIVACY_NOTE = "Your number will not be shown publicly.";
+const PHONE_PRIVACY_NOTE = "Your number won't be shown publicly.";
 const VOLUNTEER_PHONE_NOTE = 'Your phone number will be visible to other volunteers the day of for communication with them.';
 const ADMIN_PHONE_NOTE = 'Your phone number will be visible to volunteers and other admins the day of for communication with them.';
 const GRADE_NOTE = 'Goes on your volunteer hours record.';

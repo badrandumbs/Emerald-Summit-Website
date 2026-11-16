@@ -94,7 +94,7 @@ export default function ProfileSetupPage() {
       await signOut();
     } catch {
       setIsSigningOut(false);
-      toast.error("Could not sign out. Try again.");
+      toast.error("Couldn't sign out. Try again.");
     }
   };
 
@@ -109,7 +109,7 @@ export default function ProfileSetupPage() {
         await refreshProfile();
         navigate('/home', { replace: true });
       } catch {
-        setError("Could not save that. Check your connection and try again.");
+        setError("Couldn't save that. Check your connection and try again.");
       } finally {
         setIsSaving(false);
       }

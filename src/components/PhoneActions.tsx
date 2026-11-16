@@ -15,7 +15,7 @@ export default function PhoneActions({ phone, compact = false, className }: { ph
       await navigator.clipboard.writeText(phone);
       toast('Number copied');
     } catch {
-      toast.error("Could not copy the number.");
+      toast.error("Couldn't copy the number.");
     }
   };
   const link = compact

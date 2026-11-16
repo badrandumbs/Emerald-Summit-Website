@@ -24,7 +24,7 @@ export default function ReplaceScheduleDialog({ request, busy, onConfirm, onCanc
     <Dialog open={request != null} onOpenChange={(o) => !o && onCancel()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{self ? 'Replace what you are doing?' : 'Replace what they are doing?'}</DialogTitle>
+          <DialogTitle>{self ? 'Replace what you’re doing?' : 'Replace what they’re doing?'}</DialogTitle>
           <DialogDescription>
             {self ? 'You' : request?.personName} can only do one thing at a time. Managing "{request?.sessionTitle}"
             {' '}takes {self ? 'these off your day' : 'these off their day'}:
@@ -34,7 +34,7 @@ export default function ReplaceScheduleDialog({ request, busy, onConfirm, onCanc
           {request?.items.map((item) => <li key={`${item.kind}-${item.sessionId}`}>{describeReplacement(item, who)}</li>)}
         </ul>
         {!self && (
-          <p className="text-sm text-muted-foreground">They will get a notice listing these changes.</p>
+          <p className="text-sm text-muted-foreground">They'll get a notice listing these changes.</p>
         )}
         <DialogFooter>
           <Button variant="outline" onClick={onCancel}>Cancel</Button>

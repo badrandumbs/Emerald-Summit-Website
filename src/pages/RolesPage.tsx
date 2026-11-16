@@ -107,7 +107,7 @@ export default function RolesPage() {
             <div className="mb-6 flex items-start gap-3 rounded-2xl border border-border bg-card p-4">
               <Info className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
               <p className="text-sm">
-                You are signed in as{' '}
+                You're signed in as{' '}
                 <span className="font-semibold">
                   {roleLabelFor(currentRole, profile?.volunteer_subtype)}
                 </span>

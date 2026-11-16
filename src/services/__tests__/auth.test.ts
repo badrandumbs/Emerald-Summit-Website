@@ -99,7 +99,7 @@ describe('shared mobile profiles', () => {
 
   test('missing or failed profile reads fail closed instead of creating a fake account', async () => {
     db.profiles = [];
-    await expect(auth.getCurrentProfile(user)).rejects.toMatchObject({ name: 'SignInRefusedError', message: expect.stringContaining("could not load") });
+    await expect(auth.getCurrentProfile(user)).rejects.toMatchObject({ name: 'SignInRefusedError', message: expect.stringContaining("couldn't load") });
     db.profiles = [sharedProfile()];
     db.readError = true;
     await expect(auth.getCurrentProfile(user)).rejects.toMatchObject({ name: 'SignInRefusedError' });
@@ -181,7 +181,7 @@ describe('shared profile writes', () => {
     await expect(auth.saveProfile({ name: 'No session' })).rejects.toThrow('Not signed in');
     db.session = { user: { id: 'user-1' } };
     db.readError = true;
-    await expect(auth.updateProfileSettings({ name: 'Read failed' })).rejects.toThrow("could not load");
+    await expect(auth.updateProfileSettings({ name: 'Read failed' })).rejects.toThrow("couldn't load");
     expect(db.updates).toEqual([]);
   });
 });

@@ -17,7 +17,7 @@ export default function SessionMetrics({ session }: { session: Session }) {
 
   const load = useCallback(() => {
     setError(null);
-    fetchSessionRoster(session.id).then(setRoster).catch(() => setError("Could not load this session's metrics. Try again."));
+    fetchSessionRoster(session.id).then(setRoster).catch(() => setError("Couldn't load this session's metrics. Try again."));
   }, [session.id]);
   useEffect(load, [load]);
 

@@ -60,7 +60,7 @@ export default function NotificationsPage() {
             {loading
               ? 'Loading…'
               : error
-                ? "Could not load your notifications. Try again in a moment."
+                ? "Couldn't load your notifications. Try again in a moment."
                 : 'Nothing yet. Session reminders, new posts for you and changes to your sessions or team show up here.'}
           </div>
         ) : (

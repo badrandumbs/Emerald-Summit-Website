@@ -17,7 +17,7 @@ export function TeamCodeChip({ code }: { code: string }) {
         onClick={() => {
           void navigator.clipboard?.writeText(code)
             .then(() => toast.success(`Copied team code ${code}`))
-            .catch(() => toast.error("Could not copy the code. Select it and copy it instead."));
+            .catch(() => toast.error("Couldn't copy the code. Select it and copy it instead."));
         }}
       >
         <Copy className="h-4 w-4" />
@@ -46,7 +46,7 @@ export default function ProjectCard({
       </div>
       {p == null ? (
         <p className="mt-2 text-sm">
-          Let the organizers know whether you are working solo or on a team, and what your project is.
+          Let the organizers know whether you're working solo or on a team, and what your project is.
         </p>
       ) : (
         <div className="mt-2 space-y-3">

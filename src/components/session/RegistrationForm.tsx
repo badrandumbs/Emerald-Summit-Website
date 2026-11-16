@@ -103,7 +103,7 @@ export default function RegistrationForm({
       if (problem) setCodeError(problem);
       else setPendingTeam({ code: normalized, projectName: lookup.projectName ?? '', memberCount: lookup.memberCount });
     } catch {
-      setCodeError("Could not check that code. Try again.");
+      setCodeError("Couldn't check that code. Try again.");
     } finally {
       setLookingUp(false);
     }
@@ -112,7 +112,7 @@ export default function RegistrationForm({
   const submit = () => {
     setError(null);
     let project: ProjectChoice;
-    if (isTeam == null) return setError("Choose whether you are participating solo or as a team.");
+    if (isTeam == null) return setError("Choose whether you're participating solo or as a team.");
     if (!isTeam) {
       if (!soloName.trim()) return setError(projectMissing);
       project = { action: 'solo', projectName: soloName.trim() };
@@ -170,7 +170,7 @@ export default function RegistrationForm({
               </div>
               <Note>
                 {soloOnly
-                  ? "This session is now solo only. You can stay on your team or go solo, but teams cannot be created or joined."
+                  ? "This session is now solo only. You can stay on your team or go solo, but teams can't be created or joined."
                   : DEFAULT_QUESTIONS.unsureNote}
               </Note>
             </div>
@@ -209,7 +209,7 @@ export default function RegistrationForm({
                 'team-project',
                 newTeamName,
                 setNewTeamName,
-                `You will get a team code (like ${teamCodePrefix(session.track, session.disciplineName ?? '')}1234) to share with your teammates. They enter it when they register for this session. Teams here can have up to ${maxTeamSize} members, and you will be the team's owner.`,
+                `You'll get a team code (like ${teamCodePrefix(session.track, session.disciplineName ?? '')}1234) to share with your teammates. They enter it when they register for this session. Teams here can have up to ${maxTeamSize} members, and you'll be the team's owner.`,
               )}
 
               {teamAction === 'joinTeam' && (confirmedTeam ? (
@@ -245,7 +245,7 @@ export default function RegistrationForm({
           )}
 
           {willHandOff && (
-            <Note>You own "{initialProject!.projectName}". After you save, you will pick the teammate who takes it over.</Note>
+            <Note>You own "{initialProject!.projectName}". After you save, you'll pick the teammate who takes it over.</Note>
           )}
 
           {questions.length > 0 && (
@@ -311,7 +311,7 @@ export default function RegistrationForm({
                   setConfirmedTeam({ code: pendingTeam!.code, projectName: pendingTeam!.projectName });
                   setPendingTeam(null);
                 }}
-              >Yes, that is us</Button>
+              >Yes, that's us</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
