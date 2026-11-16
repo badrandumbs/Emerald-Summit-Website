@@ -234,8 +234,8 @@ class _CodeOfConductWindowState extends State<CodeOfConductWindow> {
 }
 
 /// A whole agreement as the document lays it out: title, the lines under it,
-/// each section's paragraphs and bullets, and the footer. The photo question
-/// is left out: [CodeOfConductScreen] asks it below the window.
+/// and each section's paragraphs and bullets. The photo question is left
+/// out: [CodeOfConductScreen] asks it below the window.
 class CodeOfConductText extends StatelessWidget {
   const CodeOfConductText({super.key, required this.agreement});
 
@@ -293,15 +293,6 @@ class CodeOfConductText extends StatelessWidget {
             style: theme.textTheme.titleSmall?.copyWith(color: scheme.primary),
           ),
           for (final b in section.blocks) block(b),
-        ],
-        if (agreement.footer != null) ...[
-          const SizedBox(height: 16),
-          Text(
-            agreement.footer!,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
-          ),
         ],
       ],
     );

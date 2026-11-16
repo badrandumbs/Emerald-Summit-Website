@@ -7,7 +7,8 @@
 /// checkbox, and the Code of Conduct's "Media Rights and Consent" section is
 /// not in the document window: it is asked below it as a radio button, with
 /// the two options saying "of me" instead of "of my child", because the
-/// account holder picks one, not a parent.
+/// account holder picks one, not a parent. The waiver form's version line
+/// at the bottom is left out.
 /// The website has the same text in src/models/codeOfConduct.ts: change both
 /// together and bump the version, which asks everyone who agreed to agree
 /// again.
@@ -49,7 +50,6 @@ class SummitAgreement {
     required this.sections,
     required this.checkbox,
     required this.whoAgrees,
-    this.footer,
     this.mediaChoice,
   });
 
@@ -70,9 +70,6 @@ class SummitAgreement {
 
   /// The sentence above the window.
   final String whoAgrees;
-
-  /// The document's footer line, if it has one.
-  final String? footer;
 
   /// The "Please check one" photo permission question, answered with a
   /// radio button (`profiles.photo_consent`), or null when there is none.
@@ -110,7 +107,6 @@ const codeOfConduct = SummitAgreement(
     'IMPORTANT: PLEASE REVIEW ALL SECTIONS OF THIS FORM CAREFULLY.',
   ],
   checkbox: 'I have read the Code of Conduct and agree to it.',
-  footer: 'EAF Field Trip Waiver Form Version 11.02.2025.1',
   sections: [
     ConductSection('Student Code of Conduct', [
       AgreementBlock(
