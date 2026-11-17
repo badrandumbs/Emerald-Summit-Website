@@ -77,7 +77,10 @@ export default function AuthLayout({
   backLabel = 'Back',
   onBack,
   children,
+  wide = false,
 }: {
+  /** A narrower aside and a wider form column, for long forms like profile setup. */
+  wide?: boolean;
   /** Hex color for the paths and the identity tile. */
   accent: string;
   icon: LucideIcon;
@@ -90,7 +93,7 @@ export default function AuthLayout({
   children: ReactNode;
 }) {
   return (
-    <section className="relative min-h-svh overflow-x-clip bg-background lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+    <section className={cn('relative min-h-svh overflow-x-clip bg-background lg:grid', wide ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,2.5fr)]' : 'lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]')}>
       <aside className="relative hidden h-svh flex-col overflow-hidden bg-navy p-10 text-white dark:border-r dark:border-white/10 lg:sticky lg:top-0 lg:flex xl:p-14">
         <div className="absolute inset-0 opacity-90">
           <FlowingPaths position={1} color={accent} />
@@ -128,7 +131,7 @@ export default function AuthLayout({
         </div>
       </aside>
 
-      <div className="relative flex min-h-svh flex-col justify-center px-6 py-20 sm:px-10 lg:py-16">
+      <div className={cn('relative flex min-h-svh flex-col justify-center px-6 py-20 sm:px-10', wide ? 'pt-28 lg:pb-20 lg:pt-36' : 'lg:py-16')}>
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
           <div
             className="absolute -right-24 -top-40 h-[520px] w-[520px] rounded-full opacity-60"
@@ -152,7 +155,7 @@ export default function AuthLayout({
         </button>
         <ThemeToggle className={cn(AUTH_ENTER, 'absolute right-5 top-6 z-10 sm:right-8 sm:top-8')} />
 
-        <div className="relative z-10 mx-auto w-full max-w-[420px]">
+        <div className={cn('relative z-10 mx-auto w-full', wide ? 'max-w-[960px]' : 'max-w-[420px]')}>
           <div className={cn(AUTH_ENTER, 'mb-8 lg:hidden')}>
             <BrandMark
               logoClassName="h-10 w-10"

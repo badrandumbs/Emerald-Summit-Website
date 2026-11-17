@@ -3,7 +3,7 @@
 // Used by the last sign-up step (ProfileSetupPage), like the app's
 // CodeOfConductWindow. The text is laid out as the document is, minus the
 // photo question, which ProfileSetupPage asks below the window.
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Maximize2 } from '@/components/icons';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { AgreementBlock, SummitAgreement } from '../models/codeOfConduct';
@@ -52,12 +52,13 @@ export function CodeOfConductText({ agreement, showTitle = true }: { agreement: 
   );
 }
 
-export default function CodeOfConductWindow({ agreement }: { agreement: SummitAgreement }) {
+/** `children` (the signature pad) sit under Expand, inside the same box. */
+export default function CodeOfConductWindow({ agreement, children }: { agreement: SummitAgreement; children?: ReactNode }) {
   const [expanded, setExpanded] = useState(false);
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-secondary/40">
       <div
-        className="max-h-64 overflow-y-auto px-4 py-3.5"
+        className="max-h-[28rem] overflow-y-auto px-5 py-4"
         tabIndex={0}
         role="region"
         aria-label={agreement.title}
@@ -71,6 +72,7 @@ export default function CodeOfConductWindow({ agreement }: { agreement: SummitAg
       >
         <Maximize2 className="h-4 w-4" aria-hidden /> Expand
       </button>
+      {children && <div className="border-t border-border">{children}</div>}
       <Dialog open={expanded} onOpenChange={setExpanded}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>

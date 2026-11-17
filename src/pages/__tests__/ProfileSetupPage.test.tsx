@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { beforeEach, expect, test, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import ProfileSetupPage from '../ProfileSetupPage';
@@ -32,9 +32,17 @@ vi.mock('../../services/auth', () => ({
   signOut: vi.fn(),
 }));
 
-// The Code of Conduct checkbox (Radix) measures itself; jsdom has no
+// The signature pad watches its size; jsdom has no
 // ResizeObserver.
 vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
+// jsdom has no canvas; the pad still counts a stroke without one.
+vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+
+function sign() {
+  const pad = screen.getByRole('img', { name: /Signature pad/ });
+  fireEvent.pointerDown(pad);
+  fireEvent.pointerUp(pad);
+}
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -118,10 +126,18 @@ test('sign-up ends with the Code of Conduct box, once the columns exist', async 
   // The photo question is asked once, as the radio, not again in the window.
   expect(screen.queryByText(/___/)).toBeNull();
   expect(screen.getAllByText(CODE_OF_CONDUCT.mediaChoice!.grant)).toHaveLength(1);
-  await user.click(screen.getByRole('checkbox', { name: CODE_OF_CONDUCT.checkbox }));
+  // Signing is the agreement: there is no checkbox.
+  expect(screen.queryByRole('checkbox')).toBeNull();
   // The photo permission question has to be answered too.
   expect(continueButton).toBeDisabled();
   await user.click(screen.getByRole('radio', { name: CODE_OF_CONDUCT.mediaChoice!.grant }));
+  // And it stays blocked until they sign; Clear blocks it again.
+  expect(continueButton).toBeDisabled();
+  sign();
+  expect(continueButton).toBeEnabled();
+  await user.click(screen.getByRole('button', { name: 'Clear' }));
+  expect(continueButton).toBeDisabled();
+  sign();
   await user.click(continueButton);
   expect(state.save).toHaveBeenCalled();
   expect(state.agree).toHaveBeenCalledWith(CODE_OF_CONDUCT.version, true);
@@ -130,7 +146,7 @@ test('sign-up ends with the Code of Conduct box, once the columns exist', async 
 test('no Code of Conduct box before the SQL adds the columns', () => {
   state.role = 'attendee';
   render(<MemoryRouter><ProfileSetupPage /></MemoryRouter>);
-  expect(screen.queryByRole('checkbox', { name: CODE_OF_CONDUCT.checkbox })).toBeNull();
+  expect(screen.queryByRole('img', { name: /Signature pad/ })).toBeNull();
 });
 
 test('an existing expert who has not agreed sees only the Guest Expert Policy', async () => {
@@ -142,7 +158,8 @@ test('an existing expert who has not agreed sees only the Guest Expert Policy', 
   expect(screen.getByText('One last step')).toBeInTheDocument();
   expect(screen.queryByLabelText('Area of expertise')).toBeNull();
   expect(screen.getAllByText(GUEST_EXPERT_POLICY.title).length).toBeGreaterThan(0);
-  await user.click(screen.getByRole('checkbox', { name: GUEST_EXPERT_POLICY.checkbox }));
+  expect(screen.getByRole('button', { name: 'Agree and continue' })).toBeDisabled();
+  sign();
   await user.click(screen.getByRole('button', { name: 'Agree and continue' }));
   expect(screen.queryByRole('radio')).toBeNull();
   expect(state.agree).toHaveBeenCalledWith(GUEST_EXPERT_POLICY.version, null);

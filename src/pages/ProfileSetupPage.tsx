@@ -13,7 +13,16 @@ import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 import { agreeToCodeOfConduct, needsProfileSetup, saveProfileDetails, signOut } from '../services/auth';
 import CodeOfConductWindow from '../components/CodeOfConductWindow';
-import { Checkbox } from '@/components/ui/checkbox';
+import SignaturePad from '../components/SignaturePad';
+
+const SECTION_HEADING = 'font-display text-lg font-bold tracking-tight';
+// What sits under a heading is indented a little, except the agreement box.
+const SECTION_BODY = 'space-y-5 pl-4';
+// A hairline above each section heading, so the sections read as separate blocks.
+const SECTION_RULE = 'border-t border-border pt-8';
+// Larger body text under Your Info, including the shared ProfileFieldInput questions
+// (descendant selectors, so Settings keeps its own sizes).
+const INFO_TEXT = '[&_label]:text-[15px] [&_p]:text-[13px] [&_input]:text-base [&_select]:text-base [&_textarea]:text-base';
 import {
   agreementFor, needsCodeOfConduct, tracksCodeOfConduct,
 } from '../models/codeOfConduct';
@@ -45,9 +54,10 @@ export default function ProfileSetupPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [agreed, setAgreed] = useState(false);
   // The Code of Conduct's photo permission: true grants, false does not.
   const [photoConsent, setPhotoConsent] = useState<boolean | null>(null);
+  // Drawn on screen only; it gates the button and is not saved.
+  const [signed, setSigned] = useState(false);
 
   const roleName = profile?.role as string | undefined;
   const subtype = profile?.volunteer_subtype as string | null | undefined;
@@ -102,7 +112,7 @@ export default function ProfileSetupPage() {
     setError(null);
     if (conductOnly) {
       if (media && photoConsent == null) return setError('Please choose whether you grant photo permission.');
-      if (!agreed) return setError(`Please tick the box to agree to the ${agreement.name}.`);
+      if (!signed) return setError('Please sign in the signature box.');
       setIsSaving(true);
       try {
         await agreeToCodeOfConduct(agreement.version, media ? photoConsent : null);
@@ -121,7 +131,7 @@ export default function ProfileSetupPage() {
       return setError(missing.key === 'phone' ? 'Mobile number is required.' : `Please answer "${missing.label}".`);
     }
     if (askConduct && media && photoConsent == null) return setError('Please choose whether you grant photo permission.');
-    if (askConduct && !agreed) return setError(`Please tick the box to agree to the ${agreement.name}.`);
+    if (askConduct && !signed) return setError('Please sign in the signature box.');
     setIsSaving(true);
     try {
       const out = Object.fromEntries(fields.map((f) => [f.key, answers[f.key] ?? '']));
@@ -142,15 +152,25 @@ export default function ProfileSetupPage() {
     ? gate === 'phone' ? 'Add your number' : 'Add your grade'
     : roleChanged ? `Your details as ${/^[aeiou]/i.test(label) ? 'an' : 'a'} ${label}` : 'Tell us a bit about yourself';
   const intro = conductOnly
-    ? `${agreement.whoAgrees} Read it below, or expand it to read it in full.`
+    ? 'Please carefully review the following info, then sign at the bottom.'
     : gateOnly
     ? gate === 'phone'
       ? `${role.label}s need a mobile number on file so the Summit team can reach you.`
       : 'Student volunteers and EAF ambassadors give a grade. It goes on your volunteer hours record.'
     : 'Add your name and the details the Summit team needs.';
 
+  const roleFields = fields.map((f) => (
+    <ProfileFieldInput
+      key={f.key}
+      field={f}
+      value={answers[f.key] ?? ''}
+      onChange={(v) => setAnswers((a) => ({ ...a, [f.key]: v }))}
+    />
+  ));
+
   return (
     <AuthLayout
+      wide
       accent={role.color}
       icon={role.icon}
       eyebrow="Set up your profile"
@@ -170,7 +190,7 @@ export default function ProfileSetupPage() {
       </div>
 
       <form
-        className="animate-fade-up mt-8 space-y-6"
+        className="animate-fade-up mt-12 space-y-6"
         style={{ animationDelay: '90ms' }}
         onSubmit={(e) => {
           e.preventDefault();
@@ -179,7 +199,9 @@ export default function ProfileSetupPage() {
         noValidate
       >
         {!gateOnly && (
-          <>
+          <section className={cn(SECTION_RULE, 'space-y-5 pb-8')}>
+            <h2 className={SECTION_HEADING}>Your Info</h2>
+            <div className={cn(SECTION_BODY, INFO_TEXT)}>
             <div>
               <Label htmlFor="name" className="mb-2 block text-[13px] font-semibold">Full name</Label>
               <div className="relative">
@@ -195,49 +217,43 @@ export default function ProfileSetupPage() {
               </div>
               <p id="email-help" className="mt-1.5 text-[12px] text-muted-foreground">From your sign-in. Summit emails go here.</p>
             </div>
-          </>
+            {roleFields}
+            </div>
+          </section>
         )}
 
-        {fields.map((f) => (
-          <ProfileFieldInput
-            key={f.key}
-            field={f}
-            value={answers[f.key] ?? ''}
-            onChange={(v) => setAnswers((a) => ({ ...a, [f.key]: v }))}
-          />
-        ))}
+        {gateOnly && roleFields}
 
         {askConduct && (
-          <div className="space-y-3">
-            {!conductOnly && <h2 className="text-[13px] font-semibold">{agreement.name}</h2>}
-            <CodeOfConductWindow agreement={agreement} />
+          <div className="space-y-16 pb-8">
             {media && (
-              <fieldset className="space-y-2">
-                <legend className="text-[13px] font-semibold">{media.section}</legend>
-                <p className="text-sm font-semibold">{media.prompt}</p>
+              <div className={SECTION_RULE}>
+              <fieldset>
+                <legend className={cn(SECTION_HEADING, 'mb-5')}>{media.section}</legend>
+                <div className={cn(SECTION_BODY, 'space-y-4')}>
+                <p className="text-base font-semibold">{media.prompt}</p>
                 {([[true, media.grant], [false, media.doNotGrant]] as const).map(([value, label]) => (
-                  <label key={String(value)} className="flex cursor-pointer items-start gap-3 text-sm">
+                  <label key={String(value)} className="flex cursor-pointer items-start gap-3 text-base leading-relaxed">
                     <input
                       type="radio"
                       name="photo-consent"
                       checked={photoConsent === value}
                       onChange={() => setPhotoConsent(value)}
-                      className="mt-1 h-4 w-4 accent-emerald"
+                      className="mt-1 h-5 w-5 shrink-0 accent-emerald"
                     />
                     <span>{label}</span>
                   </label>
                 ))}
+                </div>
               </fieldset>
+              </div>
             )}
-            <label className="flex cursor-pointer items-start gap-3 text-sm">
-              <Checkbox
-                checked={agreed}
-                onCheckedChange={(v) => setAgreed(v === true)}
-                className="mt-0.5"
-                aria-label={agreement.checkbox}
-              />
-              <span className="font-medium">{agreement.checkbox}</span>
-            </label>
+            <section className={cn(SECTION_RULE, 'space-y-4')}>
+              <h2 className={SECTION_HEADING}>{agreement.name}</h2>
+              <CodeOfConductWindow agreement={agreement}>
+                <SignaturePad onChange={setSigned} className="rounded-none border-0 bg-transparent" />
+              </CodeOfConductWindow>
+            </section>
           </div>
         )}
 
@@ -246,7 +262,7 @@ export default function ProfileSetupPage() {
         <Button
           type="submit"
           className="glow-emerald h-12 w-full rounded-xl bg-primary text-[15px] font-semibold hover:bg-emerald"
-          disabled={isSaving || (askConduct && (!agreed || (media != null && photoConsent == null)))}
+          disabled={isSaving || (askConduct && (!signed || (media != null && photoConsent == null)))}
         >
           {isSaving ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : conductOnly ? 'Agree and continue' : gateOnly ? 'Save and continue' : 'Continue'}
         </Button>

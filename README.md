@@ -374,6 +374,7 @@ The role sign-in (`/login/:role`), the expert application (`/apply/:role`), and 
 
 - **Navy aside:** the logo, the role's icon and name (centered a little above the middle, like the roles page heading), and flowing paths in the role's color. The paths drift with a CSS stroke animation (`auth-path` in `src/index.css`), not per-frame JavaScript. It stays in place while a long form scrolls. The outer section clips sideways overflow with `overflow-x-clip`, not `overflow-hidden`, which would break `sticky`.
 - **Focused pane:** a back link and the theme button, then the form.
+- **`wide`:** profile setup passes it for its long form: the aside takes 2/7 of the width instead of 5/11, and the form column is up to 960px instead of 420px, with extra room at the top (9rem on large screens) so the title clears the back link. Sign-in and the expert application keep the default split.
 
 On the sign-in page:
 
@@ -385,6 +386,8 @@ On the sign-in page:
 Small screens drop the aside and show the logo above the form.
 
 **Profile setup** (`/profile`, `src/pages/ProfileSetupPage.tsx`). One page: full name, the sign-in email (read-only, because `enforce_role_allowlist` pins it), then the role's questions from **Sign-up** above. Answers are saved in `profiles.details` (jsonb), merged with whatever the app already stored there, the way the app saves its role questions. Nothing is written to a separate table.
+
+Name, email and the role's questions sit under a **Your Info** heading. The content under **Your Info** and **Media Rights and Consent** is indented a little under its heading, in larger body text (15-16px); the agreement box is not. A hairline rule sits above each section heading. The agreement step follows as headed sections, in this order: **Media Rights and Consent** (the photo radio; not asked of experts), the agreement itself (**Code of Conduct**, or **Guest Expert Policy** for experts) in its scrollable window, and a signature pad attached to the bottom of that same box (no heading of its own). When the agreement is all that is left, the page keeps the title "One last step" and its only text is "Please carefully review the following info, then sign at the bottom." The signature is a draw-it-yourself box (`src/components/SignaturePad.tsx`, a plain canvas, mouse or finger) with a **Clear** button. The pad is capped at 460px wide and centered, with a dashed emerald border and a sign-here line. It re-measures itself whenever its size changes so strokes are never stretched; a resize wipes the canvas, so it also clears the signature. Signing is the agreement: there is no checkbox and no agree statement, just the pad. The submit button stays disabled until there is a signature and a photo choice; Clear disables it again. The agreement window opens taller (28rem) than other scroll boxes. The signature is only on screen: it is not saved, and `agree_to_code_of_conduct` still records just the version and the photo choice.
 
 ## Portal layout
 
