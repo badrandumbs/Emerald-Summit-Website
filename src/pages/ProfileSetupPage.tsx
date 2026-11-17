@@ -15,7 +15,7 @@ import { agreeToCodeOfConduct, needsProfileSetup, saveProfileDetails, signOut } 
 import CodeOfConductWindow from '../components/CodeOfConductWindow';
 import SignaturePad from '../components/SignaturePad';
 
-const SECTION_HEADING = 'font-display text-lg font-bold tracking-tight';
+const SECTION_HEADING = 'font-display text-2xl font-bold tracking-tight';
 // What sits under a heading is indented a little, except the agreement box.
 const SECTION_BODY = 'space-y-5 pl-4';
 // A hairline above each section heading, so the sections read as separate blocks.
