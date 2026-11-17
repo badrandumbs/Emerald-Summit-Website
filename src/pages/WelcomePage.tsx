@@ -309,7 +309,7 @@ export default function WelcomePage() {
               <p className="lp-hero__when">
                 <span>Saturday, January 23, 2027</span>
                 <span>9 AM to 5 PM</span>
-                <span>Emerald High School, Dublin</span>
+                <span>{VENUE}</span>
               </p>
               <div className="lp-hero__actions">
                 <button type="button" className="lp-btn" onClick={() => navigate('/home')}>

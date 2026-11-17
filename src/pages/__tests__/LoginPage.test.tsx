@@ -5,9 +5,9 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import LoginPage from '../LoginPage';
 
-const auth = vi.hoisted(() => ({ send: vi.fn(), verify: vi.fn(), google: vi.fn(), isTest: vi.fn(), testSignIn: vi.fn() }));
+const auth = vi.hoisted(() => ({ send: vi.fn(), verify: vi.fn(), google: vi.fn(), isTest: vi.fn(), testSignIn: vi.fn(), needsSignUp: vi.fn(), signOut: vi.fn() }));
 vi.mock('../../context/AuthContext', () => ({ useAuth: () => ({ session: null, profile: null, clearSignInError: vi.fn() }) }));
-vi.mock('../../services/auth', () => ({ sendSignInCode: (email: string, role: string, opts?: unknown) => auth.send(email, role, opts), NoAccountError: class NoAccountError extends Error {}, verifySignInCode: (email: string, code: string) => auth.verify(email, code), signInWithGoogle: auth.google, signInWithGoogleIdToken: vi.fn(), isTestAccount: (email: string) => auth.isTest(email), signInWithTestAccount: (email: string, password: string) => auth.testSignIn(email, password) }));
+vi.mock('../../services/auth', () => ({ sendSignInCode: (email: string, role: string, opts?: unknown) => auth.send(email, role, opts), NoAccountError: class NoAccountError extends Error {}, verifySignInCode: (email: string, code: string) => auth.verify(email, code), signInWithGoogle: auth.google, signInWithGoogleIdToken: vi.fn(), isTestAccount: (email: string) => auth.isTest(email), signInWithTestAccount: (email: string, password: string) => auth.testSignIn(email, password), signedInAccountNeedsSignUp: () => auth.needsSignUp(), signOut: () => auth.signOut() }));
 vi.mock('../../lib/supabase', () => ({ isSupabaseConfigured: true, supabase: null }));
 // Google's script can't load in tests, so the page shows the redirect button.
 vi.mock('../../lib/googleIdentity', () => ({ GOOGLE_WEB_CLIENT_ID: 'web', loadGoogleIdentity: async () => null, makeNonce: async () => ({ raw: 'r', hashed: 'h' }) }));
@@ -19,6 +19,8 @@ beforeEach(() => {
   auth.verify.mockResolvedValue(undefined);
   auth.isTest.mockResolvedValue(false);
   auth.testSignIn.mockResolvedValue(undefined);
+  auth.needsSignUp.mockResolvedValue({ needsSignUp: false, email: 'team@example.com' });
+  auth.signOut.mockResolvedValue(undefined);
 });
 
 test('expert email sign-in requires a verified code and offers no LinkedIn or local approval bypass', async () => {
@@ -75,7 +77,7 @@ test('sign up creates the account; sign in to an unknown email offers sign up in
   await user.click(screen.getByRole('button', { name: 'Send sign-in code' }));
   expect(auth.send).toHaveBeenLastCalledWith('new@example.com', 'participant', { createAccount: false });
   const alert = await screen.findByRole('alert');
-  expect(alert).toHaveTextContent("Let's create you an account!");
+  expect(alert).toHaveTextContent('No account found');
   expect(alert).toHaveTextContent('Press Continue to enter some information and create your Participant account.');
   await user.click(screen.getByRole('button', { name: 'Continue' }));
   expect(auth.send).toHaveBeenLastCalledWith('new@example.com', 'participant', { createAccount: true });
@@ -91,4 +93,50 @@ test('organizer sign in is for admins and test accounts and may create an allowl
   await user.type(screen.getByLabelText('Email'), 'admin@example.com');
   await user.click(screen.getByRole('button', { name: 'Send sign-in code' }));
   expect(auth.send).toHaveBeenLastCalledWith('admin@example.com', 'admin', { createAccount: true });
+});
+
+const renderLogin = (path: string) => render(
+  <MemoryRouter initialEntries={[path]}>
+    <Routes>
+      <Route path="/login/:role" element={<LoginPage />} />
+      <Route path="/home" element={<p>Home page</p>} />
+    </Routes>
+  </MemoryRouter>,
+);
+
+async function signInWithCode(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(screen.getByLabelText('Email'), 'half@example.com');
+  await user.click(screen.getByRole('button', { name: 'Send sign-in code' }));
+  await user.type(await screen.findByLabelText('Sign-in code'), '123456');
+  await user.click(screen.getByRole('button', { name: 'Verify and sign in' }));
+}
+
+test('sign in to an account that never finished sign-up signs out and points to sign up', async () => {
+  auth.needsSignUp.mockResolvedValue({ needsSignUp: true, email: 'half@example.com' });
+  const user = userEvent.setup();
+  renderLogin('/login/participant');
+  await signInWithCode(user);
+  const alert = await screen.findByRole('alert');
+  expect(alert).toHaveTextContent("Couldn't sign you in");
+  expect(alert).toHaveTextContent('half@example.com');
+  expect(auth.signOut).toHaveBeenCalled();
+  expect(screen.queryByText('Home page')).toBeNull();
+  await user.click(screen.getByRole('button', { name: 'Go to sign up' }));
+  expect(screen.getByRole('heading', { name: 'Sign up as Participant' })).toBeInTheDocument();
+});
+
+test('sign in to a finished account goes Home', async () => {
+  const user = userEvent.setup();
+  renderLogin('/login/participant');
+  await signInWithCode(user);
+  expect(await screen.findByText('Home page')).toBeInTheDocument();
+  expect(auth.signOut).not.toHaveBeenCalled();
+});
+
+test('sign up skips the check and goes on to the sign-up questions', async () => {
+  const user = userEvent.setup();
+  renderLogin('/login/participant?mode=signup');
+  await signInWithCode(user);
+  expect(await screen.findByText('Home page')).toBeInTheDocument();
+  expect(auth.needsSignUp).not.toHaveBeenCalled();
 });

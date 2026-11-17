@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeftRight, Award, Bug, CalendarDays, ChartLine, ChevronLeft, ChevronRight, Clock, HeartHandshake, LogOut, MapPin,
-  MessageSquare, Palette, QrCode, ScanLine, ShieldCheck, UserRound, Users, Inbox, CameraOff,
+  MessageSquare, Palette, QrCode, ScanLine, ShieldCheck, Trash2, UserRound, Users, Inbox, CameraOff,
 } from '@/components/icons';
 import { useSummitStatus } from '../services/summitStatus';
 import { toast } from 'sonner';
@@ -11,12 +11,13 @@ import PageHeader from '../components/PageHeader';
 import QrPassModal from '../components/QrPassModal';
 import ReportDialog from '../components/ReportDialog';
 import ChangeRoleDialog from '../components/ChangeRoleDialog';
+import DeleteAccountDialog from '../components/DeleteAccountDialog';
 import type { ReportKind } from '../services/bugReports';
 import ThemeToggle from '../components/ThemeToggle';
 import { useRequireProfile } from '../hooks/useRequireProfile';
 import { useAuth } from '../context/AuthContext';
 import { roleByName, roleLabelFor, USER_ROLES } from '../models/roles';
-import { saveProfileDetails, signOut, type Profile } from '../services/auth';
+import { deleteMyAccount, saveProfileDetails, signOut, type Profile } from '../services/auth';
 import { formFields } from '../models/profileFields';
 import ProfileFieldInput from '../components/ProfileFieldInput';
 import { Button } from '@/components/ui/button';
@@ -149,6 +150,7 @@ function ProfileHub({ profile }: { profile: Profile }) {
   const [signingOut, setSigningOut] = useState(false);
   const [changeRoleOpen, setChangeRoleOpen] = useState(false);
   const [qrPassOpen, setQrPassOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [reportKind, setReportKind] = useState<ReportKind | null>(null);
   const lastReportKind = useRef<ReportKind>('bug');
   if (reportKind) lastReportKind.current = reportKind;
@@ -215,10 +217,23 @@ function ProfileHub({ profile }: { profile: Profile }) {
         </div>
       </section>
       <section className="overflow-hidden rounded-2xl border border-border/70 bg-card/70">
-        <SettingsRow icon={LogOut} title={signingOut ? 'Signing out…' : 'Sign out'} onClick={handleSignOut} destructive />
+        <div className="divide-y divide-border/60">
+          <SettingsRow icon={LogOut} title={signingOut ? 'Signing out…' : 'Sign out'} onClick={handleSignOut} destructive />
+          <SettingsRow icon={Trash2} title="Delete account" subtitle="Permanently delete your Summit account" onClick={() => setDeleteOpen(true)} destructive />
+        </div>
       </section>
       <QrPassModal open={qrPassOpen} onOpenChange={setQrPassOpen} profile={profile} />
       <ChangeRoleDialog open={changeRoleOpen} onOpenChange={setChangeRoleOpen} />
+      <DeleteAccountDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        email={profile.email ?? ''}
+        onDelete={async () => {
+          await deleteMyAccount();
+          toast.success('Your account was deleted.');
+          navigate('/home', { replace: true });
+        }}
+      />
       <ReportDialog open={reportKind !== null} onOpenChange={(o) => { if (!o) setReportKind(null); }} kind={reportKind ?? lastReportKind.current} defaultName={profile.name ?? ''} email={profile.email} />
     </div>
   );

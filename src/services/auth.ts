@@ -639,6 +639,35 @@ export async function updateProfileSettings(input: Partial<SaveProfileInput>): P
   await writeProfile(input, false);
 }
 
+/**
+ * Sign in (not sign up) only reaches accounts that finished sign-up. Google
+ * creates an account on first use, so after a sign-in this says whether the
+ * account still needs sign-up, and its email for the message.
+ */
+export async function signedInAccountNeedsSignUp(): Promise<{ needsSignUp: boolean; email: string }> {
+  const { data: { session } } = await requireSupabase().auth.getSession();
+  if (!session) return { needsSignUp: true, email: '' };
+  const profile = await getCurrentProfile(session.user);
+  return { needsSignUp: needsProfileSetup(profile), email: session.user.email ?? '' };
+}
+
+/**
+ * Deletes the signed-in account for good (`delete_my_account`, scripts/delete_my_account.sql),
+ * then clears the local session. Throws a readable message when it can't.
+ */
+export async function deleteMyAccount(): Promise<void> {
+  await requireRealSession();
+  const { error } = await requireSupabase().rpc('delete_my_account');
+  if (error) {
+    // PGRST202 / 42883: the function isn't on the backend yet.
+    if (error.code === 'PGRST202' || error.code === '42883') {
+      throw new Error("Deleting accounts isn't turned on yet. Contact the Summit team to delete your account.");
+    }
+    throw new Error("Couldn't delete your account. Nothing was changed. Try again, or contact the Summit team.");
+  }
+  await signOut();
+}
+
 export async function signOut(): Promise<void> {
   localStorage.removeItem(PENDING_ROLE_KEY);
   // With no client configured there is nothing else to clear.

@@ -8,6 +8,8 @@ import {
   NoAccountError,
   isTestAccount,
   sendSignInCode,
+  signOut,
+  signedInAccountNeedsSignUp,
   signInWithTestAccount,
   verifySignInCode,
 } from '../services/auth';
@@ -44,6 +46,11 @@ export default function LoginPage() {
   const [isChecking, setIsChecking] = useState(false);
   // Sign in was tried with an email that has no account.
   const [noAccount, setNoAccount] = useState(false);
+  // Sign in reached an account that never finished sign-up (Google makes one on
+  // first use): it was signed out again, and this is its email.
+  const [notSignedUp, setNotSignedUp] = useState<string | null>(null);
+  // While that check runs, don't jump to Home just because a session appeared.
+  const [checkingSignIn, setCheckingSignIn] = useState(false);
 
   if (!role) {
     return (
@@ -64,7 +71,7 @@ export default function LoginPage() {
 
 
   // Already signed in as this role: nothing to sign in to.
-  if (signedInRole === role.name) {
+  if (signedInRole === role.name && !checkingSignIn) {
     return <Navigate to="/home" replace />;
   }
 
@@ -80,9 +87,35 @@ export default function LoginPage() {
 
   const switchMode = (toSignUp: boolean) => {
     setNoAccount(false);
+    setNotSignedUp(null);
     setCodeSent(false);
     setCode('');
     setSearchParams(toSignUp ? { mode: 'signup' } : {}, { replace: true });
+  };
+
+  // Sign up (and organizer sign in) may land on a new account; sign in may not.
+  // shortcut: Google's redirect fallback (no popup script) lands on /home and skips this check; route it back here if that path gets real use.
+  const finishSignIn = async () => {
+    if (signingUp || isOrganizer) {
+      navigate('/home', { replace: true });
+      return;
+    }
+    setCheckingSignIn(true);
+    try {
+      const { needsSignUp, email: accountEmail } = await signedInAccountNeedsSignUp();
+      if (!needsSignUp) {
+        navigate('/home', { replace: true });
+        return;
+      }
+      await signOut();
+      setCodeSent(false);
+      setCode('');
+      setNotSignedUp(accountEmail || email.trim());
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : String(error));
+    } finally {
+      setCheckingSignIn(false);
+    }
   };
 
   const handleEmail = async (e: FormEvent) => {
@@ -91,6 +124,7 @@ export default function LoginPage() {
     if (!isValidEmail(trimmed) || isChecking) return;
     setIsChecking(true);
     setNoAccount(false);
+    setNotSignedUp(null);
     clearSignInError();
     try {
       if (testAccount) {
@@ -99,7 +133,7 @@ export default function LoginPage() {
         navigate('/home', { replace: true });
       } else if (codeSent) {
         await verifySignInCode(trimmed, code.trim());
-        navigate('/home', { replace: true });
+        await finishSignIn();
       } else if (await isTestAccount(trimmed)) {
         setTestAccount(true);
       } else {
@@ -182,8 +216,8 @@ export default function LoginPage() {
           <GoogleSignInButton
             roleName={role.name}
             disabled={isChecking}
-            onStart={clearSignInError}
-            onSignedIn={() => navigate('/home', { replace: true })}
+            onStart={() => { clearSignInError(); setNotSignedUp(null); }}
+            onSignedIn={() => void finishSignIn()}
           />
           <div className="py-1 text-center text-xs text-muted-foreground">or use your email</div>
           <form onSubmit={handleEmail} className="space-y-3">
@@ -211,9 +245,22 @@ export default function LoginPage() {
             {testAccount && <button type="button" onClick={leaveTestAccount} disabled={isChecking} className="text-xs font-medium text-muted-foreground underline">Use a different email</button>}
             {codeSent && <button type="button" onClick={() => { setCodeSent(false); setCode(''); }} className="text-xs font-medium text-muted-foreground underline">Use another email or resend code</button>}
           </form>
+          {notSignedUp != null && (
+            <div role="alert" className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-[13.5px]">
+              <p className="font-display text-lg font-bold">Couldn't sign you in</p>
+              <p className="mt-1 text-muted-foreground">
+                There's no Summit account for{' '}
+                {notSignedUp ? <span className="font-semibold text-foreground">{notSignedUp}</span> : 'that account'} yet.
+                Sign up to create your {role.label} account.
+              </p>
+              <Button type="button" onClick={() => switchMode(true)} className="mt-3 w-full rounded-xl">
+                Go to sign up
+              </Button>
+            </div>
+          )}
           {noAccount && (
             <div role="alert" className="rounded-xl border border-border bg-card p-4 text-[13.5px]">
-              <p className="font-display text-lg font-bold">Let's create you an account!</p>
+              <p className="font-display text-lg font-bold">No account found</p>
               <p className="mt-1 text-muted-foreground">
                 There's no account for <span className="font-semibold text-foreground">{email.trim()}</span> yet.
                 Press Continue to enter some information and create your {role.label} account.
