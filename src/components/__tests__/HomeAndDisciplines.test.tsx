@@ -95,7 +95,7 @@ describe('About, Support EAF and Sponsors', () => {
     const about = screen.getByRole('region', { name: 'About the app' });
     expect(about).toHaveTextContent('100% built by Emerald High School students');
     expect(about).toHaveTextContent('Arjun Mahajan and Akhil Muthyala');
-    expect(about).toHaveTextContent('Nithali Anand, Arush Singh, Guhan Bala and Deep Shah');
+    expect(about).toHaveTextContent('Nihtahli Anand, Arush Singh, Guhan Bala and Deep Shah');
   });
 });
 

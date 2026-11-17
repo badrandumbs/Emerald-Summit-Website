@@ -149,7 +149,7 @@ export function SupportEafCard() {
 }
 
 const LEAD_DEVELOPERS = ['Arjun Mahajan', 'Akhil Muthyala'];
-const DEVELOPERS_AND_TESTERS = ['Nithali Anand', 'Arush Singh', 'Guhan Bala', 'Deep Shah'];
+const DEVELOPERS_AND_TESTERS = ['Nihtahli Anand', 'Arush Singh', 'Guhan Bala', 'Deep Shah'];
 
 function joinNames(names: string[]) {
   return names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
