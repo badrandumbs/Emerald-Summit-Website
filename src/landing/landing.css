@@ -184,6 +184,67 @@
   .lp-day__panel { min-height: 0; }
 }
 
+/* Sponsors: the tier on the left, a flat stepped mountain of tiers on the right (SponsorTerraces.tsx). */
+/* On a change of paper (what the old venue section had), with a shorter band than a full section. */
+.lp-sponsors { background: var(--color-paper-2); padding-block: var(--section-gap-s); }
+/* Nav jumps land these just under the bar (html's scroll-padding is 96px, the bar 72px), so the end of
+   the section above doesn't peek out. */
+#sponsors, #faq { scroll-margin-top: calc(var(--bar-h) - var(--space-3xl)); }
+.lp-sponsors__inner { row-gap: var(--space-xl); }
+.lp-sponsors__head { grid-column: 1 / -1; display: grid; gap: var(--space-sm); }
+/* Pinned to the top (like the day panel), so a taller tier doesn't move the terraces under the pointer. */
+.lp-sponsors__panel { grid-column: 1 / span 4; display: grid; gap: var(--space-md); align-content: start; min-height: 520px; }
+.lp-sponsors__step { font-size: var(--text-sm); color: var(--color-muted); }
+.lp-sponsors__title { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); padding-bottom: var(--space-sm); border-bottom: 1px solid var(--color-ink); }
+.lp-sponsors__name { font-size: var(--text-2xl); line-height: 1.1; max-width: none; }
+.lp-sponsors__amount { font-size: var(--text-lg); color: var(--color-accent); font-variant-numeric: tabular-nums; }
+.lp-sponsors__perks { color: var(--color-ink-2); font-size: var(--text-md); line-height: 1.5; }
+.lp-sponsors__who { display: grid; gap: var(--space-sm); padding-block: var(--space-sm); border-block: 1px solid var(--color-rule); }
+.lp-sponsors__label { font-size: var(--text-sm); font-weight: 600; color: var(--color-muted); }
+.lp-sponsors__logos { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin: 0; padding: 0; list-style: none; }
+.lp-sponsors__logo { display: flex; align-items: center; justify-content: center; width: 116px; height: 56px; padding: 8px 12px; border-radius: 10px; background: #fff; outline: 1px solid color-mix(in oklab, var(--color-ink) 10%, transparent); transition: transform var(--dur-micro) var(--ease-out); }
+.lp-sponsors__logo:hover { transform: translateY(-2px); }
+.lp-sponsors__logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.lp-sponsors__empty { color: var(--color-muted); }
+.lp-sponsors__actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
+.lp-sponsors__figure { grid-column: 6 / span 7; margin: 0; align-self: start; }
+
+/* The terraces: one band per tier, narrowest (Capstone) on top, coloured by the day figure's tier tokens. */
+.lp-terraces { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.lp-terraces__peak { width: 0; height: 0; margin-bottom: -2px; border-inline: 60px solid transparent; border-bottom: 52px solid var(--tier-0); }
+.lp-terraces__row { width: 100%; display: flex; justify-content: center; }
+.lp-terraces__row:nth-child(2) { --w: 46%; } .lp-terraces__row:nth-child(3) { --w: 60%; } .lp-terraces__row:nth-child(4) { --w: 73%; }
+.lp-terraces__row:nth-child(5) { --w: 86%; } .lp-terraces__row:nth-child(6) { --w: 100%; }
+.lp-terrace { --bg: var(--tier-0); --ink: #fff; width: var(--w); min-height: 116px; display: flex; flex-direction: column; justify-content: center; gap: 12px; padding: 16px 22px; border: 0; border-radius: 10px; background: var(--bg); color: var(--ink); font: inherit; text-align: left; cursor: pointer; opacity: 0.78; transition: opacity var(--dur-short) var(--ease-out), transform var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out); }
+.lp-terrace[data-tier="1"] { --bg: var(--tier-1); } .lp-terrace[data-tier="2"] { --bg: var(--tier-2); }
+.lp-terrace[data-tier="3"] { --bg: var(--tier-3); --ink: oklch(20% 0.03 165); } .lp-terrace[data-tier="4"] { --bg: var(--tier-4); --ink: oklch(20% 0.03 165); }
+.dark .lp-terrace[data-tier="2"] { --ink: oklch(18% 0.03 165); }
+.lp-terrace:hover, .lp-terrace[aria-pressed="true"] { opacity: 1; }
+/* The tier that's out lifts and gets a highlight ring, like the day figure's lit terrace. */
+.lp-terrace[aria-pressed="true"] { transform: translateY(-3px); box-shadow: 0 0 0 2px var(--color-paper), 0 0 0 4px var(--color-accent), 0 14px 28px -16px color-mix(in oklab, var(--color-ink) 60%, transparent); }
+.lp-terrace:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
+.lp-terrace__label { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); }
+.lp-terrace__label .num { margin-right: 8px; font-size: var(--text-sm); opacity: 0.7; }
+.lp-terrace__logos { display: flex; flex-wrap: wrap; gap: 10px; }
+.lp-terrace__chip { display: flex; align-items: center; justify-content: center; width: 124px; height: 56px; padding: 6px 12px; border-radius: 8px; background: #fff; }
+.lp-terrace__chip img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.lp-terrace__open { display: inline-flex; align-items: center; height: 56px; padding: 0 20px; border: 1.5px dashed currentColor; border-radius: 6px; font-size: var(--text-sm); font-weight: 600; opacity: 0.75; }
+@media (prefers-reduced-motion: reduce) { .lp-terrace, .lp-sponsors__logo { transition: none; } .lp-terrace[aria-pressed="true"], .lp-sponsors__logo:hover { transform: none; } }
+@media (max-width: 60rem) {
+  .lp-sponsors__panel { grid-column: 1 / span 5; min-height: 480px; gap: var(--space-sm); }
+  .lp-sponsors__figure { grid-column: 6 / span 7; }
+  .lp-sponsors__name { font-size: var(--text-xl); }
+  .lp-terrace__chip { width: 96px; height: 44px; }
+  .lp-terrace__open { height: 44px; }
+}
+@media (max-width: 48rem) {
+  /* Phones: terraces first, then the tier they picked. */
+  .lp-sponsors__figure { grid-column: 1 / -1; grid-row: 2; }
+  .lp-sponsors__panel { grid-column: 1 / -1; grid-row: 3; min-height: 0; }
+  .lp-terraces__row:nth-child(n) { --w: 100%; }
+  .lp-terraces__peak { display: none; }
+}
+
 /* Hairline figures, coloured by the page's tokens through the kernel's own variables. */
 .lp-hairline { width: 100%; --hairline-plate: var(--color-paper); --hairline-hi: var(--color-accent); --hairline-edge: var(--color-line-edge); --hairline-mid: var(--color-line-mid); --hairline-lo: var(--color-line-lo); --hairline-stroke: 1.1; }
 .lp-hairline:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
@@ -286,16 +347,8 @@
 }
 
 /* ───────────── Where do I go? The facts as a table, on a change of paper ───────────── */
-.lp-venue { background: var(--color-paper-2); }
-.lp-facts { margin: 0; border-top: 1px solid var(--color-ink); }
-.lp-facts > div { padding-block: var(--space-lg); border-bottom: 1px solid var(--color-rule); align-items: baseline; }
-.lp-facts dt { grid-column: 1 / span 3; font-size: var(--text-sm); color: var(--color-muted); }
-.lp-facts dd { grid-column: 4 / span 9; margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-xs) var(--space-xl); font: 500 var(--text-title)/1.3 var(--font-display); letter-spacing: -0.01em; }
-.lp-facts dd .lp-link { font: 500 var(--text-md)/1.4 var(--font-body); letter-spacing: 0; }
 @media (max-width: 40rem) {
-  .lp-facts dt, .lp-facts dd { grid-column: 1 / -1; }
-  .lp-facts dt { margin-bottom: var(--space-2xs); }
-}
+    }
 
 /* ───────────── What else should I know? Rows of disclosures ───────────── */
 .lp-faq__head { grid-column: 1 / span 4; align-self: start; position: sticky; top: calc(var(--bar-h) + var(--space-xl)); }
@@ -323,7 +376,13 @@
 .lp-roles__figure { grid-column: 1 / span 6; margin: 0; }
 .lp-roles__text { grid-column: 8 / span 5; display: grid; gap: var(--space-xl); justify-items: start; }
 .lp-roles__list { width: 100%; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-ink); }
-.lp-roles__list li { display: grid; gap: var(--space-3xs); padding-block: var(--space-md); border-bottom: 1px solid var(--color-rule); }
+.lp-roles__list li { border-bottom: 1px solid var(--color-rule); }
+/* The whole band between two rules is the link. Hovering it, or the badge it matches, fills the band; the
+   left and right edges have no rule, so the fill fades out there instead of stopping hard. */
+.lp-roles__link { --band: color-mix(in oklab, var(--color-accent) 12%, transparent); display: grid; gap: var(--space-3xs); padding: var(--space-md); color: inherit; text-decoration: none; }
+.lp-roles__link:hover, .lp-roles__list li.is-active .lp-roles__link { background: linear-gradient(to right, transparent, var(--band) 14%, var(--band) 86%, transparent); }
+.lp-roles__link:hover h3 { color: var(--color-accent); }
+.lp-roles__link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
 .lp-roles__list h3 { font-size: var(--text-lg); line-height: 1.3; transition: color var(--dur-short) var(--ease-out); }
 .lp-roles__list p { font-size: var(--text-sm); color: var(--color-muted); }
 .lp-roles__list li.is-active h3 { color: var(--color-accent); }

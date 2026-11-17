@@ -35,7 +35,7 @@ import QuoteCard from '../components/home/QuoteCard';
 import { pickGreeting } from '../models/greetings';
 import LinksCard from '../components/home/LinksCard';
 import { ExpertDeclinedDialog, ExpertPending, needsExpertApproval } from '../components/ExpertStatus';
-import { AboutAppCard, SponsorsCard, SupportEafCard } from '../components/home/AboutSections';
+import { AboutAppCard, SupportEafCard } from '../components/home/AboutSections';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
@@ -503,10 +503,6 @@ export default function HomePage() {
       <hr className="my-8 border-t border-border/80" aria-hidden />
 
       <SupportEafCard />
-
-      <hr className="my-8 border-t border-border/80" aria-hidden />
-
-      <SponsorsCard />
 
       <hr className="my-8 border-t border-border/80" aria-hidden />
 

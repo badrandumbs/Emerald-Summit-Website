@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import { markIntroPlayed, shouldPlayIntro } from '../components/introSession';
 import LandingNav from '../components/LandingNav';
@@ -13,22 +13,13 @@ import HairlineFigure from '../landing/HairlineFigure';
 import { SIGN_IN_ROLES } from '../models/roles';
 import { DAY_PARTS, type DayPart } from '../landing/dayParts';
 import SunArc from '../landing/SunArc';
+import SponsorTerraces from '../landing/SponsorTerraces';
 import { Mail } from '@/components/icons';
 import { useIsTouchScreen } from '../lib/device';
 import '../landing/landing.css';
 
 const VENUE = 'Emerald High School, Dublin, CA';
 const CONTACT_EMAIL = 'contact@ehsacademics.org';
-
-/** Opens the venue in Google Maps (a new tab, or the Maps app on phones). */
-const VENUE_MAP_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(VENUE)}`;
-
-const FACTS: { label: string; text: string; href?: string }[] = [
-  { label: 'Date', text: 'Saturday, January 23, 2027' },
-  { label: 'Hours', text: '9:00 AM to 5:00 PM' },
-  { label: 'Place', text: 'Emerald High School, 3600 Central Pkwy, Dublin, CA', href: VENUE_MAP_URL },
-  { label: 'Cost', text: 'Free' },
-];
 
 const ABOUT_STATS = [
   { value: '20+', label: 'Tracks', note: 'From Robothon to Mock Trial' },
@@ -39,6 +30,12 @@ const ABOUT_STATS = [
 
 /** The five roles anyone can sign in as, in the order the badges hang. */
 const BADGE_ROLES = SIGN_IN_ROLES;
+
+/**
+ * Where a badge or role row leads: that role's sign-up. Admins have no sign-up
+ * (the allowlist decides who is one), so theirs is Organizer sign in.
+ */
+const signUpPath = (role: string) => (role === 'admin' ? '/login/admin' : `/login/${role}?mode=signup`);
 
 /** The owner's own photographs from the last Summit, in rail order. */
 const DAY_PHOTOS: { n: number; alt: string; tall?: boolean }[] = [
@@ -129,6 +126,14 @@ export default function WelcomePage() {
   const holdRef = useRef<ReturnType<typeof setTimeout>>();
   const [part, setPart] = useState(0);
   const [badge, setBadge] = useState(-1);
+  // The badge picked so far, read synchronously by the click (state lags a render).
+  const badgeRef = useRef(-1);
+  // A touch picks a badge on its first tap; only a tap on the badge already out opens sign-up.
+  const badgeTap = useRef<{ before: number; touch: boolean }>({ before: -1, touch: false });
+  const pickBadge = (i: number) => {
+    badgeRef.current = i;
+    setBadge(i);
+  };
 
   useEffect(() => {
     if (playingIntro) markIntroPlayed();
@@ -393,47 +398,29 @@ export default function WelcomePage() {
           />
         </section>
 
-        {/* Where and when, as a table on a change of paper. */}
-        <section id="venue" className="lp-section lp-venue" aria-labelledby="venue-title">
-          <div className="container">
-            <div className="lp-head">
-              <h2 id="venue-title">How do I get to Emerald High?</h2>
-            </div>
-            <dl className="lp-facts">
-              {FACTS.map(({ label, text, href }) => (
-                <div key={label} className="lp-grid">
-                  <dt>{label}</dt>
-                  <dd>
-                    <span>{text}</span>
-                    {href && (
-                      <a
-                        href={href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`${VENUE} (opens Google Maps)`}
-                        className="lp-link"
-                      >
-                        Open in Google Maps
-                      </a>
-                    )}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </section>
+        {/* Who makes it possible: the sponsor tiers as a flat stepped mountain. */}
+        <SponsorTerraces />
 
         <FaqSection />
 
         {/* The close: who you're coming as, on the badge rack, and the way in. */}
         <section id="roles" className="lp-section lp-roles" aria-labelledby="roles-title">
           <div className="container lp-grid lp-roles__inner">
-            <figure className="lp-roles__figure">
+            {/* The figure is a picture for screen readers; the role rows beside it are the real links. */}
+            <figure
+              className="lp-roles__figure"
+              onPointerDownCapture={(e) => { badgeTap.current = { before: badgeRef.current, touch: e.pointerType !== 'mouse' }; }}
+              onClick={() => {
+                const i = badgeRef.current;
+                if (i < 0 || (badgeTap.current.touch && badgeTap.current.before !== i)) return;
+                navigate(signUpPath(BADGE_ROLES[i].name));
+              }}
+            >
               <HairlineFigure
                 name="badges"
                 label="Five lanyard badges hanging on a rack, one for each way to sign in to the Summit"
                 className="lp-hairline"
-                onPick={setBadge}
+                onPick={pickBadge}
               />
             </figure>
             <div className="lp-roles__text">
@@ -441,8 +428,10 @@ export default function WelcomePage() {
               <ul className="lp-roles__list">
                 {BADGE_ROLES.map((r, i) => (
                   <li key={r.name} className={badge === i ? 'is-active' : undefined}>
-                    <h3>{r.label}</h3>
-                    <p>{r.description}</p>
+                    <Link to={signUpPath(r.name)} className="lp-roles__link">
+                      <h3>{r.label}</h3>
+                      <p>{r.description}</p>
+                    </Link>
                   </li>
                 ))}
               </ul>

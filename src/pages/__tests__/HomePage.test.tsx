@@ -48,7 +48,6 @@ vi.mock('../../components/home/QuoteCard', () => ({ default: () => null }));
 vi.mock('../../components/home/LinksCard', () => ({ default: () => null }));
 vi.mock('../../components/home/AboutSections', () => ({
   AboutAppCard: () => null,
-  SponsorsCard: () => null,
   SupportEafCard: () => null,
 }));
 vi.mock('../RolesPage', () => ({ default: () => null }));

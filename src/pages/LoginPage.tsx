@@ -217,7 +217,7 @@ export default function LoginPage() {
             roleName={role.name}
             disabled={isChecking}
             onStart={() => { clearSignInError(); setNotSignedUp(null); }}
-            onSignedIn={() => void finishSignIn()}
+            onSignedIn={finishSignIn}
           />
           <div className="py-1 text-center text-xs text-muted-foreground">or use your email</div>
           <form onSubmit={handleEmail} className="space-y-3">

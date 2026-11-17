@@ -16,8 +16,9 @@ interface Props {
   disabled?: boolean;
   /** Called before Google sign-in starts, so the page can clear old errors. */
   onStart?: () => void;
-  /** Called once Supabase has a session. */
-  onSignedIn: () => void;
+  /** Called once Supabase has a session. If the page stays put (e.g. it signed
+   * the account out again), the button resets once this settles. */
+  onSignedIn: () => void | Promise<void>;
 }
 
 const BUTTON_CLASS =
@@ -69,7 +70,10 @@ export default function GoogleSignInButton({ roleName, disabled, onStart, onSign
           setBusy(true);
           try {
             await signInWithGoogleIdToken(credential, nonce.raw, latest.current.roleName);
-            latest.current.onSignedIn();
+            await latest.current.onSignedIn();
+            // Still here: back to a usable button, set up again with a fresh nonce.
+            setBusy(false);
+            setAttempt((n) => n + 1);
           } catch (error) {
             toast.error(error instanceof Error ? error.message : String(error));
             setBusy(false);

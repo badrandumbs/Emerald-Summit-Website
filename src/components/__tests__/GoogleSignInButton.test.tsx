@@ -59,6 +59,15 @@ test('a refused token shows the reason and sets the button up again', async () =
   await waitFor(() => expect(google.api!.initialize).toHaveBeenCalledTimes(2));
 });
 
+test('if the page stays put after sign-in, the button comes back instead of spinning', async () => {
+  render(<GoogleSignInButton roleName="participant" onSignedIn={async () => {}} />);
+  await waitFor(() => expect(google.api!.initialize).toHaveBeenCalledTimes(1));
+  await act(async () => { await google.api!.initialize.mock.calls[0][0].callback({ credential: 't' }); });
+  expect(screen.queryByText('Signing in with Google…')).toBeNull();
+  await waitFor(() => expect(google.api!.initialize).toHaveBeenCalledTimes(2));
+  expect(screen.getByTestId('google-button-slot')).not.toHaveClass('hidden');
+});
+
 test("without Google's script, the redirect button still works", async () => {
   google.api = null;
   render(<GoogleSignInButton roleName="participant" onSignedIn={vi.fn()} />);
