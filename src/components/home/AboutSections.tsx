@@ -32,7 +32,7 @@ function buttonClass(primary?: boolean) {
   );
 }
 
-function LinkButton({
+export function LinkButton({
   href,
   children,
   primary,
@@ -62,7 +62,7 @@ function LinkButton({
  * embedded payment form in a popup is cramped there); anywhere else, a
  * popup with the Zeffy form embedded, so people give without leaving.
  */
-function DonateButton() {
+export function DonateButton() {
   const phone = useIsPhoneScreen();
   const [open, setOpen] = useState(false);
   // Zeffy's form takes a few seconds to appear; say so instead of a blank box.

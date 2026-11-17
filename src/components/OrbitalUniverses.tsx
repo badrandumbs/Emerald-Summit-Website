@@ -9,9 +9,23 @@ import {
 } from 'framer-motion';
 import SummitLogo from './SummitLogo';
 import { useIsPhoneScreen } from '../lib/device';
-import { useSummitContent } from '../services/summitContent';
+import { toMinutes, useSummitContent } from '../services/summitContent';
 import { VERSE_DISCIPLINES as USER_DISCIPLINES } from '../models/verseVibes';
-import { tracksForUniverse } from '../models/tracks';
+import { MOCK_SESSIONS } from '../models/sessions';
+
+/**
+ * A discipline's sessions by title, earliest first: tracks are sessions. Not the
+ * session's `track` column, which some rows fill with the discipline's own name
+ * ("NovaSphere") or a group ("Engineering Track"), so it named the discipline as
+ * a track and folded sessions that share it into one.
+ */
+function sessionTitles(discipline: string): string[] {
+  const titles = MOCK_SESSIONS.filter((s) => s.track === discipline)
+    .sort((a, b) => toMinutes(a.time) - toMinutes(b.time))
+    .map((s) => s.title.trim())
+    .filter(Boolean);
+  return [...new Set(titles)];
+}
 
 const COUNT = USER_DISCIPLINES.length;
 /** Ring radius, in percent of the square stage, so it scales fluidly. */
@@ -71,7 +85,7 @@ function UniverseOrbit() {
   };
 
   const d = USER_DISCIPLINES[active];
-  const tracks = tracksForUniverse(d.name);
+  const tracks = sessionTitles(d.name);
 
   return (
     <section
@@ -176,7 +190,7 @@ function UniverseIndex() {
               <h3 className="lp-uni__name">{d.label}</h3>
               <p className="lp-uni__desc">{d.description}</p>
               <ul className="lp-uni__tracks" aria-label={`${d.label} tracks`}>
-                {tracksForUniverse(d.name).map((t) => (
+                {sessionTitles(d.name).map((t) => (
                   <li key={t}>{t}</li>
                 ))}
               </ul>

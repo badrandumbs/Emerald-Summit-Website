@@ -245,6 +245,20 @@
   .lp-terraces__peak { display: none; }
 }
 
+/* The EAF seal in the bottom-right corner, with its Support EAF card (EafDonateCorner.tsx). Not rendered on phones. */
+.lp-eaf { position: fixed; right: var(--space-lg); bottom: var(--space-lg); z-index: var(--z-sticky); animation: lp-eaf-in var(--dur-long) var(--ease-out); display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-sm); }
+.lp-eaf__seal { width: 64px; height: 64px; padding: 6px; border: 1px solid var(--color-rule); border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 10px 28px -12px oklch(0% 0 0 / 0.45); transition: transform var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out); }
+.lp-eaf__seal:hover, .lp-eaf__seal[aria-expanded="true"] { transform: translateY(-2px); box-shadow: 0 0 0 3px var(--color-accent), 0 14px 32px -12px oklch(0% 0 0 / 0.5); }
+.lp-eaf__seal:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
+.lp-eaf__card { width: min(360px, calc(100vw - 2 * var(--space-lg))); display: grid; gap: var(--space-xs); padding: var(--space-lg); border: 1px solid var(--color-rule); border-radius: var(--radius-card); background: var(--color-paper); color: var(--color-ink); box-shadow: 0 24px 48px -24px oklch(0% 0 0 / 0.5); animation: lp-eaf-in var(--dur-short) var(--ease-out); }
+.lp-eaf__title { font: 700 var(--text-lg)/1.2 var(--font-display); }
+.lp-eaf__text { font-size: var(--text-sm); line-height: 1.5; color: var(--color-ink-2); }
+.lp-eaf__ask { font-weight: 600; color: var(--color-ink); }
+.lp-eaf__fine { font-size: var(--text-xs); color: var(--color-muted); }
+.lp-eaf__actions { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-top: var(--space-xs); }
+@keyframes lp-eaf-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .lp-eaf, .lp-eaf__card { animation: none; } .lp-eaf__seal { transition: none; } .lp-eaf__seal:hover, .lp-eaf__seal[aria-expanded="true"] { transform: none; } }
+
 /* Hairline figures, coloured by the page's tokens through the kernel's own variables. */
 .lp-hairline { width: 100%; --hairline-plate: var(--color-paper); --hairline-hi: var(--color-accent); --hairline-edge: var(--color-line-edge); --hairline-mid: var(--color-line-mid); --hairline-lo: var(--color-line-lo); --hairline-stroke: 1.1; }
 .lp-hairline:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }

@@ -14,6 +14,7 @@ import { SIGN_IN_ROLES } from '../models/roles';
 import { DAY_PARTS, type DayPart } from '../landing/dayParts';
 import SunArc from '../landing/SunArc';
 import SponsorTerraces from '../landing/SponsorTerraces';
+import EafDonateCorner from '../landing/EafDonateCorner';
 import { Mail } from '@/components/icons';
 import { useIsTouchScreen } from '../lib/device';
 import '../landing/landing.css';
@@ -462,6 +463,8 @@ export default function WelcomePage() {
       </section>
 
       <LandingFooter />
+      {/* Only once the opening animation has fully settled (or straight away when it doesn't play). */}
+      {introGone && <EafDonateCorner />}
     </div>
   );
 }
