@@ -2122,6 +2122,24 @@ has it too since Nov 14, 2026; see below.
   points at `be-the-catalyst-for-learning-and-discovery`. Donating happens
   only from the dashboard's Support EAF section; the website's landing
   page no longer has a donate button.
+- [ ] **Edit your own announcements** (website, Nov 20, 2026). Admins and
+  track organizers (volunteers with `can_post_announcements`) get **Edit**
+  in the ⋯ menu of a post they wrote. It changes the subject, message and
+  files; the audience and pin stay as posted, and personal notices are never
+  editable. Readers see the new text in the same spot with a small
+  "· edited" after the date, and nothing else: no banner, no notification,
+  no "New" dot (those only fire on insert, and read state is keyed by the
+  post's id). A file taken off is deleted from the bucket only once the edit
+  saves.
+  - Backend: [announcement_edits.sql](supabase/announcement_edits.sql) adds
+    `announcements.edited_at`, the "Authors update own announcements" policy
+    and the `announcement_edit_guard` trigger (see SUPABASE.md step 65).
+    Run on the dev project Nov 20, 2026.
+  - App: read `edited_at` in the Announcement model and show "· edited" in
+    the News feed; add Edit (own posts only, same rule as the website's
+    `canEditAnnouncement`) reusing announcement_compose_screen with the
+    audience and pin locked. Updates must send only `title`, `body` and
+    `attachments`.
 
 Website-only on purpose, no app work: the public landing page (hero, the
 arrival, the Summit figure, the FAQ, the universes orbit, and since Nov 17,

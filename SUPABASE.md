@@ -500,6 +500,18 @@ permissions, rooms, session assignments, and attendance). Run these in order,
     with their account. Run after the files it names at the top. Safe to
     re-run. *(Run on the dev project 2026-11-14.)*
 
+65. `supabase/announcement_edits.sql`: **posters edit their own
+    announcements.** Adds `announcements.edited_at` (set by a trigger when
+    an edit from the API changes the title, body or attachments; pinning
+    doesn't count and clients can't set it), an UPDATE policy for the post's
+    author while `can_post_to_discipline` still allows them, and a guard
+    trigger so a non-admin's update can only change title, body and
+    attachments. `notify_from_announcement_update` also copies an edited
+    title into the bell's "X posted to Y" note without marking it unread.
+    Run after `announcements_insert_lockdown.sql` and
+    `notifications_setup.sql`. Additive; safe to re-run. *(Run on the dev project
+    2026-11-20.)*
+
 After this, sign in and build a schedule — it should persist across restarts
 and devices. Everyone is a `participant` until the allowlist sync runs.
 
