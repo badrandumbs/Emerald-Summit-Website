@@ -15,9 +15,9 @@
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <!-- Deep emerald (#102D26) so a cold start flows straight into
-                             the Flutter mountain-and-sun splash with no white flash. -->
-                        <color key="backgroundColor" red="0.06274509804" green="0.17647058824" blue="0.14901960784" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <!-- Deep emerald (#02100B) so a cold start flows straight into
+                             the Flutter sunburst splash with no white flash. -->
+                        <color key="backgroundColor" red="0.00784313725" green="0.06274509803" blue="0.04313725490" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>

@@ -746,14 +746,13 @@ RPC failed on every call — an unqualified `id` in its role check clashed
 with the `id` output column, which PL/pgSQL rejects as ambiguous. The
 current file drops and recreates it.)*
 
-**Launch splash.** The mountain-and-sun scene retains its original ridge
-profile, three-second sun traverse and centered wordmark reveal
-([lib/screens/splash_screen.dart](lib/screens/splash_screen.dart)).
-The look is now matte green throughout: a pale green sun, layered forest-green
-mountains and a quiet emerald sky. Neon rays, sparkling stars and text shimmer
-are removed. Tap anywhere or use Continue to skip; reduced motion shows the
-composed scene still before handoff. Native iOS and Android backgrounds match
-the sky, #102D26.
+**Launch splash.** A brief branded introduction plays once at app start
+([lib/screens/splash_screen.dart](lib/screens/splash_screen.dart)). The Summit
+logo, wordmark and local school identity sit on a flat deep-emerald background;
+there are no mountains, glowing sun, stars or haptic sequence. Tap anywhere or
+use Continue to skip; otherwise it hands off after 1.2 seconds to the auth gate
+(or the app in sample mode). The short fade respects reduced motion. The native
+iOS and Android launch backgrounds use the same `#02100B`.
 
 **UI shapes.** Shared themes use 8 px cards and sheets, 6 px controls, and flat
 surfaces. Home, Discover, track pages, News and Archie follow the same restrained
