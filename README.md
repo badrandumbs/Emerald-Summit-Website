@@ -2089,8 +2089,7 @@ has it too since Nov 14, 2026; see below.
   - The app needs it before launch anyway: the App Store and Google Play
     both require apps that create accounts to let people delete them.
 - [ ] **No sponsors shown anywhere for now** (website, Nov 17 and Nov 20,
-  2026; the Nov 20 part is on the website's `akhil-changes` branch, not
-  on `main` yet). Sponsors left the website's Home on Nov 17, and after the
+  2026; live on the website since Nov 20). Sponsors left the website's Home on Nov 17, and after the
   Nov 20 meeting they are off the public site too: the organizers don't
   want unpaid sponsors getting free advertising, so there's no "past
   sponsors" list either. Sponsors will come back in a planned **Summit 27**
@@ -2101,7 +2100,7 @@ has it too since Nov 14, 2026; see below.
   lists "Nihtahli Anand", not "Nithali Anand". Fix `_developersAndTesters`
   in [home_about_sections.dart](lib/widgets/home_about_sections.dart).
 - [ ] **Say "track" and "organizer" on screen** (website, Nov 20, 2026;
-  on the `akhil-changes` branch, not on `main` yet). After the Nov 20
+  live on the website). After the Nov 20
   meeting, everything people read says **track**, not "session", and
   **Organizer**, not "Admin" (the role label too: "Organizer"). Examples
   from the website: "Browse tracks", "Add the tracks you want to watch",
@@ -2115,8 +2114,8 @@ has it too since Nov 14, 2026; see below.
   [user_profile.dart](lib/models/user_profile.dart), `admin('Admin',
   'Admins')` in [volunteer_contact.dart](lib/widgets/volunteer_contact.dart),
   then every visible "session" string.
-- [ ] **New Zeffy donation form** (website, Nov 20, 2026; on the
-  `akhil-changes` branch, not on `main` yet). Donate uses the form the
+- [ ] **New Zeffy donation form** (website, Nov 20, 2026; live
+  on the website). Donate uses the form the
   organizers sent on Nov 20, id `6938c617-88ca-483d-ab7d-997e94ed8b6c`
   ("Fuel the Journey of Learning and Discovery"). The app's `eafDonateUrl`
   in [home_about_sections.dart](lib/widgets/home_about_sections.dart) still
