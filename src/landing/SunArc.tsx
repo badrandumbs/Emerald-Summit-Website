@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * The arrival: an emerald sun rises from behind the range left of centre and
- * comes to rest above the central summit, where it stays, pulsing slowly
- * (since Nov 20, 2026; it used to set on the right). It is drawn inside the
+ * The arrival: an emerald sun rises straight up from behind the central summit,
+ * at full strength, and comes to rest above it, where it dims and stays,
+ * pulsing slowly (since Nov 20, 2026; it used to cross from left to right). It is drawn inside the
  * hero's own sky, under its ridges. With `rise` off (repeat visits, or after
  * Skip) it is simply there at the top.
  *
@@ -17,18 +17,18 @@ const SKY_CORE = [12, 74, 53];
 const RISE_MS = 4100;
 /** Above 1 the sun slows more as it settles into the crest. */
 const SETTLE_EASE = 2.2;
-/** Overall brightness at rest (1 = the old full-strength sun). */
+/** Overall brightness at rest (1 = full strength, which it climbs at). */
 const DIM = 0.62;
+/** After reaching the top, how long it takes to dim from full strength to DIM. */
+const DIM_MS = 2500;
 /** One slow breath of the resting sun, and how deep it goes (0.15 = dims to 85%). */
 const PULSE_MS = 9000;
 const PULSE_DEPTH = 0.15;
 /** The resting sun moves slowly, so it repaints at ~24fps, not 60. */
 const REST_FRAME_MS = 1000 / 24;
 
-/** How far either side of centre the sun rises and sets, as a share of the width. */
-const ARC_HALF_SPAN = 0.21;
-/** Height of the crest and of the horizon, as shares of the sky's height. The crest is high enough that the resting sun clears the hero's lede line. */
-const ARC_TOP = 0.1;
+/** Height of the crest and of the horizon, as shares of the sky's height. */
+const ARC_TOP = 0.23;
 const ARC_BASE = 0.98;
 const SPOKES = 120;
 const TAU = Math.PI * 2;
@@ -87,12 +87,13 @@ export default function SunArc({
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, w, h);
 
-      // A narrow arc about the centre; low enough at both ends that the ridges hide it.
-      const x = w * (0.5 + ARC_HALF_SPAN * (2 * t - 1));
+      // Straight up the middle, from behind the summit.
+      const x = w * 0.5;
       const y = h * (ARC_BASE - day * (ARC_BASE - ARC_TOP));
       // Like a real day: the sun and its rays are smallest on the horizons and fullest at the crest.
       const grow = smooth(day);
-      const r = Math.max(42, Math.min(138, Math.min(w, h) * 0.14)) * (0.42 + 0.58 * grow);
+      // Sized so the whole sun, rays included, fits between the top edge and the hero's lede.
+      const r = Math.max(56, Math.min(118, Math.min(w, h) * 0.105)) * (0.42 + 0.58 * grow);
       const a = clamp01(0.12 + day * 1.25) * glow;
       const energy = clamp01(0.3 + 0.55 * day);
 
@@ -195,7 +196,7 @@ export default function SunArc({
       if (p < 1) {
         // Climbing: decelerates into the crest so it settles rather than stops.
         const t = 0.5 * (1 - (1 - p) ** SETTLE_EASE);
-        paint(t, secs, DIM);
+        paint(t, secs, 1);
         onFrameRef.current?.(t);
         return;
       }
@@ -206,9 +207,10 @@ export default function SunArc({
       }
       if (!onScreen || now - lastPaint < REST_FRAME_MS) return;
       lastPaint = now;
-      // A slow breath from full (DIM) down by PULSE_DEPTH and back.
+      // Settles from full strength to DIM, then a slow breath down by PULSE_DEPTH and back.
+      const settled = rise ? smooth(clamp01((now - restAt) / DIM_MS)) : 1;
       const breath = 0.5 - 0.5 * Math.cos((TAU * (now - restAt)) / PULSE_MS);
-      paint(0.5, secs, DIM * (1 - PULSE_DEPTH * breath));
+      paint(0.5, secs, (1 - (1 - DIM) * settled) * (1 - PULSE_DEPTH * breath * settled));
     };
 
     if (still) {

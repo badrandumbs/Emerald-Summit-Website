@@ -168,7 +168,6 @@ export default function WelcomePage() {
     if (glidingRef.current) return;
     glidingRef.current = true;
     openRef.current.forEach(clearTimeout);
-    setZoomed(false);
     setRevealed(true);
     const el = titleRef.current;
     el?.closest<HTMLElement>('.lp-hero')?.style.removeProperty('--sun');
