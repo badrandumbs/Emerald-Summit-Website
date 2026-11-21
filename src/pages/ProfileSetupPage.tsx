@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 import { agreeToCodeOfConduct, needsProfileSetup, saveProfileDetails, signOut } from '../services/auth';
 import CodeOfConductWindow from '../components/CodeOfConductWindow';
-import SignaturePad from '../components/SignaturePad';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const SECTION_HEADING = 'font-display text-2xl font-bold tracking-tight';
 // What sits under a heading is indented a little, except the agreement box.
@@ -56,8 +56,7 @@ export default function ProfileSetupPage() {
   const [isSigningOut, setIsSigningOut] = useState(false);
   // The Code of Conduct's photo permission: true grants, false does not.
   const [photoConsent, setPhotoConsent] = useState<boolean | null>(null);
-  // Drawn on screen only; it gates the button and is not saved.
-  const [signed, setSigned] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   const roleName = profile?.role as string | undefined;
   const subtype = profile?.volunteer_subtype as string | null | undefined;
@@ -112,7 +111,7 @@ export default function ProfileSetupPage() {
     setError(null);
     if (conductOnly) {
       if (media && photoConsent == null) return setError('Please choose whether you grant photo permission.');
-      if (!signed) return setError('Please sign in the signature box.');
+      if (!agreed) return setError(`Please tick the box to agree to the ${agreement.name}.`);
       setIsSaving(true);
       try {
         await agreeToCodeOfConduct(agreement.version, media ? photoConsent : null);
@@ -131,7 +130,7 @@ export default function ProfileSetupPage() {
       return setError(missing.key === 'phone' ? 'Mobile number is required.' : `Please answer "${missing.label}".`);
     }
     if (askConduct && media && photoConsent == null) return setError('Please choose whether you grant photo permission.');
-    if (askConduct && !signed) return setError('Please sign in the signature box.');
+    if (askConduct && !agreed) return setError(`Please tick the box to agree to the ${agreement.name}.`);
     setIsSaving(true);
     try {
       const out = Object.fromEntries(fields.map((f) => [f.key, answers[f.key] ?? '']));
@@ -152,7 +151,7 @@ export default function ProfileSetupPage() {
     ? gate === 'phone' ? 'Add your number' : 'Add your grade'
     : roleChanged ? `Your details as ${/^[aeiou]/i.test(label) ? 'an' : 'a'} ${label}` : 'Tell us a bit about yourself';
   const intro = conductOnly
-    ? 'Please carefully review the following info, then sign at the bottom.'
+    ? `${agreement.whoAgrees} Read it below, or expand it to read it in full.`
     : gateOnly
     ? gate === 'phone'
       ? `${role.label}s need a mobile number on file so the Summit team can reach you.`
@@ -250,9 +249,16 @@ export default function ProfileSetupPage() {
             )}
             <section className={cn(SECTION_RULE, 'space-y-4')}>
               <h2 className={SECTION_HEADING}>{agreement.name}</h2>
-              <CodeOfConductWindow agreement={agreement}>
-                <SignaturePad onChange={setSigned} className="rounded-none border-0 bg-transparent" />
-              </CodeOfConductWindow>
+              <CodeOfConductWindow agreement={agreement} />
+              <label className="flex cursor-pointer items-start gap-3 text-base">
+                <Checkbox
+                  checked={agreed}
+                  onCheckedChange={(v) => setAgreed(v === true)}
+                  className="mt-0.5"
+                  aria-label={agreement.checkbox}
+                />
+                <span className="font-medium">{agreement.checkbox}</span>
+              </label>
             </section>
           </div>
         )}
@@ -262,7 +268,7 @@ export default function ProfileSetupPage() {
         <Button
           type="submit"
           className="glow-emerald h-12 w-full rounded-xl bg-primary text-[15px] font-semibold hover:bg-emerald"
-          disabled={isSaving || (askConduct && (!signed || (media != null && photoConsent == null)))}
+          disabled={isSaving || (askConduct && (!agreed || (media != null && photoConsent == null)))}
         >
           {isSaving ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : conductOnly ? 'Agree and continue' : gateOnly ? 'Save and continue' : 'Continue'}
         </Button>

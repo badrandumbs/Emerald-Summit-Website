@@ -3,7 +3,7 @@
 // Used by the last sign-up step (ProfileSetupPage), like the app's
 // CodeOfConductWindow. The text is laid out as the document is, minus the
 // photo question, which ProfileSetupPage asks below the window.
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { Maximize2 } from '@/components/icons';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { AgreementBlock, SummitAgreement } from '../models/codeOfConduct';
@@ -52,8 +52,7 @@ export function CodeOfConductText({ agreement, showTitle = true }: { agreement: 
   );
 }
 
-/** `children` (the signature pad) sit under Expand, inside the same box. */
-export default function CodeOfConductWindow({ agreement, children }: { agreement: SummitAgreement; children?: ReactNode }) {
+export default function CodeOfConductWindow({ agreement }: { agreement: SummitAgreement }) {
   const [expanded, setExpanded] = useState(false);
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-secondary/40">
@@ -72,7 +71,6 @@ export default function CodeOfConductWindow({ agreement, children }: { agreement
       >
         <Maximize2 className="h-4 w-4" aria-hidden /> Expand
       </button>
-      {children && <div className="border-t border-border">{children}</div>}
       <Dialog open={expanded} onOpenChange={setExpanded}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
