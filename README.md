@@ -18,6 +18,11 @@ website's copy says so and avoids competing, judging, winners and awards.
 Some shared names still use the older words, such as the schedule kinds
 `competing` and `judging` on the backend; they are not shown as labels.
 
+**One track = one session.** "Track" and "session" name the same thing: a
+track is never a group of sessions. Each discipline's sessions are its
+tracks, and assigning a volunteer to manage a session is assigning them to
+that track.
+
 > **Status: role-driven backend live.** All screens and interactions work, and
 > the backend is wired up and verified end-to-end on the dev project (two-device
 > testing). **The "dev" project (`dgrskmykbkvphnaasfzl`) is in practice
@@ -161,7 +166,7 @@ stays put on Ask Archie and for screen-reader users.
     since the custom route has none.
   - **Discipline page:** name, topics (the tagline split on commas), a one-line
     count of sessions, open seats and how many are on your day; filter chips
-    (All, Open seats, Morning, Afternoon, plus each real track); sessions grouped
+    (All, Open seats, Morning, Afternoon); its sessions (its tracks) grouped
     under start-time headers, each with a seat bar that turns amber when only a
     few seats are left and red when full.
   - The six known disciplines draw their mark from the personality, so the
@@ -1991,11 +1996,6 @@ has it too since Nov 14, 2026; see below.
   screens, Flutter errors and failed Supabase requests (through
   `RecordingHttpClient`) and reads the build (`package_info_plus`, plus
   `--dart-define=GIT_COMMIT=…` when given) and device (`device_info_plus`).
-- [x] **Home sections and wording, Nov 14** (website, Nov 14, 2026).
-  - The Archie tab is labeled **Ask Archie** (sidebar and bottom bar; the
-    website's `NAV_ITEMS` in `src/components/AppShell.tsx`).
-  - "Summit" is always capitalized in app text ("Summit day", "the Summit
-    team", "questions about the Summit", role blurbs, the phone-number
 - [x] **"are not", never "aren't"** (website and app, Nov 15, 2026). App
   text writes "are not" in full ("You are not eligible to sign up as a
   volunteer.", "Teams are not allowed."), the same as the website. Other
@@ -2005,6 +2005,11 @@ has it too since Nov 14, 2026; see below.
     not", never "aren't") with
     `supabase functions deploy archie-chat --no-verify-jwt --use-api`, and
     upload the edited `supabase/archie/knowledge.md`.
+- [x] **Home sections and wording, Nov 14** (website, Nov 14, 2026).
+  - The Archie tab is labeled **Ask Archie** (sidebar and bottom bar; the
+    website's `NAV_ITEMS` in `src/components/AppShell.tsx`).
+  - "Summit" is always capitalized in app text ("Summit day", "the Summit
+    team", "questions about the Summit", role blurbs, the phone-number
     helper, volunteer hours, the follow-up screens).
   - Never "Explore the verses"; it's always **Explore the disciplines**.
   - Home's **Quick access** row (Resources, Announcements, Profile, Volunteer
@@ -2031,9 +2036,71 @@ has it too since Nov 14, 2026; see below.
     Archie after editing it). The website switched on Nov 14, 2026.
   Done in the app. The Jump to grid went with the website's Quick access,
   and the Resources screen is gone.
+- [ ] **Sign the Code of Conduct instead of ticking a box** (website, Nov
+  17, 2026). The last sign-up step is now headed sections: **Your Info**
+  (name, email, the role's questions), **Media Rights and Consent** (the
+  photo radio; not asked of experts), then the agreement (**Code of
+  Conduct**, or **Guest Expert Policy** for experts) in its scroll box with
+  a draw-it-yourself signature pad attached under it, plus a **Clear**
+  button. There is no checkbox and no agree statement: signing is the
+  agreement. The button stays disabled until there is a signature and a
+  photo choice; Clear disables it again. When the agreement is all that is
+  left, the page says "One last step" and "Please carefully review the
+  following info, then sign at the bottom." The signature is only on
+  screen and is not saved; `agree_to_code_of_conduct` still records just
+  the version and the photo choice, so no backend change. The app still
+  uses a `CheckboxListTile` in
+  [code_of_conduct_screen.dart](lib/screens/auth/code_of_conduct_screen.dart).
+  Website code: `src/components/SignaturePad.tsx` and
+  `src/pages/ProfileSetupPage.tsx`.
+- [ ] **Sign in only reaches finished accounts** (website, Nov 17, 2026).
+  After any Sign in (Google or email code), the website checks the account
+  has finished sign-up (`signedInAccountNeedsSignUp`: the profile still
+  needs setup). If it hasn't, it signs out again and shows **Couldn't sign
+  you in**: "There's no Summit account for <email> yet. Sign up to create
+  your <role> account." with **Go to sign up**, instead of starting the
+  sign-up steps. Sign up and Organizer sign in skip the check. The app
+  still runs onboarding when a new Google account comes in through Sign in
+  (see **Sign in and Sign up are different paths** above). Also, a new email
+  on Sign in is now headed **No account found** ("There's no account for …
+  yet. Press Continue to enter some information and create your …
+  account."), not "Let's create you an account!".
+- [ ] **Delete account** (website, Nov 17, 2026). Profile has **Delete
+  account** under **Sign out**, for every role. Step one, "Delete your
+  account?": "This deletes your Summit account for good, on the website and
+  the app. It can't be undone." and a list (profile and QR pass deleted,
+  taken off every session on your day and any team, to come back you sign
+  up again), with **Yes, delete my account**. Step two: "To confirm, type
+  your email: …", which unlocks **Delete account forever**. It calls
+  `delete_my_account()`, signs out and goes Home with "Your account was
+  deleted." If the function is missing: "Deleting accounts isn't turned on
+  yet. Contact the Summit team to delete your account."; any other failure:
+  "Couldn't delete your account. Nothing was changed."
+  - **Backend: not run yet.** The SQL is the website's
+    `scripts/delete_my_account.sql`. Copy it into `supabase/` here and run
+    it on the shared project. It deletes only the caller's `auth.users`
+    row; the foreign keys decide what goes with it, and any reference with
+    no `ON DELETE` rule makes the whole delete fail. Check team ownership,
+    volunteer hours, bug reports and announcements first.
+  - The app needs it before launch anyway: the App Store and Google Play
+    both require apps that create accounts to let people delete them.
+- [ ] **Sponsors left Home** (website, Nov 17, 2026). The website moved
+  sponsors from Home to the public landing page ("Who helps make the
+  Summit happen?", a stepped mountain of tiers; data now in
+  `src/models/sponsors.ts`). Home there is Support EAF, Links and About the
+  app. The app has no landing page, so decide whether `SponsorsSection`
+  stays on the app's Home ([dashboard_screen.dart](lib/screens/dashboard_screen.dart))
+  or goes.
+- [ ] **Spelling: Nihtahli Anand** (website, Nov 17, 2026). About the app
+  lists "Nihtahli Anand", not "Nithali Anand". Fix `_developersAndTesters`
+  in [home_about_sections.dart](lib/widgets/home_about_sections.dart).
 
 Website-only on purpose, no app work: the public landing page (hero, the
-arrival, the Summit figure, the FAQ, the universes orbit), the
+arrival, the Summit figure, the FAQ, the universes orbit, and since Nov 17,
+2026 the sponsor terraces, the Support EAF seal in the corner, role badges
+that link to each role's sign-up, and the date line's "Dublin, CA"), the
+profile setup page's wider layout, the Google button resetting after a
+sign-in that gets sent to Sign up, the
 `website_show_session_times` switch, the header search jumping to pages, the
 browser's 15-minute pause after five wrong test passwords, the "your QR
 pass is also in the mobile app" note, and the "Better in the app" banner
@@ -2148,7 +2215,7 @@ replaced, not adapted.
 | QR pass encodes the user id | Same in the app: the QR is the bare `auth.users.id`. Keep it, so a pass on a laptop scans at the app's front desk and the reverse. |
 | Its own `announcements` (category enum, `author_id`, `author_name`) | The app's `announcements` (see `Announcement.fromMap` in [models.dart](lib/models/models.dart)): `audience`, `pinned`, `discipline_id`, `created_by`, `target_user_id` (personal notices), `session_id`, `attachments`. Read state in `announcement_reads`, hides in `announcement_dismissals`. |
 | `announcement-media` bucket (100 MB) | `announcement_attachments` bucket, uploads under `<user_id>/`, admins and volunteers with `can_post_announcements` only. Size limits in [storage_upload_limits.sql](supabase/storage_upload_limits.sql). |
-| Tracks | Sessions under disciplines (`disciplines`, `sessions_with_counts` view for reads, `sessions` for writes). |
+| Tracks | One track = one session. Sessions under disciplines (`disciplines`, `sessions_with_counts` view for reads, `sessions` for writes). |
 | Directory page (everyone, with visibility settings) | No equivalent; `profiles` is own-row-only. `fetch_volunteer_hub` lists volunteers for the people allowed to see it. Drop the directory or turn it into the volunteer hub. |
 | Judging page | No backend. Leave it hidden (the route already redirects). |
 | Resources page | The app no longer has one. Leave it unlinked or delete it. |
