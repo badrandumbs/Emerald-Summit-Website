@@ -2039,23 +2039,23 @@ has it too since Nov 14, 2026; see below.
     Archie after editing it). The website switched on Nov 14, 2026.
   Done in the app. The Jump to grid went with the website's Quick access,
   and the Resources screen is gone.
-- [ ] **Sign the Code of Conduct instead of ticking a box** (website, Nov
-  17, 2026). The last sign-up step is now headed sections: **Your Info**
-  (name, email, the role's questions), **Media Rights and Consent** (the
-  photo radio; not asked of experts), then the agreement (**Code of
-  Conduct**, or **Guest Expert Policy** for experts) in its scroll box with
-  a draw-it-yourself signature pad attached under it, plus a **Clear**
-  button. There is no checkbox and no agree statement: signing is the
-  agreement. The button stays disabled until there is a signature and a
-  photo choice; Clear disables it again. When the agreement is all that is
-  left, the page says "One last step" and "Please carefully review the
-  following info, then sign at the bottom." The signature is only on
-  screen and is not saved; `agree_to_code_of_conduct` still records just
-  the version and the photo choice, so no backend change. The app still
-  uses a `CheckboxListTile` in
-  [code_of_conduct_screen.dart](lib/screens/auth/code_of_conduct_screen.dart).
-  Website code: `src/components/SignaturePad.tsx` and
-  `src/pages/ProfileSetupPage.tsx`.
+- [x] **Code of Conduct: back to the checkbox** (website, Nov 20, 2026; no
+  app work). On Nov 17, 2026 Akhil replaced the website's agreement
+  checkbox with a draw-it-yourself signature pad (website commit
+  `1eae9a4`), and this item asked the app to copy it. It has been taken
+  out again. The drawn signature was never saved
+  (`agree_to_code_of_conduct` only records the version and the photo
+  choice), and it contradicted the agreements: the Guest Expert Policy
+  ends with "Continue once you have read it; no signature is needed", and
+  both documents had their signature lines replaced by the checkbox. The
+  website deleted `SignaturePad.tsx` and went back to the checkbox ("I
+  have read the … and agree to it."), the same as the app's
+  `CheckboxListTile` in
+  [code_of_conduct_screen.dart](lib/screens/auth/code_of_conduct_screen.dart),
+  so the two match again. No backend change, and nobody agrees again. The
+  website kept the rest of that change (headed sections **Your Info**,
+  **Media Rights and Consent**, then the agreement, in a wider layout);
+  the app's screen does not need those to match.
 - [ ] **Sign in only reaches finished accounts** (website, Nov 17, 2026).
   After any Sign in (Google or email code), the website checks the account
   has finished sign-up (`signedInAccountNeedsSignUp`: the profile still
