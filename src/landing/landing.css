@@ -109,7 +109,7 @@
 /* A soft pool behind the details: the sky and ridges under them are blurred and dimmed, feathered out so no edge shows. */
 .lp-hero__aside::before { content: ""; position: absolute; inset: calc(-1 * var(--space-xl)) calc(-1 * var(--space-3xl)); z-index: -1; background: oklch(13% 0.02 165 / 0.5); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-mask-image: radial-gradient(closest-side, #000 45%, transparent 100%); mask-image: radial-gradient(closest-side, #000 45%, transparent 100%); pointer-events: none; }
 /* Over the wordmark: its tagline as a spaced caption in the wordmark's own pale emerald. Under it: the facts on one line, then the two ways on. */
-.lp-hero__lede { max-width: none; font: 500 var(--text-md)/1.4 var(--font-display); letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-night-accent); margin-bottom: calc(-1 * var(--space-xs)); }
+.lp-hero__lede { max-width: none; font: 500 var(--text-md)/1.4 var(--font-display); letter-spacing: 0.2em; text-transform: uppercase; color: oklch(95% 0.05 165); margin-bottom: calc(-1 * var(--space-xs)); text-shadow: 0 0 6px rgb(2 12 9 / 0.95), 0 0 16px rgb(2 12 9 / 0.85), 0 1px 2px rgb(2 12 9 / 0.9); } /* Near-white mint and a dark shadow, so the line reads over the resting sun (the green accent it had disappeared into the glow). */
 .lp-hero__when { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2xs) 0; max-width: none; font: 500 1.1875rem/1.4 var(--font-display); letter-spacing: -0.01em; color: var(--color-night-ink); }
 .lp-hero__when span + span::before { content: ""; display: inline-block; width: 4px; height: 4px; margin: 0 var(--space-sm); border-radius: var(--radius-pill); background: var(--color-night-accent); vertical-align: middle; }
 .lp-hero__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-md); margin-top: 85px; }
@@ -118,7 +118,11 @@
   .lp-hero__inner { padding-bottom: var(--space-3xl); }
   .lp-hero__lede { letter-spacing: 0.12em; font-size: var(--text-sm); }
   .lp-hero__when { flex-direction: column; font-size: 1.0625rem; }
-  .lp-hero__actions { margin-top: var(--space-2xl); }
+  .lp-hero__actions { margin-top: var(--space-2xl); gap: var(--space-sm); }
+  /* Smaller than the title on phones, so the buttons don't outweigh it. */
+  .lp-hero__actions .lp-btn { min-height: 42px; padding-inline: 20px; font-size: 0.9375rem; }
+  /* The ranges are drawn 1440 wide and squeezed to the screen, which on a phone packs the peaks into spikes. Draw them 2.4x the screen width, centred (the summit stays in the middle), so the slopes keep their shape. */
+  .lp-hero [data-ridge] { left: -70%; right: auto; width: 240%; }
   .lp-hero__aside::before { inset: calc(-1 * var(--space-lg)) calc(-1 * var(--space-md)); }
   .lp-hero__when span + span::before { display: none; }
 }
@@ -129,11 +133,15 @@
 .lp-hero__ground[data-done] { opacity: 0; }
 .lp-hero__title .lp-hero__title-in { display: inline-block; will-change: transform; filter: drop-shadow(0 2px 18px rgb(2 12 9 / 0.55)); }
 .lp-sun { position: absolute; inset: 0; width: 100%; height: 100%; }
-/* The opening push-in: the whole sky (stars, sun, ridges) drifts slowly in toward the upper sky where the sun crests, so the foot of the range slips out of frame; it eases back out as the page settles. */
+/* The opening push-in: the whole sky (stars, sun, ridges) drifts slowly in toward the upper sky where the sun crests, so the foot of the range slips out of frame. */
 .lp-hero .lp-sky { transform-origin: 50% 20%; transition: transform 1500ms var(--ease-in-out); }
+/* The settled hero keeps the pushed-in framing (since Nov 20, 2026), so the sun at rest sits well inside the sky and the range stays low in frame. */
+.lp-hero:not(.lp-hero--intro) .lp-sky { transform: scale(1.18); }
 .lp-hero[data-zoom] .lp-sky { transform: scale(1.18); transition: transform 6500ms cubic-bezier(0.3, 0, 0.3, 1); }
 /* Daylight on the range: while the sun is up (--sun, 0 to 1, set each frame by WelcomePage) the rock brightens and takes a little colour. The crest outlines are left as they are, at the owner's request. */
 .lp-hero--intro [data-ridge] { filter: brightness(calc(1 + 0.6 * var(--sun, 0))) saturate(calc(1 + 0.35 * var(--sun, 0))); }
+/* The sun now stays up, so the range is still lit when the intro ends: ease it back to plain rock instead of snapping. */
+.lp-hero:not(.lp-hero--intro) [data-ridge] { transition: filter 1.6s var(--ease-out); }
 @media (prefers-reduced-motion: reduce) { .lp-hero__ground { transition: none; } }
 .lp-skip { position: fixed; bottom: var(--space-xl); left: 50%; z-index: var(--z-toast); transform: translateX(-50%); }
 

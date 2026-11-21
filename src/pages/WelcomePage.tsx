@@ -112,8 +112,6 @@ export default function WelcomePage() {
   const [revealed, setRevealed] = useState(() => !shouldPlayIntro());
   const [locked, setLocked] = useState(playingIntro);
   const [skipped, setSkipped] = useState(false);
-  /** The sun is still crossing the sky. */
-  const [sunUp, setSunUp] = useState(playingIntro);
   /** The intro's ground and pinned headline, dropped once both have settled. */
   const [introGone, setIntroGone] = useState(!playingIntro);
   /** The opening push-in: the view is zoomed toward the summit, and the sun may start once it has arrived. */
@@ -154,24 +152,22 @@ export default function WelcomePage() {
     el.style.clipPath = 'inset(0 100% 0 0)';
   }, [playingIntro]);
 
-  /** The wipe: from 36% to 60% of the sun's crossing, once it has climbed clear of the name. */
+  /** The wipe: from 0.2 to 0.45 of the timeline (the crest is 0.5), once the sun has climbed clear of the name. */
   const onSunFrame = (t: number) => {
     const el = titleRef.current;
     if (!el || glidingRef.current) return;
     // Daylight, 0 on the horizons and 1 at the crest: the stylesheet lights the range with it.
     el.closest<HTMLElement>('.lp-hero')?.style.setProperty('--sun', Math.sin(t * Math.PI).toFixed(3));
-    const p = Math.min(1, Math.max(0, (t - 0.36) / 0.24));
+    const p = Math.min(1, Math.max(0, (t - 0.2) / 0.25));
     const e = 1 - (1 - p) ** 3;
     el.style.clipPath = `inset(-0.2em ${(1 - e) * 100}% -0.2em 0)`;
   };
 
-  /** The sun has set (or Skip): the headline lifts to its place and the details come in under it. */
+  /** The sun has reached the top (or Skip): the headline lifts to its place and the details come in under it. */
   const settle = (ms: number) => {
     if (glidingRef.current) return;
     glidingRef.current = true;
     openRef.current.forEach(clearTimeout);
-    setZoomed(false);
-    setSunUp(false);
     setRevealed(true);
     const el = titleRef.current;
     el?.closest<HTMLElement>('.lp-hero')?.style.removeProperty('--sun');
@@ -201,7 +197,7 @@ export default function WelcomePage() {
     return () => openRef.current.forEach(clearTimeout);
   }, [playingIntro]);
 
-  /** The sun is down: let the sky stand a moment, then bring the page in. */
+  /** The sun is at the top: let the sky stand a moment, then bring the page in. */
   const onSunSet = () => {
     holdRef.current = setTimeout(() => settle(GLIDE_MS), SETTLE_HOLD_MS);
   };
@@ -286,7 +282,9 @@ export default function WelcomePage() {
           aria-labelledby="hero-title"
         >
           <SkyVideo
-            behindRidges={sunUp && sunStarted && !skipped ? <SunArc onFrame={onSunFrame} onDone={onSunSet} /> : null}
+            behindRidges={!playingIntro || sunStarted || skipped
+              ? <SunArc rise={playingIntro && !skipped} onFrame={onSunFrame} onDone={playingIntro ? onSunSet : undefined} />
+              : null}
           />
           <div className="lp-hero__scrim" aria-hidden />
           {!introGone && <div className="lp-hero__ground" data-done={revealed || undefined} aria-hidden />}

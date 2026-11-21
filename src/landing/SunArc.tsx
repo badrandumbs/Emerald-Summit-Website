@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * The arrival: an emerald sun rises from behind the range left of centre,
- * crests over the central summit and sets behind the range on the right, the
- * way the mobile app's launch splash ("Arc Traverse") does. It is drawn
- * inside the hero's own sky, under its ridges, so when it has set the sky it
- * leaves is already the hero.
+ * The arrival: an emerald sun rises straight up from behind the central summit,
+ * at full strength, and comes to rest above it, where it dims and stays,
+ * pulsing slowly (since Nov 20, 2026; it used to cross from left to right). It is drawn inside the
+ * hero's own sky, under its ridges. With `rise` off (repeat visits, or after
+ * Skip) it is simply there at the top.
  *
  * The sun is light, not a ball: everything is painted additively and fades
  * to nothing, so there is no rim to see, and a fringe of rays breathes out
@@ -13,17 +13,22 @@ import { useEffect, useRef } from 'react';
  */
 const SKY_CORE = [12, 74, 53];
 
-/** One full rise and set. */
-export const SUN_ARC_MS = 6900;
-/** Above 1 the rise takes longer than the set: at 1.3 the crest comes about 59% of the way through. */
-const RISE_EASE = 1.3;
-/** How much the sun slows as it crosses the crest (0 = not at all; 0.4 = 40% slower there, made up near the horizons). */
-const CREST_LINGER = 0.4;
+/** The climb from the horizon to the crest. */
+const RISE_MS = 4100;
+/** Above 1 the sun slows more as it settles into the crest. */
+const SETTLE_EASE = 2.2;
+/** Overall brightness at rest (1 = full strength, which it climbs at). */
+const DIM = 0.62;
+/** After reaching the top, how long it takes to dim from full strength to DIM. */
+const DIM_MS = 2500;
+/** One slow breath of the resting sun, and how deep it goes (0.15 = dims to 85%). */
+const PULSE_MS = 9000;
+const PULSE_DEPTH = 0.15;
+/** The resting sun moves slowly, so it repaints at ~24fps, not 60. */
+const REST_FRAME_MS = 1000 / 24;
 
-/** How far either side of centre the sun rises and sets, as a share of the width. */
-const ARC_HALF_SPAN = 0.21;
-/** Height of the crest and of the two horizons, as shares of the sky's height. */
-const ARC_TOP = 0.17;
+/** Height of the crest and of the horizon, as shares of the sky's height. */
+const ARC_TOP = 0.23;
 const ARC_BASE = 0.98;
 const SPOKES = 120;
 const TAU = Math.PI * 2;
@@ -33,12 +38,15 @@ const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const smooth = (v: number) => v * v * (3 - 2 * v);
 
 export default function SunArc({
+  rise = true,
   onFrame,
   onDone,
 }: {
-  /** Every frame, with the timeline from 0 (rising) to 1 (set). */
+  /** Climb up from the horizon first; off, the sun starts at rest at the top. */
+  rise?: boolean;
+  /** Every frame of the climb, with the timeline from 0 (horizon) to 0.5 (crest). */
   onFrame?: (t: number) => void;
-  /** The sun has set. */
+  /** The sun has reached the crest. */
   onDone?: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -65,27 +73,28 @@ export default function SunArc({
     size();
     window.addEventListener('resize', size);
 
-    const paint = (t: number) => {
-      const day = Math.sin(t * Math.PI); // 0, up to 1 at the crest, back to 0
+    // `glow` scales all the light: dimmed, and breathing once the sun is at rest.
+    const paint = (t: number, secs: number, glow: number) => {
+      const day = Math.sin(t * Math.PI); // 0 on the horizon, 1 at the crest
       ctx.globalCompositeOperation = 'source-over';
       ctx.clearRect(0, 0, w, h);
 
       // The sky warms to emerald while the sun is up, and gives the stars back as it sets.
       const sky = ctx.createRadialGradient(w * 0.5, h * 0.34, 0, w * 0.5, h * 0.34, Math.max(w, h) * 0.95);
-      sky.addColorStop(0, rgba(SKY_CORE, 0.62 * day));
-      sky.addColorStop(0.55, rgba(SKY_CORE, 0.27 * day));
+      sky.addColorStop(0, rgba(SKY_CORE, 0.62 * day * glow));
+      sky.addColorStop(0.55, rgba(SKY_CORE, 0.27 * day * glow));
       sky.addColorStop(1, rgba(SKY_CORE, 0));
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, w, h);
 
-      // A narrow arc about the centre; low enough at both ends that the ridges hide it.
-      const x = w * (0.5 + ARC_HALF_SPAN * (2 * t - 1));
+      // Straight up the middle, from behind the summit.
+      const x = w * 0.5;
       const y = h * (ARC_BASE - day * (ARC_BASE - ARC_TOP));
       // Like a real day: the sun and its rays are smallest on the horizons and fullest at the crest.
       const grow = smooth(day);
-      const r = Math.max(42, Math.min(138, Math.min(w, h) * 0.14)) * (0.42 + 0.58 * grow);
-      const a = clamp01(0.12 + day * 1.25);
-      const secs = (t * SUN_ARC_MS) / 1000;
+      // Sized so the whole sun, rays included, fits between the top edge and the hero's lede.
+      const r = Math.max(56, Math.min(118, Math.min(w, h) * 0.105)) * (0.42 + 0.58 * grow);
+      const a = clamp01(0.12 + day * 1.25) * glow;
       const energy = clamp01(0.3 + 0.55 * day);
 
       ctx.globalCompositeOperation = 'lighter';
@@ -169,29 +178,58 @@ export default function SunArc({
       ctx.globalCompositeOperation = 'source-over';
     };
 
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Only paint while the hero is on screen: the resting sun would otherwise run forever.
+    let onScreen = true;
+    const io = new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; });
+    io.observe(canvas);
+
     let raf = 0;
     let start = 0;
-    let done = false;
+    let restAt = 0; // when the sun reached the crest
+    let lastPaint = 0;
     const frame = (now: number) => {
+      raf = requestAnimationFrame(frame);
       if (!start) start = now;
-      // Position along the arc, eased so the climb is unhurried and the set a little quicker.
-      const eased = Math.pow(Math.min(1, (now - start) / SUN_ARC_MS), RISE_EASE);
-      // Then lingered: slowest across the crest, quicker near the two horizons.
-      const t = eased + (CREST_LINGER * Math.sin(TAU * eased)) / TAU;
-      paint(t);
-      onFrameRef.current?.(t);
-      if (t < 1) {
-        raf = requestAnimationFrame(frame);
-      } else if (!done) {
-        done = true;
-        ctx.clearRect(0, 0, w, h);
+      const secs = (now - start) / 1000;
+      const p = rise ? Math.min(1, (now - start) / RISE_MS) : 1;
+      if (p < 1) {
+        // Climbing: decelerates into the crest so it settles rather than stops.
+        const t = 0.5 * (1 - (1 - p) ** SETTLE_EASE);
+        paint(t, secs, 1);
+        onFrameRef.current?.(t);
+        return;
+      }
+      if (!restAt) {
+        restAt = now;
+        onFrameRef.current?.(0.5);
         onDoneRef.current?.();
       }
+      if (!onScreen || now - lastPaint < REST_FRAME_MS) return;
+      lastPaint = now;
+      // Settles from full strength to DIM, then a slow breath down by PULSE_DEPTH and back.
+      const settled = rise ? smooth(clamp01((now - restAt) / DIM_MS)) : 1;
+      const breath = 0.5 - 0.5 * Math.cos((TAU * (now - restAt)) / PULSE_MS);
+      paint(0.5, secs, (1 - (1 - DIM) * settled) * (1 - PULSE_DEPTH * breath * settled));
     };
+
+    if (still) {
+      // Reduced motion: no climb, no pulse; one still frame, redrawn on resize.
+      const draw = () => paint(0.5, 0, DIM);
+      draw();
+      onDoneRef.current?.();
+      window.addEventListener('resize', draw);
+      return () => {
+        io.disconnect();
+        window.removeEventListener('resize', size);
+        window.removeEventListener('resize', draw);
+      };
+    }
     raf = requestAnimationFrame(frame);
 
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect();
       window.removeEventListener('resize', size);
     };
   }, []);
