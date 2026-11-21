@@ -8,7 +8,8 @@
 // is not in the document window: it is asked below it as a radio button,
 // with the two options saying "of me" instead of "of my child", because the
 // account holder picks one, not a parent. The waiver form's version line at
-// the bottom is left out. The app has the same text in
+// the bottom is left out. The title shown is "Emerald Summit 2027 Code of
+// Conduct" (renamed Nov 20, 2026; the text is unchanged). The app has the same text in
 // lib/models/code_of_conduct.dart: change both together and bump the
 // version, which asks everyone who agreed to agree again.
 
@@ -52,7 +53,7 @@ export interface SummitAgreement {
 export const CODE_OF_CONDUCT: SummitAgreement = {
   version: 'conduct-2026-11-15',
   name: 'Code of Conduct',
-  title: 'Emerald Summit 2026 Code of Conduct',
+  title: 'Emerald Summit 2027 Code of Conduct',
   whoAgrees: 'Everyone at the Summit agrees to the Code of Conduct.',
   preamble: [
     'This is an EAF event. It is NOT a school/DUSD-sponsored event.',
