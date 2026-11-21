@@ -233,7 +233,28 @@ Every session has a page at `/sessions/:id` (`src/pages/SessionPage.tsx`, conten
 - `website_registration_open`: while false, "Add to my day" on session pages and the + on discipline pages are greyed out. Hovering shows "Registration will open on November 21st"; tapping shows the same message as a toast. Signing in, browsing verses, tracks and sessions, and editing or removing an existing registration still work. The server enforces it too: `register_for_session` refuses every new sign-up with the error `registration_closed` (app repo, `registration_closed_lock.sql`), which `toggleRegistration` shows as the same message. To change the date in the message, edit `REGISTRATION_CLOSED_MESSAGE` (and the hint in that SQL file).
 - `website_show_session_times`: while false, session times, lengths and participant deadlines read "TBD" (Discover, discipline pages, session pages, My Day, Home, search, the volunteer pages), and Home has no countdown. The session editor still shows the real times.
 
-To turn one on: `update public.summit_settings set website_registration_open = true;` (or `website_show_session_times`) in the SQL editor, or tick the box in Table Editor. People see it on their next page load.
+**Turning registration on and off.** Do this in the shared Supabase project (`dgrskmykbkvphnaasfzl`). No deploy or app release is needed.
+
+1. Open the project in the Supabase dashboard and go to the **SQL editor**.
+2. Run one of these:
+
+   ```sql
+   -- Open registration
+   update public.summit_settings set website_registration_open = true;
+
+   -- Close registration
+   update public.summit_settings set website_registration_open = false;
+
+   -- See where it stands
+   select website_registration_open from public.summit_settings;
+   ```
+
+   Or, without SQL: open **Table Editor → summit_settings** and tick or untick `website_registration_open`.
+3. Reload the website. The server starts accepting or refusing sign-ups as soon as the update runs. The website buttons change on each person's next page load.
+
+Closing registration doesn't remove anyone. People already on a session stay on it, and they can still edit or remove their registration. Only new sign-ups are refused, on the website, in the app and through the API. Session times work the same way with `website_show_session_times`.
+
+**Scheduled opening (set up Nov 20, 2026).** A one-time pg_cron job on the shared backend, `open-website-registration`, sets `website_registration_open` to true at 5:00 AM Pacific on Nov 21, 2026 (schedule `0 13 21 11 *`, since pg_cron runs in UTC). It runs once and then unschedules itself, and it leaves `website_show_session_times` alone. The switch still works by hand before and after. If you set it back to false before 5 AM, the job sets it to true again at 5 AM, so to keep registration closed, cancel the job first: `select cron.unschedule('open-website-registration');`. To check that it ran, look for `website_registration_open` = true and a successful run under Integrations → Cron → Job runs in the Supabase dashboard. The app README's **Registration lock and hidden session times** section has the same note.
 
 **Summit date.** `fetch_summit_status()` (`src/services/summitStatus.ts`) gives the summit date, which stays null on the shared backend until the organizers set it. Until then the website uses its own `SUMMIT_DATE` (2027-01-23), so the Home hero shows "Sat, Jan 23" and a countdown to the first session, the same way the app's Home does, and volunteer hours count sessions on that day. A date set on the backend wins over it. The mobile app has its own date handling and is not affected. The public landing page states the date by hand: Saturday, January 23, 2027.
 
