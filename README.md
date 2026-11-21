@@ -218,6 +218,8 @@ Every session has a page at `/sessions/:id` (`src/pages/SessionPage.tsx`, conten
 - The server enforces it too: `register_for_session` refuses with `eighth_grade_not_allowed` or `middle_school_not_allowed` (app repo, `eighth_grade_participation.sql`), and the website shows the same message as the greyed-out choice. Unticking the box later doesn't remove 8th graders who already registered.
 - That SQL was run on the shared project on Nov 13, 2026. If the column is ever missing (a fresh backend), the editor's box is disabled ("Available once the Summit database is updated") and the website keeps every 8th grader to spectating; `hasEighthGradeColumn` in `src/services/summitContent.ts` checks for it.
 
+**Organizer metrics** (`/admin/metrics`, `src/pages/MetricsPage.tsx`, admins only). The top part is **Experts**: expert accounts, approved, waiting for approval (the count from `fetch_expert_requests`, linking to Expert approvals), experts serving in at least one track, expert sign-ups, tracks with no expert yet (listed, keynotes left out; needs the database session list) and experts by discipline. Below it, **Who is registered** (filter: participants, parents & spectators, everyone) counts only people registered for at least one track, not counting experts serving: an account that signed up but never joined a track is not in any chart. The counting is `registeredPeople` and `expertSummary` in `src/models/metrics.ts`; the data is `fetch_summit_metrics` (no names or contact details). Not in the app yet (app README to-do).
+
 **Profile menu** (`src/pages/SettingsPage.tsx`) has the app's items by role: Sessions I'm managing, Track volunteer hours (`/volunteer/hours`), Volunteer hub, Front desk check-in (shown, marked "Mobile app only"), Metrics (`/admin/metrics`), Expert approvals (`/admin/experts`), Manage rooms (`/admin/rooms`), Change role, and after the summit, Summit feedback or Volunteer for EAF again (`/follow-up`).
 
 **Delete account** sits under **Sign out** for every role (`src/components/DeleteAccountDialog.tsx`). It takes two steps so it can't happen by accident: a warning (profile and QR pass deleted, taken off every session and team, can't be undone) with **Yes, delete my account**, then typing your own email to unlock **Delete account forever**. That typed check stands in for a CAPTCHA: only a signed-in person can reach the button, so a bot check adds nothing. `deleteMyAccount` (`src/services/auth.ts`) calls `delete_my_account`, then signs out and goes Home with "Your account was deleted."
@@ -499,6 +501,12 @@ The design source is the Figma file [Emerald Summit — Portal Redesign](https:/
 Experts sign in like everyone else (Google or an emailed code). Picking Expert sets `expert_status = pending` on the shared profile. Until an admin approves them in the app (`review_expert`), the dashboard shows the app's waiting screen (`src/components/ExpertStatus.tsx`): "Your expert account is awaiting approval", the contact email, **Check again**, **Sign up as something else** and **Sign out**. If the admin declines, the server makes the account a participant, and the next visit shows the app's one-time "Your expert request wasn't approved" note. OK calls `acknowledge_expert_decline` so it isn't shown again.
 
 The old Google Sheet flow (`apps-script/approvals.gs`, the `/apply/expert` survey) is no longer used: `/apply/:role` redirects, and the script is kept only for reference.
+
+**Planned (Nov 20, 2026), not built yet:** a new expert flow. Sign in with LinkedIn, Google or an emailed code; profile details (photo and name from LinkedIn when connected, otherwise uploaded; title, company and bio typed); the Guest Expert Policy; then the BeAMentor clearance step, where the expert ticks that they submitted it. They then get full access with a "waiting to be verified" banner until an admin verifies them on the expert dashboard, which sends an in-app notice. LinkedIn's free sign-in only shares name, email and photo, so title, company and bio stay manual.
+
+**Expert to-dos, on hold:**
+- **Welcome email** when an expert signs up. The wording isn't decided yet, so don't build it until it is.
+- **AI summary of an expert's profile** (from their LinkedIn details or bio). Later, not part of the first version.
 
 ---
 

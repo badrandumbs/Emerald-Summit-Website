@@ -138,3 +138,37 @@ export function crossTab(
     maxCell: Math.max(0, ...cellSizes.values()),
   };
 }
+
+/** Distinct people registered for at least one session (experts serving don't count). */
+export function registeredPeople(people: MetricsPerson[], registrations: MetricsRegistration[]): MetricsPerson[] {
+  const registered = new Set(registrations.filter((r) => r.type !== 'expert').map((r) => r.userId));
+  return people.filter((p) => registered.has(p.id));
+}
+
+export interface ExpertSummary {
+  /** Onboarded accounts with the expert role, approved or waiting. */
+  accounts: number;
+  /** Distinct experts signed up to serve in at least one session. */
+  serving: number;
+  /** Expert sign-ups across all sessions. */
+  signUps: number;
+  /** Distinct experts per discipline, largest first. */
+  byDiscipline: [string, number][];
+  /** Ids of the given sessions with no expert signed up. */
+  sessionsWithoutExpert: string[];
+}
+
+export function expertSummary(
+  data: SummitMetrics,
+  sessionIds: string[],
+): ExpertSummary {
+  const expertRegs = data.registrations.filter((r) => r.type === 'expert');
+  const covered = new Set(expertRegs.map((r) => r.sessionId));
+  return {
+    accounts: data.people.filter((p) => p.role === 'expert').length,
+    serving: new Set(expertRegs.map((r) => r.userId)).size,
+    signUps: expertRegs.length,
+    byDiscipline: countBy(expertRegs.map((r) => [r.disciplineName, r.userId])),
+    sessionsWithoutExpert: sessionIds.filter((id) => !covered.has(id)),
+  };
+}

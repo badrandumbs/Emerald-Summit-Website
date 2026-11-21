@@ -16,7 +16,7 @@ import {
 } from '../registration';
 import { missingGateField, formFields } from '../profileFields';
 import { canonicalSchoolName } from '../schools';
-import { countBy, crossTab, gradeLabel } from '../metrics';
+import { countBy, crossTab, expertSummary, gradeLabel, registeredPeople, type SummitMetrics } from '../metrics';
 import { safeAttachmentUrl } from '../../services/announcements';
 
 describe('registration rules ported from the app', () => {
@@ -98,6 +98,32 @@ describe('metrics helpers ported from the app', () => {
     const t = crossTab([['Dublin', 'Tech', '1'], ['Dublin', 'Tech', '1'], ['Dublin', 'Bio', '1']], ['Bio', 'Tech']);
     expect(t.rowTotals.get('Dublin')).toBe(1);
     expect(t.count('Dublin', 'Tech')).toBe(1);
+  });
+});
+
+describe('summit metrics only count people in a track', () => {
+  const data: SummitMetrics = {
+    people: [
+      { id: 'a', role: 'participant', school: 'Dublin', grade: '10' },
+      { id: 'b', role: 'participant', school: 'Emerald', grade: '11' },
+      { id: 'e', role: 'expert', school: 'No school given', grade: 'No grade given' },
+      { id: 'w', role: 'expert', school: 'No school given', grade: 'No grade given' },
+    ],
+    registrations: [
+      { userId: 'a', sessionId: 's1', disciplineId: 'tech', disciplineName: 'Tech', type: 'participant' },
+      { userId: 'e', sessionId: 's1', disciplineId: 'tech', disciplineName: 'Tech', type: 'expert' },
+      { userId: 'e', sessionId: 's2', disciplineId: 'tech', disciplineName: 'Tech', type: 'expert' },
+    ],
+  };
+
+  test('accounts with no track sign-up are left out, and so are serving experts', () => {
+    expect(registeredPeople(data.people, data.registrations).map((p) => p.id)).toEqual(['a']);
+  });
+
+  test('experts are counted once and uncovered sessions are listed', () => {
+    const s = expertSummary(data, ['s1', 's2', 's3']);
+    expect(s).toMatchObject({ accounts: 2, serving: 1, signUps: 2, sessionsWithoutExpert: ['s3'] });
+    expect(s.byDiscipline).toEqual([['Tech', 1]]);
   });
 });
 
