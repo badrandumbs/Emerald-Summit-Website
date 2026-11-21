@@ -133,10 +133,6 @@ class _SplashScreenState extends State<SplashScreen>
                     painter: _SplashPainter(
                       t: _controller.value,
                       scene: _scene,
-                      fontFamily: Theme.of(context)
-                          .textTheme
-                          .titleLarge
-                          ?.fontFamily,
                     ),
                     size: Size.infinite,
                   ),
@@ -207,15 +203,10 @@ class _Scene {
 // ---------------------------------------------------------------------------
 
 class _SplashPainter extends CustomPainter {
-  _SplashPainter({
-    required this.t,
-    required this.scene,
-    required this.fontFamily,
-  });
+  _SplashPainter({required this.t, required this.scene});
 
   final double t; // 0..1 timeline
   final _Scene scene;
-  final String? fontFamily;
 
   // Sun path constants.
   static const double _horizon = 0.80; // where it sits at rise/set
@@ -311,7 +302,6 @@ class _SplashPainter extends CustomPainter {
       text: 'Emerald Summit ’27',
       style: TextStyle(
         fontSize: fs,
-        fontFamily: fontFamily,
         color: const Color(0xFFD5E8DB),
         fontWeight: FontWeight.w600,
         letterSpacing: 0.2,
@@ -345,7 +335,6 @@ class _SplashPainter extends CustomPainter {
         text: text,
         style: TextStyle(
           fontSize: fs,
-          fontFamily: fontFamily,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.2,
         ),
@@ -371,7 +360,7 @@ class _SplashPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _SplashPainter oldDelegate) =>
-      oldDelegate.t != t || oldDelegate.fontFamily != fontFamily;
+      oldDelegate.t != t;
 }
 
 /// A haptic beat scheduled at a point in the timeline.
