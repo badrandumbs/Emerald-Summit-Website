@@ -59,6 +59,26 @@ describe('announcements service (local fallback)', () => {
     );
   });
 
+  test('an edit marks the post edited but keeps its date and place', async () => {
+    const first = await createAnnouncement(draft, author);
+    const second = await createAnnouncement({ ...draft, title: 'Later' }, author);
+    expect(first.editedAt).toBeUndefined();
+    const edited = await updateAnnouncement(first.id, { title: 'Buses leave at 5', body: draft.body, attachments: [] });
+    expect(edited.editedAt).toBeTruthy();
+    expect(edited.createdAt).toBe(first.createdAt);
+    expect(edited.date).toBe(first.date);
+    expect(edited.audience).toBe('Everyone');
+
+    const { announcements } = await fetchAnnouncements();
+    expect(announcements.map((a) => a.id)).toEqual([second.id, first.id]);
+  });
+
+  test('saving with nothing changed does not mark it edited', async () => {
+    const created = await createAnnouncement(draft, author);
+    const same = await updateAnnouncement(created.id, { title: draft.title, body: draft.body, attachments: [] });
+    expect(same.editedAt).toBeUndefined();
+  });
+
   test('pinning moves an announcement to the front of the feed', async () => {
     const first = await createAnnouncement(draft, author);
     const second = await createAnnouncement({ ...draft, title: 'Later' }, author);

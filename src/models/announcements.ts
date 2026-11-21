@@ -70,6 +70,8 @@ export interface Announcement {
   attachments?: AnnouncementAttachment[];
   createdAt?: string;
   updatedAt?: string;
+  /** Set when the author changed the title, text or attachments after posting. */
+  editedAt?: string;
 }
 
 /** Audiences an admin can target; free text is allowed too. */
@@ -227,6 +229,24 @@ export function postAudiences(profile: {
     ...(isAdmin ? [{ value: 'everyone', label: 'Everyone' }] : []),
     ...disciplines.map((d) => ({ value: d.name, label: d.label })),
   ];
+}
+
+/**
+ * Whether this account may edit [announcement]: only the person who posted
+ * it, and only while they could still post to that audience (admins: any of
+ * their own posts; track organizers: their own posts to a track they manage).
+ * Personal notices are written by the system and are never editable. The
+ * database's "Authors update own announcements" policy enforces the same.
+ */
+export function canEditAnnouncement(
+  announcement: Announcement,
+  profile: (NonNullable<Parameters<typeof postAudiences>[0]> & { id?: string | null }) | null | undefined,
+): boolean {
+  if (!profile?.id || announcement.targetUserId) return false;
+  if (!announcement.authorId || announcement.authorId !== profile.id) return false;
+  if (profile.role === 'admin') return true;
+  const target = announcement.disciplineId;
+  return target != null && postAudiences(profile).some((a) => a.value === target);
 }
 
 /** What the in-app banner shows for a new post, and where tapping it goes. */

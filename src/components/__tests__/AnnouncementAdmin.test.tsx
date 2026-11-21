@@ -3,9 +3,11 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AnnouncementsPanel from '../AnnouncementsPanel';
 import AnnouncementComposer from '../AnnouncementComposer';
+import { removeAttachmentFile } from '../../services/announcements';
 import type { Announcement } from '../../models/announcements';
 
 const create = vi.fn().mockResolvedValue(undefined);
+const edit = vi.fn().mockResolvedValue(undefined);
 const auth = vi.hoisted(() => ({
   profile: { id: 'admin-1', role: 'admin' } as Record<string, unknown>,
 }));
@@ -21,6 +23,7 @@ vi.mock('../../context/AnnouncementsContext', () => ({
     configured: true,
     refresh: vi.fn(),
     create,
+    edit,
     remove: vi.fn(),
   }),
 }));
@@ -79,7 +82,7 @@ describe('AnnouncementsPanel admin controls', () => {
     expect(screen.queryByRole('button', { name: /delete/i })).toBeNull();
   });
 
-  test('admins can post and delete, but not edit or re-pin, like the app', async () => {
+  test('admins can post and delete; no Edit or re-pin on a post they did not write', async () => {
     const onCompose = vi.fn();
     render(
       <AnnouncementsPanel
@@ -99,6 +102,41 @@ describe('AnnouncementsPanel admin controls', () => {
     expect(await screen.findByRole('menuitem', { name: /delete for everyone/i })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /mark as read/i })).toBeNull();
     expect(screen.queryByPlaceholderText(/search/i)).toBeNull();
+  });
+
+  test('the author gets Edit in the ⋯ menu', async () => {
+    const onEdit = vi.fn();
+    render(
+      <AnnouncementsPanel
+        announcements={[announcement]}
+        onEdit={onEdit}
+        canEdit={(a) => a.id === 'a1'}
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: /more options/i }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: /^edit$/i }));
+    expect(onEdit).toHaveBeenCalledWith(announcement);
+  });
+
+  test('no Edit for a post canEdit refuses', () => {
+    render(
+      <AnnouncementsPanel announcements={[announcement]} onEdit={vi.fn()} canEdit={() => false} />,
+    );
+    // Nothing else is in the menu, so there is no menu at all.
+    expect(screen.queryByRole('button', { name: /more options/i })).toBeNull();
+  });
+
+  test('an edited post shows a small "edited" label and nothing else', () => {
+    const { rerender } = render(<AnnouncementsPanel announcements={[announcement]} />);
+    expect(screen.queryByText(/edited/i)).toBeNull();
+    rerender(
+      <AnnouncementsPanel
+        announcements={[{ ...announcement, title: 'Buses leave at 5', editedAt: '2026-11-20T18:00:00Z' }]}
+      />,
+    );
+    expect(screen.getByText(/· edited/)).toBeTruthy();
+    expect(screen.getByText('Buses leave at 5')).toBeTruthy();
+    expect(screen.queryByText(/new/i)).toBeNull();
   });
 
   test('plays media inline and lists documents as download rows', () => {
@@ -179,6 +217,38 @@ describe('AnnouncementComposer', () => {
     await userEvent.click(screen.getByRole('button', { name: /^post$/i }));
     await waitFor(() => expect(create).toHaveBeenCalled());
     expect(create.mock.calls[0][0]).toMatchObject({ audience: 'BioSphere', disciplineId: 'biosphere' });
+  });
+
+  test('editing fills in the post, keeps the audience, and saves only what can change', async () => {
+    vi.mocked(removeAttachmentFile).mockClear();
+    edit.mockClear();
+    const onOpenChange = vi.fn();
+    render(<AnnouncementComposer open onOpenChange={onOpenChange} editing={announcement} />);
+    expect(screen.getByText('Edit announcement')).toBeTruthy();
+    expect(screen.getByLabelText('Subject')).toHaveValue('Buses leave at 4');
+    expect(screen.queryByLabelText('Audience')).toBeNull();
+    expect(screen.queryByLabelText('Pin to top')).toBeNull();
+
+    const save = screen.getByRole('button', { name: /save changes/i });
+    expect(save).toBeDisabled();
+
+    await userEvent.clear(screen.getByLabelText('Subject'));
+    await userEvent.type(screen.getByLabelText('Subject'), 'Buses leave at 5');
+    await userEvent.click(screen.getByRole('button', { name: /remove campus map/i }));
+    // A saved file is only deleted once the edit saves.
+    expect(removeAttachmentFile).not.toHaveBeenCalled();
+    await userEvent.click(save);
+
+    await waitFor(() => expect(edit).toHaveBeenCalled());
+    expect(edit.mock.calls[0][0]).toBe('a1');
+    expect(edit.mock.calls[0][1]).toEqual({
+      title: 'Buses leave at 5',
+      body: 'Meet by the gym doors.',
+      attachments: [announcement.attachments![1]],
+    });
+    expect(create).not.toHaveBeenCalled();
+    expect(removeAttachmentFile).toHaveBeenCalledWith(announcement.attachments![0]);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
   test('admins post to Everyone by default', async () => {

@@ -8,6 +8,7 @@ import {
   Plus,
   EyeOff,
   MoreHorizontal,
+  Pencil,
 } from '@/components/icons';
 import {
   DropdownMenu,
@@ -27,8 +28,8 @@ import { cn } from '@/lib/utils';
 const COMPACT_COUNT = 3;
 
 /**
- * Posting and deleting. Like the app, a post can be written and deleted but
- * not edited or re-pinned afterwards.
+ * Posting, editing and deleting. The person who wrote a post can edit its
+ * title, text and attachments; readers only see a small "edited" label.
  */
 export interface AnnouncementAdminProps {
   /** Admins: Delete on each post. */
@@ -36,6 +37,18 @@ export interface AnnouncementAdminProps {
   /** Set only for accounts that may post (admins, volunteers with the flag). */
   onCompose?: () => void;
   onDelete?: (announcement: Announcement) => void;
+  /** Edit on the posts [canEdit] allows (the author's own). */
+  onEdit?: (announcement: Announcement) => void;
+  canEdit?: (announcement: Announcement) => boolean;
+}
+
+function editedLabel(iso: string): string {
+  return `Edited ${new Date(iso).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })}`;
 }
 
 /** Read state, owned by AnnouncementsContext; omit to show everything as read. */
@@ -87,6 +100,8 @@ export function AnnouncementItem({
   onHide,
   canManage = false,
   onDelete,
+  onEdit,
+  canEdit,
 }: {
   announcement: Announcement;
   unread?: boolean;
@@ -99,6 +114,7 @@ export function AnnouncementItem({
     (a) => INLINE_ATTACHMENT_TYPES.includes(a.type) && a.url,
   );
   const listed = attachments.filter((a) => !inline.includes(a));
+  const editable = onEdit != null && (canEdit?.(announcement) ?? false);
 
   return (
     // Opening an unread item (clicking anywhere in it) marks it read.
@@ -124,8 +140,13 @@ export function AnnouncementItem({
           </span>
         )}
         <span className="text-muted-foreground">{announcement.audience}</span>
-        <span className="ml-auto text-muted-foreground">{announcement.date}</span>
-        {(onHide || (canManage && onDelete)) && (
+        <span className="ml-auto text-muted-foreground">
+          {announcement.date}
+          {announcement.editedAt && (
+            <span title={editedLabel(announcement.editedAt)}> · edited</span>
+          )}
+        </span>
+        {(onHide || editable || (canManage && onDelete)) && (
           // Out of the way on purpose: removing a post from your feed can't be
           // undone, so it sits behind ⋯ and asks first (AnnouncementsPage).
           <DropdownMenu>
@@ -137,6 +158,11 @@ export function AnnouncementItem({
               <MoreHorizontal className="h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+              {editable && (
+                <DropdownMenuItem onSelect={() => onEdit?.(announcement)}>
+                  <Pencil className="h-4 w-4" /> Edit
+                </DropdownMenuItem>
+              )}
               {onHide && (
                 <DropdownMenuItem onSelect={() => onHide(announcement)}>
                   <EyeOff className="h-4 w-4" /> Remove this announcement from my feed
@@ -193,6 +219,8 @@ export default function AnnouncementsPanel({
   canManage = false,
   onCompose,
   onDelete,
+  onEdit,
+  canEdit,
   isUnread,
   onMarkRead,
   onHide,
@@ -259,6 +287,8 @@ export default function AnnouncementsPanel({
             onHide={onHide}
             canManage={canManage}
             onDelete={onDelete}
+            onEdit={onEdit}
+            canEdit={canEdit}
           />
         ))}
         {announcements.length === 0 && (

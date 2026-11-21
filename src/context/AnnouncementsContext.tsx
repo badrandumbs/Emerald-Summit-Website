@@ -28,12 +28,14 @@ import {
   markOpened,
   markSeen,
   unhideForMe,
+  updateAnnouncement,
   isBackendConfigured,
   sortAnnouncements,
   subscribeToAnnouncements,
   type AnnouncementDraft,
+  type AnnouncementEdit,
 } from '../services/announcements';
-import { bannerFor, postAudiences, type Announcement } from '../models/announcements';
+import { bannerFor, canEditAnnouncement, postAudiences, type Announcement } from '../models/announcements';
 
 interface AnnouncementsContextValue {
   announcements: Announcement[];
@@ -49,6 +51,10 @@ interface AnnouncementsContextValue {
   configured: boolean;
   refresh: () => Promise<void>;
   create: (draft: AnnouncementDraft) => Promise<void>;
+  /** The author's own edit; readers only see an "edited" label. */
+  edit: (id: string, changes: AnnouncementEdit) => Promise<void>;
+  /** Whether this account wrote [announcement] and may still edit it. */
+  canEdit: (announcement: Announcement) => boolean;
   remove: (id: string) => Promise<void>;
   /** Posts this account hasn't seen yet: the badge, like the app's News tab. */
   unreadCount: number;
@@ -276,6 +282,17 @@ export function AnnouncementsProvider({ children }: { children: ReactNode }) {
     [profile],
   );
 
+  const edit = useCallback(async (id: string, changes: AnnouncementEdit) => {
+    const updated = await updateAnnouncement(id, changes);
+    // Same place in the feed: the order is by when it was posted.
+    setAnnouncements((prev) => sortAnnouncements(prev.map((a) => (a.id === id ? updated : a))));
+  }, []);
+
+  const canEdit = useCallback(
+    (announcement: Announcement) => canEditAnnouncement(announcement, profile),
+    [profile],
+  );
+
   const remove = useCallback(async (id: string) => {
     await deleteAnnouncement(id);
     setAnnouncements((prev) => prev.filter((a) => a.id !== id));
@@ -292,6 +309,8 @@ export function AnnouncementsProvider({ children }: { children: ReactNode }) {
       configured: isBackendConfigured(),
       refresh,
       create,
+      edit,
+      canEdit,
       remove,
       unreadCount,
       isUnread,
@@ -308,6 +327,8 @@ export function AnnouncementsProvider({ children }: { children: ReactNode }) {
       profile,
       refresh,
       create,
+      edit,
+      canEdit,
       remove,
       unreadCount,
       isUnread,

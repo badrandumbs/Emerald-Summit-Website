@@ -87,6 +87,7 @@ interface AnnouncementRow {
   attachments: SharedAttachment[] | null;
   created_at: string;
   updated_at?: string;
+  edited_at?: string | null;
 }
 
 function rowToAnnouncement(row: AnnouncementRow): Announcement {
@@ -113,6 +114,7 @@ function rowToAnnouncement(row: AnnouncementRow): Announcement {
     date: formatAnnouncementDate(row.created_at),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    editedAt: row.edited_at ?? undefined,
   };
 }
 
@@ -333,33 +335,58 @@ export async function createAnnouncement(
   return rowToAnnouncement(data as AnnouncementRow);
 }
 
+/** What an edit may change. Audience, pin and author stay as posted. */
+export type AnnouncementEdit = Pick<AnnouncementDraft, 'title' | 'body' | 'attachments'>;
+
+function sameEdit(a: Announcement, edit: AnnouncementEdit): boolean {
+  const files = (list: AnnouncementAttachment[] | undefined) =>
+    JSON.stringify((list ?? []).map((x) => [x.url ?? '', x.path ?? '', x.title]));
+  return a.title === edit.title.trim()
+    && a.body === edit.body.trim()
+    && files(a.attachments) === files(edit.attachments);
+}
+
+/**
+ * The author's own edit. Only title, body and attachments are sent; the
+ * database stamps edited_at, so readers see a small "edited" label and
+ * nothing else (no new banner, notification or unread dot).
+ */
 export async function updateAnnouncement(
   id: string,
-  draft: AnnouncementDraft,
+  edit: AnnouncementEdit,
 ): Promise<Announcement> {
   if (!(await canPublishRemotely())) {
     const list = readLocal();
     const index = list.findIndex((a) => a.id === id);
     if (index === -1) throw new Error('Announcement not found');
+    const now = new Date().toISOString();
+    const changed = !sameEdit(list[index], edit);
     const updated: Announcement = {
       ...list[index],
-      ...draft,
-      updatedAt: new Date().toISOString(),
+      title: edit.title.trim(),
+      body: edit.body.trim(),
+      attachments: edit.attachments,
+      updatedAt: now,
+      editedAt: changed ? now : list[index].editedAt,
     };
     list[index] = updated;
     writeLocal(sortAnnouncements(list));
     return updated;
   }
 
+  const row = draftToRow({ ...edit, category: 'General', audience: '', pinned: false });
+  // An update RLS refuses matches no rows instead of erroring.
   const { data, error } = await client()
     .from('announcements')
-    .update(draftToRow(draft))
+    .update({ title: row.title, body: row.body, attachments: row.attachments })
     .eq('id', id)
-    .select('*')
-    .single();
+    .select('*');
 
   if (error) throw new Error(error.message);
-  return rowToAnnouncement(data as AnnouncementRow);
+  if (!data || data.length === 0) {
+    throw new Error('Your changes were not saved. You can only edit your own posts.');
+  }
+  return rowToAnnouncement(data[0] as AnnouncementRow);
 }
 
 export async function deleteAnnouncement(id: string): Promise<void> {

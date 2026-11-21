@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import {
   formatBytes,
   postAudiences,
+  type Announcement,
   type AnnouncementAttachment,
   type PostAudience,
 } from '../models/announcements';
@@ -54,19 +55,34 @@ function emptyDraft(audience: PostAudience | undefined): AnnouncementDraft {
   };
 }
 
+function draftFrom(announcement: Announcement): AnnouncementDraft {
+  return {
+    title: announcement.title,
+    body: announcement.body,
+    category: announcement.category,
+    audience: announcement.audience,
+    disciplineId: announcement.disciplineId,
+    pinned: announcement.pinned,
+    attachments: announcement.attachments ?? [],
+  };
+}
+
 /**
  * New post, like the app's announcement_compose_screen: subject, message,
- * audience (Everyone or a discipline), pin, photos and files. Posts can't be
- * edited afterwards, in the app or here.
+ * audience (Everyone or a discipline), pin, photos and files. With [editing],
+ * the author fixes the subject, message and files of a post they wrote; the
+ * audience and pin stay as posted, and readers only see an "edited" label.
  */
 export default function AnnouncementComposer({
   open,
   onOpenChange,
+  editing = null,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editing?: Announcement | null;
 }) {
-  const { create, live, configured } = useAnnouncements();
+  const { create, edit, live, configured } = useAnnouncements();
   const { profile } = useAuth();
   const audiences = postAudiences(profile);
   const [draft, setDraft] = useState<AnnouncementDraft>(() => emptyDraft(audiences[0]));
@@ -77,11 +93,16 @@ export default function AnnouncementComposer({
   // Nested drag events fire on every child; count them so leaving a child
   // doesn't clear the highlight while the pointer is still over the zone.
   const dragDepth = useRef(0);
+  // Saved files the author took off while editing. They're deleted from
+  // storage only once the edit saves, so Cancel leaves the post intact.
+  const removedSaved = useRef<AnnouncementAttachment[]>([]);
 
-  // Each time it opens, start from a blank post.
+  // Each time it opens, start from a blank post, or the post being edited.
   useEffect(() => {
-    if (open) setDraft(emptyDraft(audiences[0]));
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!open) return;
+    removedSaved.current = [];
+    setDraft(editing ? draftFrom(editing) : emptyDraft(audiences[0]));
+  }, [open, editing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const addFiles = async (files: FileList | File[]) => {
     const list = Array.from(files);
@@ -114,23 +135,46 @@ export default function AnnouncementComposer({
       ...d,
       attachments: d.attachments.filter((a) => a.id !== attachment.id),
     }));
-    // Only orphan-clean uploads made in this session; an attachment already
-    // saved on another announcement version is left alone until save.
-    void removeAttachmentFile(attachment);
+    // Uploads made in this dialog are cleaned up now; a file already saved on
+    // the post is left alone until the edit saves.
+    if (editing?.attachments?.some((a) => a.id === attachment.id)) {
+      removedSaved.current.push(attachment);
+    } else {
+      void removeAttachmentFile(attachment);
+    }
   };
+
+  const changed = !editing
+    || draft.title.trim() !== editing.title
+    || draft.body.trim() !== editing.body
+    || draft.attachments.map((a) => a.id).join('|')
+      !== (editing.attachments ?? []).map((a) => a.id).join('|');
 
   const canSave =
     draft.title.trim().length > 0 &&
     draft.body.trim().length > 0 &&
     uploading === 0 &&
+    changed &&
     !saving;
 
   const handleSave = async () => {
     if (!canSave) return;
     setSaving(true);
     try {
-      await create(draft);
-      toast.success(live ? 'Announcement posted' : 'Posted to this browser only');
+      if (editing) {
+        await edit(editing.id, {
+          title: draft.title,
+          body: draft.body,
+          attachments: draft.attachments,
+        });
+        const removed = removedSaved.current;
+        removedSaved.current = [];
+        removed.forEach((a) => void removeAttachmentFile(a).catch(() => {}));
+        toast.success('Changes saved');
+      } else {
+        await create(draft);
+        toast.success(live ? 'Announcement posted' : 'Posted to this browser only');
+      }
       onOpenChange(false);
     } catch (err: any) {
       toast.error(err?.message ?? 'Could not save announcement');
@@ -144,12 +188,14 @@ export default function AnnouncementComposer({
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display">
-            New announcement
+            {editing ? 'Edit announcement' : 'New announcement'}
           </DialogTitle>
           <DialogDescription>
-            {live
-              ? 'Posts appear in Announcements straight away for the audience you pick.'
-              : 'This post will stay in this browser.'}
+            {editing
+              ? 'Readers see the new version in the same spot, marked "edited". Nobody gets a new notification.'
+              : live
+                ? 'Posts appear in Announcements straight away for the audience you pick.'
+                : 'This post will stay in this browser.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -186,6 +232,13 @@ export default function AnnouncementComposer({
             />
           </div>
 
+          {editing ? (
+            <p className="text-xs text-muted-foreground">
+              Sent to <span className="font-medium text-foreground">{editing.audience}</span>
+              {editing.pinned ? ', pinned' : ''}. The audience stays as posted.
+            </p>
+          ) : (
+          <>
           <div className="space-y-1.5">
             <Label htmlFor="announcement-audience">Audience</Label>
             <Select
@@ -223,6 +276,8 @@ export default function AnnouncementComposer({
               onCheckedChange={(pinned) => setDraft({ ...draft, pinned })}
             />
           </div>
+          </>
+          )}
 
           {/* Attachments */}
           <div className="space-y-2">
@@ -320,7 +375,7 @@ export default function AnnouncementComposer({
           </Button>
           <Button onClick={handleSave} disabled={!canSave}>
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-            Post
+            {editing ? 'Save changes' : 'Post'}
           </Button>
         </DialogFooter>
       </DialogContent>

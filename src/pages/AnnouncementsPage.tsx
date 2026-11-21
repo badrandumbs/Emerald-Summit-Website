@@ -33,6 +33,7 @@ export default function AnnouncementsPage() {
     markRead,
     markAllRead,
     hide,
+    canEdit,
     configured,
   } = useAnnouncements();
 
@@ -45,6 +46,8 @@ export default function AnnouncementsPage() {
   }, [ready, markAllRead]);
 
   const [composerOpen, setComposerOpen] = useState(false);
+  // Set while the composer is editing one of this account's own posts.
+  const [editing, setEditing] = useState<Announcement | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Announcement | null>(null);
   const [pendingRemove, setPendingRemove] = useState<Announcement | null>(null);
 
@@ -111,16 +114,20 @@ export default function AnnouncementsPage() {
         onHide={configured ? setPendingRemove : undefined}
         variant="full"
         canManage={canManage}
-        onCompose={canPost ? () => setComposerOpen(true) : undefined}
+        onCompose={canPost ? () => { setEditing(null); setComposerOpen(true); } : undefined}
         onDelete={setPendingDelete}
+        onEdit={(a) => { setEditing(a); setComposerOpen(true); }}
+        canEdit={canEdit}
       />
 
-      {canPost && (
-        <AnnouncementComposer
-          open={composerOpen}
-          onOpenChange={setComposerOpen}
-        />
-      )}
+      <AnnouncementComposer
+        open={composerOpen}
+        onOpenChange={(open) => {
+          setComposerOpen(open);
+          if (!open) setEditing(null);
+        }}
+        editing={editing}
+      />
 
       <Dialog
         open={pendingDelete !== null}

@@ -267,7 +267,7 @@ Relevant files: `src/services/auth.ts` (`getCurrentProfile`), `src/models/roles.
 
 Admins author the announcements every other role reads. The feed is one live list shared by the Announcements tab, the dashboard panel, and the sidebar's pinned badge. It starts empty ("No announcements yet."); `MOCK_ANNOUNCEMENTS` holds sample posts that no page shows. Posts are the app's `announcements` rows (`audience`, `pinned`, `discipline_id`, `target_user_id`, `created_by`, `attachments`), so a post from either side shows on both. The browser's offline copy uses the key `local_announcements_v2`.
 
-**Posting.** Same rules as the app's composer: admins post to Everyone or one discipline; volunteers with `can_post_announcements` post to the disciplines they manage (`discipline_id` set), never to Everyone. A post has a subject, a message, an audience, an optional pin-to-top, and photos and files. Like the app, a post can't be edited, re-pinned or given a link after it's posted; admins can delete it. Photos and files come in by drag-and-drop or a file picker:
+**Posting.** Same rules as the app's composer: admins post to Everyone or one discipline; volunteers with `can_post_announcements` post to the disciplines they manage (`discipline_id` set), never to Everyone. A post has a subject, a message, an audience, an optional pin-to-top, and photos and files. A post can't be re-pinned or given a link after it's posted; admins can delete it. Photos and files come in by drag-and-drop or a file picker:
 
 | Attachment | How it appears in the feed |
 |---|---|
@@ -279,7 +279,9 @@ Admins author the announcements every other role reads. The feed is one live lis
 
 Files upload to the shared `announcement_attachments` bucket under the poster's user id (10 MB per file). Only admins and volunteers with `can_post_announcements` can write to it.
 
-**Live across profiles.** The client subscribes to Postgres changes on `announcements`, so a new or deleted post reaches every connected profile without a refresh.
+**Editing your own post** (Nov 20, 2026). Whoever wrote a post (an admin, or a track organizer while they can still post to that track) gets **Edit** in its ⋯ menu (`canEditAnnouncement` in `src/models/announcements.ts`). The composer opens in edit mode with the subject, message and files filled in; the audience and pin stay as posted. Save sends only `title`, `body` and `attachments` (`updateAnnouncement`). Readers see the new version in the same place with a small "· edited" after the date (hover shows when), and nothing else: no banner, no notification, no "New" dot, since those fire on new posts only and read state is keyed by the post's id. A saved file taken off the post is deleted from the bucket only after the edit saves, so Cancel leaves it intact. The database stamps `announcements.edited_at` and enforces who may edit ([announcement_edits.sql in the app repo](https://github.com/genzarjun/Emerald-Summit-App-MOBILE/blob/main/supabase/announcement_edits.sql)). The app does not have Edit or the label yet; it's on the app README's to-do list.
+
+**Live across profiles.** The client subscribes to Postgres changes on `announcements`, so a new, edited or deleted post reaches every connected profile without a refresh.
 
 **New-post banner.** Like the app's in-app banner, a post that reaches you and arrives while the site is open shows as a toast with its title, the start of the message and an **Open** button (Announcements, or the bell's list for a personal notice). The rule is the app's (`bannerFor` in `src/models/announcements.ts`): nothing for your own posts or for a discipline you're not in, and admins see "Ms. Lee sent an announcement to the TechVerse discipline" for discipline posts. Posts already there when the page loaded never banner. Nothing mutes it, here or in the app: there's no notification setting on either (see **Notifications**).
 
