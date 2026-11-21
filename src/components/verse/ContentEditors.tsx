@@ -166,7 +166,7 @@ function SessionForm({ target, onClose }: { target: SessionEditorTarget; onClose
     };
     setBusy(true);
     try {
-      announce(await saveSession(input, s?.id), s ? 'Session updated' : 'Session added');
+      announce(await saveSession(input, s?.id), s ? 'Track updated' : 'Track added');
       onClose();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error));
@@ -178,7 +178,7 @@ function SessionForm({ target, onClose }: { target: SessionEditorTarget; onClose
     if (!s) return;
     setBusy(true);
     try {
-      announce(await deleteSession(s.id), 'Session deleted');
+      announce(await deleteSession(s.id), 'Track deleted');
       onClose();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error));
@@ -190,7 +190,7 @@ function SessionForm({ target, onClose }: { target: SessionEditorTarget; onClose
     <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-xl">
       <form onSubmit={submit} className="space-y-4">
         <DialogHeader>
-          <DialogTitle className="font-display">{s ? 'Edit session' : 'Add a session'}</DialogTitle>
+          <DialogTitle className="font-display">{s ? 'Edit track' : 'Add a track'}</DialogTitle>
           <DialogDescription>{verseLabel}</DialogDescription>
         </DialogHeader>
 
@@ -263,12 +263,12 @@ function SessionForm({ target, onClose }: { target: SessionEditorTarget; onClose
         </div>
 
         <DialogFooter className="gap-2 sm:items-center">
-          {s && (!shared || profile?.role === 'admin') && <DeleteButton label="Delete session" busy={busy} onConfirm={() => void remove()} />}
+          {s && (!shared || profile?.role === 'admin') && <DeleteButton label="Delete track" busy={busy} onConfirm={() => void remove()} />}
           <Button type="button" variant="outline" onClick={onClose} disabled={busy}>
             Cancel
           </Button>
           <Button type="submit" disabled={!canSave} className="bg-emerald-deep text-white hover:bg-emerald">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : s ? 'Save' : 'Add session'}
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : s ? 'Save' : 'Add track'}
           </Button>
         </DialogFooter>
       </form>
@@ -401,7 +401,7 @@ function TrackForm({
         <DialogFooter className="gap-2 sm:items-center">
           {t && (
             <DeleteButton
-              label={hasSessions ? 'Has sessions' : 'Delete track'}
+              label={hasSessions ? 'Has tracks' : 'Delete track'}
               disabled={hasSessions}
               busy={busy}
               onConfirm={() => void remove()}

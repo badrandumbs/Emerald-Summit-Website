@@ -189,8 +189,8 @@ describe('shared registrations and volunteer assignments', () => {
     await reservations.release('a');
     expect(backend.rpc).toHaveBeenLastCalledWith('register_for_session', { p_session_id: 'a', p_intent: 'remove' });
     backend.rpcResult = { outcome: 'full' };
-    await expect(reservations.reserve('b', 'competing')).rejects.toThrow('This session is full.');
-    await expect(reservations.reserve('b', 'volunteering')).rejects.toThrow(/assigned by an admin/);
+    await expect(reservations.reserve('b', 'competing')).rejects.toThrow('This track is full.');
+    await expect(reservations.reserve('b', 'volunteering')).rejects.toThrow(/assigned by an organizer/);
     expect(backend.queries.some((q) => q.operation === 'insert')).toBe(false);
   });
 });

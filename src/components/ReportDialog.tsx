@@ -22,7 +22,7 @@ interface Shot { file: File; url: string }
 
 const ATTACHED = [
   'Your sign-in email and role',
-  'The sessions on your day, any team, sessions you manage, and your check-in',
+  'The tracks on your day, any team, tracks you manage, and your check-in',
   'Your last 10 notifications',
   'The pages you opened on this site before reporting, and any errors they showed',
   'Your browser, screen size, theme and the version of the site',

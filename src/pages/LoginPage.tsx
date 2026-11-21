@@ -200,7 +200,7 @@ export default function LoginPage() {
           )}
           {isOrganizer && (
             <p className="mt-3 text-[15px] text-muted-foreground">
-              For Summit admins and test accounts.
+              For Summit organizers and test accounts.
             </p>
           )}
         </header>

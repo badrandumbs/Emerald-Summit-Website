@@ -106,7 +106,7 @@ export default function SessionRoster({
     setError(null);
     fetchSessionRoster(session.id)
       .then((all) => setRoster(all.filter((e) => types.includes(e.type))))
-      .catch(() => setError("Couldn't load this session's people. Try again."));
+      .catch(() => setError("Couldn't load this track's people. Try again."));
     loadRemovals();
     // types is a fixed list per tab.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -130,9 +130,9 @@ export default function SessionRoster({
     try {
       const outcome = await removeFromSession(session.id, removing.userId);
       if (outcome === 'cannot_remove_self') {
-        toast.error("You can't remove yourself. Remove the session from your day instead.");
+        toast.error("You can't remove yourself. Remove the track from your day instead.");
       } else {
-        toast.success(outcome === 'removed' ? `Removed ${who} from this session` : `${who} had already left this session`);
+        toast.success(outcome === 'removed' ? `Removed ${who} from this track` : `${who} had already left this track`);
         setRemoving(null);
         load();
       }
@@ -148,7 +148,7 @@ export default function SessionRoster({
     setBusy(true);
     try {
       await allowBackToSession(session.id, r.userId);
-      toast.success(`${who} can sign up for this session again`);
+      toast.success(`${who} can sign up for this track again`);
       loadRemovals();
     } catch {
       toast.error(`Couldn't allow ${who} back. Try again.`);
@@ -221,7 +221,7 @@ export default function SessionRoster({
             variant="ghost"
             size="sm"
             className="-my-1 h-8 px-2 text-xs text-muted-foreground hover:text-destructive"
-            aria-label={`Remove ${e.name || e.email} from this session`}
+            aria-label={`Remove ${e.name || e.email} from this track`}
             onClick={() => setRemoving(e)}
           >
             Remove
@@ -260,7 +260,7 @@ export default function SessionRoster({
       {removals != null && removals.length > 0 && (
         <section className="rounded-2xl border border-dashed border-border px-4 py-3">
           <h3 className="font-semibold">Removed</h3>
-          <p className="text-xs text-muted-foreground">Taken off this session by an organizer. They can't sign up again unless you allow them back.</p>
+          <p className="text-xs text-muted-foreground">Taken off this track by an organizer. They can't sign up again unless you allow them back.</p>
           <ul className="mt-1 divide-y divide-border">
             {removals.map((r) => (
               <li key={r.userId} className="flex items-center gap-3 py-2.5">

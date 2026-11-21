@@ -10,7 +10,7 @@ interface FaqItem {
 const FAQ_ITEMS: FaqItem[] = [
   {
     q: 'Who can attend Emerald Summit?',
-    a: 'Any Tri-Valley high schooler can participate, and 8th graders can in some sessions. Last year’s Summit drew 225+ signups from six schools. Bring a project or an idea to share, or come to look around as a spectator: curious minds of all ages are welcome. Middle schoolers and younger need a parent with them.',
+    a: 'Any Tri-Valley high schooler can participate, and 8th graders can in some tracks. Last year’s Summit drew 225+ signups from six schools. Bring a project or an idea to share, or come to look around as a spectator: curious minds of all ages are welcome. Middle schoolers and younger need a parent with them.',
   },
   {
     q: 'When and where is the next Summit?',
@@ -46,11 +46,11 @@ const FAQ_ITEMS: FaqItem[] = [
   },
   {
     q: 'What’s the difference between participating and spectating?',
-    a: 'Participants book a seat in a session to share their work and get feedback. Spectators sit in and watch. Both book seats in the schedule builder.',
+    a: 'Participants book a seat in a track to share their work and get feedback. Spectators sit in and watch. Both book seats in the schedule builder.',
   },
   {
     q: 'Can I help out in other ways?',
-    a: 'Yes. Sign in as a Volunteer to help run the day, or as an Expert to lead a session and give feedback. Check-in on the day is one tap at the front desk.',
+    a: 'Yes. Sign in as a Volunteer to help run the day, or as an Expert to lead a track and give feedback. Check-in on the day is one tap at the front desk.',
   },
 ];
 
@@ -94,7 +94,7 @@ export default function FaqSection() {
     <section id="faq" className="lp-section" aria-labelledby="faq-title">
       <div className="container lp-grid">
         <div className="lp-faq__head">
-          <h2 id="faq-title">Anything else before January?</h2>
+          <h2 id="faq-title">Frequently Asked Questions</h2>
         </div>
 
         <div className="lp-faq__list">

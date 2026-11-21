@@ -53,7 +53,7 @@ export default function ExpertApprovalsPage() {
 
   return (
     <AppShell>
-      <PageHeader label="Admin" title="Expert approvals" />
+      <PageHeader label="Organizer" title="Expert approvals" />
       <div className="mx-auto max-w-3xl space-y-4">
         <p className="text-sm text-muted-foreground">
           Expert accounts stay on a waiting screen until you approve them. Check that each person is who they say they are before approving.

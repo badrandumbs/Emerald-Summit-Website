@@ -71,7 +71,7 @@ describe('ReportDialog', () => {
   test('lists what is attached, says what is left out, and who can read it', async () => {
     open();
     await userEvent.click(screen.getByRole('button', { name: /What else is sent/ }));
-    expect(screen.getByText(/The sessions on your day/)).toBeInTheDocument();
+    expect(screen.getByText(/The tracks on your day/)).toBeInTheDocument();
     expect(screen.getByText(/Not your phone number, student ID, school, grade or emergency contact/)).toBeInTheDocument();
     expect(screen.getByText(/Only Summit app developers can read reports/)).toBeInTheDocument();
   });

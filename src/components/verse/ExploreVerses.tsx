@@ -357,7 +357,7 @@ function VersePage({
                     <EditChip
                       vibe={vibe}
                       icon={Plus}
-                      label="Add session"
+                      label="Add track"
                       onClick={() => setSessionEditor({ verse: discipline.name })}
                       dashed
                     />
@@ -427,7 +427,7 @@ function AddToScheduleButton({
   // aria-disabled (not disabled) so a tap still explains why.
   const { registrationOpen } = useSiteSwitches();
   const closed = !registrationOpen;
-  const label = closed ? REGISTRATION_CLOSED_MESSAGE : full ? 'Session full' : 'Add to schedule';
+  const label = closed ? REGISTRATION_CLOSED_MESSAGE : full ? 'Track full' : 'Add to schedule';
   return (
     <span className="group relative -my-1">
       <button

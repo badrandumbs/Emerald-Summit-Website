@@ -61,7 +61,7 @@ export default function NotificationsPage() {
               ? 'Loading…'
               : error
                 ? "Couldn't load your notifications. Try again in a moment."
-                : 'Nothing yet. Session reminders, new posts for you and changes to your sessions or team show up here.'}
+                : 'Nothing yet. Track reminders, new posts for you and changes to your tracks or team show up here.'}
           </div>
         ) : (
           <ul className="divide-y divide-border">

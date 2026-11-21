@@ -79,7 +79,7 @@ beforeEach(() => {
 describe('Your day for spectators', () => {
   test('shows an empty day, not sample sessions, before they add any', () => {
     renderHome();
-    expect(screen.getByText('No sessions yet')).toBeInTheDocument();
+    expect(screen.getByText('No tracks yet')).toBeInTheDocument();
     expect(screen.queryByText('Robotics Lab')).not.toBeInTheDocument();
     expect(screen.queryByText('Genetics Lab')).not.toBeInTheDocument();
   });

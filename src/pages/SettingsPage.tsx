@@ -202,17 +202,17 @@ function ProfileHub({ profile }: { profile: Profile }) {
             <span className="min-w-0 flex-1"><span className="block text-[14px] font-semibold">Appearance</span><span className="mt-0.5 block text-[12px] text-muted-foreground">System is dark from 7 PM to 7 AM</span></span>
             <ThemeToggle labels />
           </div>
-          {isVolunteer && <SettingsRow icon={CalendarDays} title="Sessions I'm managing" subtitle="Take attendance for sessions you run" onClick={() => navigate('/volunteer')} />}
-          {status.feedbackOpen && roleName === 'expert' && <SettingsRow icon={Award} title="Summit feedback" subtitle="Rate your sessions, the Summit and the app" onClick={() => navigate('/follow-up')} />}
+          {isVolunteer && <SettingsRow icon={CalendarDays} title="Tracks I'm managing" subtitle="Take attendance for tracks you run" onClick={() => navigate('/volunteer')} />}
+          {status.feedbackOpen && roleName === 'expert' && <SettingsRow icon={Award} title="Summit feedback" subtitle="Rate your tracks, the Summit and the app" onClick={() => navigate('/follow-up')} />}
           {status.feedbackOpen && (isVolunteer || isAdmin) && <SettingsRow icon={HeartHandshake} title="Volunteer for EAF again?" subtitle="Let us know" onClick={() => navigate('/follow-up')} />}
           {(isVolunteer || isAdmin) && <SettingsRow icon={Clock} title="Track volunteer hours" subtitle="Your logged hours and Summit-day hours" onClick={() => navigate('/volunteer/hours')} />}
-          {canOpenVolunteerHub && <SettingsRow icon={Users} title="Volunteer hub" subtitle="Volunteers, admins, and how to reach them" onClick={() => navigate('/volunteer/contacts')} />}
+          {canOpenVolunteerHub && <SettingsRow icon={Users} title="Volunteer hub" subtitle="Volunteers, organizers, and how to reach them" onClick={() => navigate('/volunteer/contacts')} />}
           {canCheckIn && <AppOnlyRow icon={ScanLine} title="Front desk check-in" subtitle="Scanning QR passes needs the phone camera, so check people in from the Emerald Summit app." />}
           {isAdmin && <SettingsRow icon={ChartLine} title="Metrics" subtitle="Who signed up, from which schools, for what" onClick={() => navigate('/admin/metrics')} />}
           {isAdmin && <SettingsRow icon={CameraOff} title="Photo permission" subtitle="Who did not allow photos" onClick={() => navigate('/admin/photo-permission')} />}
           {isAdmin && <SettingsRow icon={ShieldCheck} title="Expert approvals" subtitle="Approve or decline expert sign-ups" onClick={() => navigate('/admin/experts')} />}
           {isAdmin && <SettingsRow icon={Inbox} title="Bug reports and feedback" subtitle="What people reported, with their details" onClick={() => navigate('/admin/reports')} />}
-          {isAdmin && <SettingsRow icon={MapPin} title="Manage rooms" subtitle="The rooms sessions can be held in" onClick={() => navigate('/admin/rooms')} />}
+          {isAdmin && <SettingsRow icon={MapPin} title="Manage rooms" subtitle="The rooms tracks can be held in" onClick={() => navigate('/admin/rooms')} />}
           <SettingsRow icon={ArrowLeftRight} title="Change role" subtitle={`Currently ${roleLabel}`} onClick={() => setChangeRoleOpen(true)} />
         </div>
       </section>

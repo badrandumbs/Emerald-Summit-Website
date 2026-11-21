@@ -36,7 +36,7 @@ describe('role change', () => {
     expect(rc.describeRoleChange(items[0])).toBe(
       '"CADathon": you\'ll go from participating to spectating. Nobody else has joined your team "Bots", so it will be deleted and its code AB12 will stop working.',
     );
-    expect(rc.roleChangeLeadIn('attendee', 'Attendee')).toBe('As a Attendee, you can only spectate. These sessions change:');
+    expect(rc.roleChangeLeadIn('attendee', 'Attendee')).toBe('As a Attendee, you can only spectate. These tracks change:');
   });
 
   test('managing lines match the app', () => {

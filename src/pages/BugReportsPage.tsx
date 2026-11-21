@@ -154,7 +154,7 @@ export default function BugReportsPage() {
 
   return (
     <AppShell>
-      <PageHeader label="Admin" title="Bug reports and feedback" actions={
+      <PageHeader label="Organizer" title="Bug reports and feedback" actions={
         <Button variant="outline" onClick={load}><RefreshCw className="h-4 w-4" /> Refresh</Button>
       } />
       <div className="mb-4 grid max-w-md grid-cols-2 gap-2" role="tablist" aria-label="Category">

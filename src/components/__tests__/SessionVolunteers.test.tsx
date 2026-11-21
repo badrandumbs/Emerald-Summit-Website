@@ -61,7 +61,7 @@ describe('assigning someone who is busy at that time', () => {
 
     expect(await screen.findByText('Replace what they’re doing?')).toBeInTheDocument();
     expect(screen.getByText(/Sam Lee can only do one thing at a time/)).toBeInTheDocument();
-    expect(screen.getByText(/Their sign-up to participate in this session. They'll manage it instead. They own "Rover"; it passes to the teammate who joined first./)).toBeInTheDocument();
+    expect(screen.getByText(/Their sign-up to participate in this track. They'll manage it instead. They own "Rover"; it passes to the teammate who joined first./)).toBeInTheDocument();
     expect(screen.getByText(/"Drone Lab", which they manage. They'll stop managing it./)).toBeInTheDocument();
     expect(screen.getByText(/They'll get a notice/)).toBeInTheDocument();
 
@@ -82,7 +82,7 @@ describe('assigning someone who is busy at that time', () => {
     api.assign.mockResolvedValue({ outcome: 'conflict', conflictingTitle: 'Bio Lab', conflictKind: 'registered' });
     api.preview.mockResolvedValue(null);
     await pickSam();
-    expect(await screen.findByText(/can't be added to this session/)).toBeInTheDocument();
+    expect(await screen.findByText(/can't be added to this track/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Assign and replace' })).not.toBeInTheDocument();
   });
 
@@ -94,7 +94,7 @@ describe('assigning someone who is busy at that time', () => {
   });
 });
 
-describe('volunteers signed up for this session', () => {
+describe('volunteers signed up for this track', () => {
   const samOnRoster = (type = 'participant') => ({
     userId: 'sam', name: 'Sam Lee', email: 'sam@x.org', attended: false, type, answers: {},
     isTeam: null, projectName: null, teamId: null, teamCode: null, isTeamOwner: false, role: 'volunteer', details: {},
@@ -112,14 +112,14 @@ describe('volunteers signed up for this session', () => {
     const user = userEvent.setup();
     render(<SessionVolunteers session={session} canAssign />);
 
-    expect(await screen.findByText('Volunteers signed up for this session')).toBeInTheDocument();
+    expect(await screen.findByText('Volunteers signed up for this track')).toBeInTheDocument();
     expect(screen.getByText(/Signed up as participant/)).toBeInTheDocument();
     expect(screen.queryByText('Kid Student')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Assign Sam Lee to be a manager instead' }));
     expect(await screen.findByText('Assign Sam Lee to be a manager instead?')).toBeInTheDocument();
     expect(screen.getByText(
-      'This will make them a manager of this session, and they will no longer be a participant of this session.',
+      'This will make them a manager of this track, and they will no longer be a participant of this track.',
     )).toBeInTheDocument();
     expect(screen.getByText(/They own "Rover"; it passes to the teammate who joined first./)).toBeInTheDocument();
 
@@ -134,7 +134,7 @@ describe('volunteers signed up for this session', () => {
     const user = userEvent.setup();
     render(<SessionVolunteers session={session} canAssign />);
     await user.click(await screen.findByRole('button', { name: 'Assign Sam Lee to be a manager instead' }));
-    expect(await screen.findByText(/they will no longer be a spectator of this session/)).toBeInTheDocument();
+    expect(await screen.findByText(/they will no longer be a spectator of this track/)).toBeInTheDocument();
   });
 
   test('the picker tags them and goes straight to the manager dialog', async () => {
@@ -142,7 +142,7 @@ describe('volunteers signed up for this session', () => {
     api.preview.mockResolvedValue([here()]);
     const user = userEvent.setup();
     render(<SessionVolunteers session={session} canAssign />);
-    await screen.findByText('Volunteers signed up for this session');
+    await screen.findByText('Volunteers signed up for this track');
     await user.click(screen.getByRole('button', { name: /Assign a volunteer to manage/ }));
     const row = await screen.findByRole('button', { name: /Sam Lee.*Signed up as participant/ });
     await user.click(row);
@@ -152,16 +152,16 @@ describe('volunteers signed up for this session', () => {
 
   test('people who only view the tab never load the roster', async () => {
     render(<SessionVolunteers session={session} canAssign={false} />);
-    await screen.findByText('No one has been assigned to manage this session yet.');
+    await screen.findByText('No one has been assigned to manage this track yet.');
     expect(api.roster).not.toHaveBeenCalled();
     expect(screen.queryByText(/They can't edit the session's details/)).not.toBeInTheDocument();
   });
 
   test('admins see what managers can and can\'t do', async () => {
     render(<SessionVolunteers session={session} canAssign />);
-    expect(await screen.findByText('The people managing this session.')).toBeInTheDocument();
-    expect(screen.getByText(/mark attendance, and remove someone from the session. They can't edit the session's details/)).toBeInTheDocument();
-    expect(screen.getByText('No volunteers assigned yet. Assign volunteers so they can manage this session.')).toBeInTheDocument();
+    expect(await screen.findByText('The people managing this track.')).toBeInTheDocument();
+    expect(screen.getByText(/mark attendance, and remove someone from the track. They can't edit the track's details/)).toBeInTheDocument();
+    expect(screen.getByText('No volunteers assigned yet. Assign volunteers so they can manage this track.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Assign a volunteer to manage' })).toBeInTheDocument();
   });
 });

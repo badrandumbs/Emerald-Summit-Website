@@ -134,7 +134,7 @@ describe('while registration is closed and times are hidden', () => {
 describe('session page', () => {
   test('suggests another session in the discipline that fits, with its photo', async () => {
     const { container } = page();
-    expect(screen.getByRole('heading', { name: 'Sessions similar to this' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Tracks similar to this' })).toBeInTheDocument();
     expect(screen.getByText('More in TechVerse that fit an open slot on your schedule.')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Drone Lab' })).toBeInTheDocument();
     expect(screen.getByText('1:00 PM – 2:00 PM · 15 seats left')).toBeInTheDocument();
@@ -144,7 +144,7 @@ describe('session page', () => {
   test("doesn't suggest a session that's already on my day", () => {
     state.schedule.mySchedule = ['s2'];
     page();
-    expect(screen.queryByRole('heading', { name: 'Sessions similar to this' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Tracks similar to this' })).not.toBeInTheDocument();
   });
 
   test("with no hero set, the first photo is the banner and the rest are the gallery", async () => {
@@ -252,7 +252,7 @@ describe('an admin managing a session they are busy for', () => {
     const user = userEvent.setup();
     page();
     await user.click(screen.getByRole('button', { name: /Add to my day/ }));
-    await user.click(screen.getByRole('button', { name: /Manage this session/ }));
+    await user.click(screen.getByRole('button', { name: /Manage this track/ }));
     expect(await screen.findByText('Replace what you’re doing?')).toBeInTheDocument();
     expect(screen.getByText(/"Bio Lab", where you're signed up to spectate./)).toBeInTheDocument();
     expect(state.preview).toHaveBeenCalledWith('s1', 'me');
@@ -261,14 +261,14 @@ describe('an admin managing a session they are busy for', () => {
     expect(state.schedule.reload).toHaveBeenCalled();
   });
 
-  test('their own sign-up for this session is replaced too', async () => {
+  test('their own sign-up for this track is replaced too', async () => {
     state.manage.mockResolvedValue({ outcome: 'conflict', conflictingTitle: 'Robot Showcase', conflictKind: 'registered_this' });
     state.preview.mockResolvedValue([{ ...bioLab, sessionId: 's1', title: 'Robot Showcase', kind: 'registered_this', participationType: 'participant' }]);
     const user = userEvent.setup();
     page();
     await user.click(screen.getByRole('button', { name: /Add to my day/ }));
-    await user.click(screen.getByRole('button', { name: /Manage this session/ }));
-    expect(await screen.findByText(/Your sign-up to participate in this session. You'll manage it instead./)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Manage this track/ }));
+    expect(await screen.findByText(/Your sign-up to participate in this track. You'll manage it instead./)).toBeInTheDocument();
   });
 
   test('before the SQL is run, the old refusal stays', async () => {
@@ -276,7 +276,7 @@ describe('an admin managing a session they are busy for', () => {
     const user = userEvent.setup();
     page();
     await user.click(screen.getByRole('button', { name: /Add to my day/ }));
-    await user.click(screen.getByRole('button', { name: /Manage this session/ }));
+    await user.click(screen.getByRole('button', { name: /Manage this track/ }));
     expect(await screen.findByText(/overlaps with "Bio Lab"/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Manage instead' })).not.toBeInTheDocument();
   });
@@ -290,7 +290,7 @@ describe('8th graders', () => {
     await user.click(screen.getByRole('button', { name: /Add to my day/ }));
     const participate = screen.getByRole('button', { name: /Participate/ });
     expect(participate).toBeDisabled();
-    expect(participate).toHaveTextContent("This session isn't open to 8th graders. You can spectate it.");
+    expect(participate).toHaveTextContent("This track isn't open to 8th graders. You can spectate it.");
     await user.click(screen.getByRole('button', { name: /Spectate/ }));
     await waitFor(() => expect(state.toggle).toHaveBeenCalledWith('s1', expect.objectContaining({ add: true, type: 'spectator' })));
   });

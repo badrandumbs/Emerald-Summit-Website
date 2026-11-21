@@ -48,7 +48,7 @@ export function ExpertPending() {
     <section className="glass mx-auto max-w-xl rounded-3xl p-8">
       <h1 className="font-display text-2xl font-bold">Your expert account is awaiting approval</h1>
       <p className="mt-3 text-muted-foreground">
-        An admin checks every expert sign-up to make sure the person is who they say they are.
+        An organizer checks every expert sign-up to make sure the person is who they say they are.
         You'll be able to use the app as soon as your account is approved.
       </p>
       {profile?.name && (
@@ -96,7 +96,7 @@ export function ExpertDeclinedDialog() {
         <DialogHeader>
           <DialogTitle>Your expert request wasn't approved</DialogTitle>
           <DialogDescription>
-            An admin reviewed your sign-up and did not approve it as an expert account, so your
+            An organizer reviewed your sign-up and did not approve it as an expert account, so your
             account is now a participant account. If you think this is a mistake, email {EXPERT_CONTACT_EMAIL}.
           </DialogDescription>
         </DialogHeader>

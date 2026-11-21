@@ -203,7 +203,7 @@ function GlobalSearch({ items }: { items: NavItem[] }) {
               inputRef.current?.blur();
             }
           }}
-          placeholder="Search sessions, pages, rooms…"
+          placeholder="Search tracks, pages, rooms…"
           aria-label="Search the portal"
           className="min-w-0 flex-1 bg-transparent text-[13.5px] outline-none placeholder:text-muted-foreground"
         />

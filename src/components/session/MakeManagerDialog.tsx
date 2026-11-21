@@ -35,8 +35,8 @@ export default function MakeManagerDialog({ request, busy, onConfirm, onCancel }
         <DialogHeader>
           <DialogTitle>Assign {request?.personName} to be a manager instead?</DialogTitle>
           <DialogDescription>
-            This will make them a manager of this session, and they will no longer be
-            {' '}{AS[request?.type ?? 'participant']} of this session.
+            This will make them a manager of this track, and they will no longer be
+            {' '}{AS[request?.type ?? 'participant']} of this track.
           </DialogDescription>
         </DialogHeader>
         {team && <p className="text-sm">{team}</p>}

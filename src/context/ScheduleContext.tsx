@@ -199,7 +199,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
     async (id: string, kind: ReservationKind) => {
       if (scheduleError) throw new Error('We could not load your saved schedule. Refresh the page before making changes.');
       if (kind === 'volunteering' || lists.current.volunteerSchedule.includes(id)) {
-        throw new Error('Volunteer sessions are assigned by an admin.');
+        throw new Error('Volunteer tracks are assigned by an organizer.');
       }
       const previous = kindOf(id);
       if (previous === kind) return;
@@ -233,7 +233,7 @@ export function ScheduleProvider({ children }: { children: ReactNode }) {
     async (id: string) => {
       if (scheduleError) throw new Error('We could not load your saved schedule. Refresh the page before making changes.');
       if (lists.current.volunteerSchedule.includes(id)) {
-        throw new Error('Only an admin can remove a volunteer assignment.');
+        throw new Error('Only an organizer can remove a volunteer assignment.');
       }
       const previous = kindOf(id);
       if (!previous) return;

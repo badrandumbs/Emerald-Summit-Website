@@ -13,8 +13,6 @@ import HairlineFigure from '../landing/HairlineFigure';
 import { SIGN_IN_ROLES } from '../models/roles';
 import { DAY_PARTS, type DayPart } from '../landing/dayParts';
 import SunArc from '../landing/SunArc';
-import SponsorTerraces from '../landing/SponsorTerraces';
-import EafDonateCorner from '../landing/EafDonateCorner';
 import { Mail } from '@/components/icons';
 import { useIsTouchScreen } from '../lib/device';
 import '../landing/landing.css';
@@ -23,10 +21,10 @@ const VENUE = 'Emerald High School, Dublin, CA';
 const CONTACT_EMAIL = 'contact@ehsacademics.org';
 
 const ABOUT_STATS = [
+  { value: '1', label: 'Day', note: 'One campus, Emerald High' },
+  { value: '6', label: 'Disciplines', note: 'TechVerse to CivicVerse' },
   { value: '20+', label: 'Tracks', note: 'From Robothon to Mock Trial' },
   { value: '30+', label: 'Visiting experts', note: 'Giving feedback and leading the talks' },
-  { value: '6', label: 'Disciplines', note: 'TechVerse to CivicVerse' },
-  { value: '1', label: 'Day', note: 'One campus, Emerald High' },
 ];
 
 /** The five roles anyone can sign in as, in the order the badges hang. */
@@ -399,9 +397,6 @@ export default function WelcomePage() {
           />
         </section>
 
-        {/* Who makes it possible: the sponsor tiers as a flat stepped mountain. */}
-        <SponsorTerraces />
-
         <FaqSection />
 
         {/* The close: who you're coming as, on the badge rack, and the way in. */}
@@ -449,7 +444,7 @@ export default function WelcomePage() {
         <div className="container lp-cta__inner">
           <h2 id="contact-title">Start the trek.</h2>
           <p className="lp-cta__lede">
-            Free to attend. Questions before January 23? Email us.
+            Free to attend. Questions? Email us.
           </p>
           <div className="lp-cta__actions">
             <button type="button" className="lp-btn" onClick={() => navigate('/home')}>
@@ -463,8 +458,6 @@ export default function WelcomePage() {
       </section>
 
       <LandingFooter />
-      {/* Only once the opening animation has fully settled (or straight away when it doesn't play). */}
-      {introGone && <EafDonateCorner />}
     </div>
   );
 }

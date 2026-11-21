@@ -127,7 +127,7 @@ describe('shared mobile profiles', () => {
   test('refuses a new role when the server keeps a different role', async () => {
     db.forcedRole = 'participant';
     auth.savePendingRole('admin');
-    await expect(auth.getCurrentProfile(user)).rejects.toMatchObject({ name: 'SignInRefusedError', role: 'admin', message: "You are not eligible to sign up as an admin." });
+    await expect(auth.getCurrentProfile(user)).rejects.toMatchObject({ name: 'SignInRefusedError', role: 'admin', message: "You are not eligible to sign up as an organizer." });
     expect(db.profiles[0].role).toBe('participant');
     expect(db.profiles).toHaveLength(1);
   });

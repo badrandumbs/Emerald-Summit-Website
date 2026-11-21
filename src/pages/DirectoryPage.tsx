@@ -36,7 +36,7 @@ export default function DirectoryPage() {
   return (
     <AppShell>
       <PageHeader label="Summit team" title="Volunteer hub" />
-      <p className="mb-5 text-sm text-muted-foreground">Numbers are shared here so volunteers and admins can reach each other on Summit day.</p>
+      <p className="mb-5 text-sm text-muted-foreground">Numbers are shared here so volunteers and organizers can reach each other on Summit day.</p>
       <label className="relative mb-6 block max-w-md">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input aria-label="Search volunteers by name" placeholder="Search by name…" value={query} onChange={(e) => setQuery(e.target.value)} className="h-11 w-full rounded-xl border border-input bg-secondary/40 pl-9 pr-3 text-sm outline-none focus:border-emerald-glow/60" />
@@ -52,7 +52,7 @@ export default function DirectoryPage() {
               </div>
             ))}
           </div>
-          {filtered.length === 0 && <p className="py-12 text-center text-sm text-muted-foreground">{people.length === 0 ? 'No other volunteers or admins have signed up yet.' : 'No one matches your search.'}</p>}
+          {filtered.length === 0 && <p className="py-12 text-center text-sm text-muted-foreground">{people.length === 0 ? 'No other volunteers or organizers have signed up yet.' : 'No one matches your search.'}</p>}
         </>
       )}
     </AppShell>

@@ -55,7 +55,7 @@ beforeEach(() => {
 
 test.each([
   ['volunteer', 'Your phone number will be visible to other volunteers the day of for communication with them.'],
-  ['admin', 'Your phone number will be visible to volunteers and other admins the day of for communication with them.'],
+  ['admin', 'Your phone number will be visible to volunteers and other organizers the day of for communication with them.'],
 ])('%s sign-up requires a mobile number and says who sees it', async (role, note) => {
   state.role = role;
   const user = userEvent.setup();
@@ -97,7 +97,7 @@ test('the grade question says middle schoolers come with an adult', () => {
   state.role = 'participant';
   render(<MemoryRouter><ProfileSetupPage /></MemoryRouter>);
   expect(screen.getByLabelText('Grade')).toHaveAccessibleDescription(
-    '8th graders can participate in some sessions and spectate any of them. Middle schoolers must come with an adult.',
+    '8th graders can participate in some tracks and spectate any of them. Middle schoolers must come with an adult.',
   );
 });
 

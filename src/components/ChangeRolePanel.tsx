@@ -101,7 +101,7 @@ export default function ChangeRolePanel({
             <div className="font-semibold">Switching to {role.label}</div>
             {role.name === 'expert' && (
               <p className="mt-2">
-                Expert accounts need an admin to approve them. Until then, you'll only see a screen
+                Expert accounts need an organizer to approve them. Until then, you'll only see a screen
                 saying your account is awaiting approval.
               </p>
             )}
@@ -113,7 +113,7 @@ export default function ChangeRolePanel({
                 </ul>
                 {changes.some((c) => c.from === 'managing') && (
                   <p className="mt-2">
-                    The admins will be told you're no longer managing these sessions, so they can find someone else.
+                    The organizers will be told you're no longer managing these sessions, so they can find someone else.
                   </p>
                 )}
               </>

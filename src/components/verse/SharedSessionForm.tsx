@@ -102,7 +102,7 @@ export default function SharedSessionForm({
     if (n === 0) return null;
     const teams = n === 1 ? '1 team' : `${n} teams`;
     return maxTeamSize < 2
-      ? `${teams} already registered for this session will keep their team. Nobody is removed, and members can still leave to go solo. No new teams can be created or joined.`
+      ? `${teams} already registered for this track will keep their team. Nobody is removed, and members can still leave to go solo. No new teams can be created or joined.`
       : `${teams} already ${n === 1 ? 'has' : 'have'} more than ${maxTeamSize} members. Nobody is removed, but ${n === 1 ? 'it' : 'they'} can't take new members.`;
   })();
 
@@ -131,7 +131,7 @@ export default function SharedSessionForm({
       participant_questions: questions.filter((q) => q.prompt.trim()).map((q) => ({ id: q.id, prompt: q.prompt.trim() })),
     };
     setBusy(true);
-    if (teamsNotice && !(await ask(maxTeamSize < 2 ? 'This session has teams' : 'Some teams are bigger', `${teamsNotice} Save anyway?`))) {
+    if (teamsNotice && !(await ask(maxTeamSize < 2 ? 'This track has teams' : 'Some teams are bigger', `${teamsNotice} Save anyway?`))) {
       setBusy(false);
       return;
     }
@@ -140,7 +140,7 @@ export default function SharedSessionForm({
       const affected = await previewTimeConflicts(s.id, start, end);
       if (affected > 0) {
         const who = affected === 1 ? '1 person' : `${affected} people`;
-        const ok = await ask('Schedule clash', `This new time overlaps another session that ${who} registered for it already have. If you save, they'll be notified to adjust their schedule. Save anyway?`);
+        const ok = await ask('Schedule clash', `This new time overlaps another track that ${who} registered for it already have. If you save, they'll be notified to adjust their schedule. Save anyway?`);
         if (!ok) {
           setBusy(false);
           return;
@@ -150,7 +150,7 @@ export default function SharedSessionForm({
     try {
       await saveSessionColumns(columns, s?.id);
       if (timeChanged) await notifyTimeConflicts(s.id).catch(() => {});
-      toast.success(s ? 'Session updated' : 'Session created');
+      toast.success(s ? 'Track updated' : 'Track created');
       onClose();
     } catch {
       setError('Could not save. You may not manage this discipline.');
@@ -163,7 +163,7 @@ export default function SharedSessionForm({
     setBusy(true);
     try {
       await deleteSession(s.id);
-      toast.success('Session deleted');
+      toast.success('Track deleted');
       onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : String(err));
@@ -189,7 +189,7 @@ export default function SharedSessionForm({
       ) : (
         <form onSubmit={(e) => void submit(e)} className="space-y-5">
           <DialogHeader>
-            <DialogTitle className="font-display">{s ? 'Edit session' : 'Add a session'}</DialogTitle>
+            <DialogTitle className="font-display">{s ? 'Edit track' : 'Add a track'}</DialogTitle>
             <DialogDescription>{verseLabel}</DialogDescription>
           </DialogHeader>
 
@@ -211,7 +211,7 @@ export default function SharedSessionForm({
               {deadline && <Button type="button" variant="ghost" onClick={() => setDeadline('')}>Clear</Button>}
             </div>
             <p className="text-xs text-muted-foreground">
-              {deadlineDate ? `Participating closes ${formatDeadline(deadlineDate)}. After that, people can still spectate.` : 'With no deadline, people can register to participate until the session is full.'}
+              {deadlineDate ? `Participating closes ${formatDeadline(deadlineDate)}. After that, people can still spectate.` : 'With no deadline, people can register to participate until the track is full.'}
             </p>
           </div>
 
@@ -287,8 +287,8 @@ export default function SharedSessionForm({
 
           <section className="space-y-3 rounded-xl border border-border p-3">
             <div>
-              <p className="text-sm font-semibold">Session page</p>
-              <p className="mt-1 text-xs text-muted-foreground">The hero photo, gallery, and sections below are what participants see on this session.</p>
+              <p className="text-sm font-semibold">Track page</p>
+              <p className="mt-1 text-xs text-muted-foreground">The hero photo, gallery, and sections below are what participants see on this track.</p>
             </div>
             <SessionPhotosEditor sessionId={s?.id} hero={hero} onHeroChange={setHero} onBusyChange={setPhotosBusy} />
             <p className="pt-1 text-sm font-medium">Content sections</p>
@@ -317,11 +317,11 @@ export default function SharedSessionForm({
           ) : (
             <DialogFooter className="gap-2 sm:items-center">
               {s && profile?.role === 'admin' && (
-                <Button type="button" variant="ghost" className="text-destructive sm:mr-auto" onClick={() => setConfirmDelete(true)}>Delete session</Button>
+                <Button type="button" variant="ghost" className="text-destructive sm:mr-auto" onClick={() => setConfirmDelete(true)}>Delete track</Button>
               )}
               <Button type="button" variant="outline" onClick={onClose} disabled={busy}>Cancel</Button>
               <Button type="submit" disabled={busy || photosBusy} className="bg-emerald-deep text-white hover:bg-emerald">
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : s ? 'Save' : 'Add session'}
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : s ? 'Save' : 'Add track'}
               </Button>
             </DialogFooter>
           )}

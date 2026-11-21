@@ -71,7 +71,7 @@ export default function SummitFollowupPage() {
     return (
       <AppShell>
         <PageHeader label="After the Summit" title={isExpert ? 'Summit feedback' : 'Volunteer for EAF again?'} />
-        <p className="mx-auto max-w-3xl text-sm text-muted-foreground">This opens after the last session of Summit day ends.</p>
+        <p className="mx-auto max-w-3xl text-sm text-muted-foreground">This opens after the last track of Summit day ends.</p>
       </AppShell>
     );
   }
@@ -127,7 +127,7 @@ export default function SummitFollowupPage() {
         </p>
         {items == null ? <Skeleton className="h-40 w-full" /> : items.map((item, idx) => (
           <section key={`${item.kind}-${item.sessionId ?? ''}`} className="space-y-3 rounded-2xl border border-border p-4">
-            {item.kind === 'session' && <p className="text-xs font-semibold uppercase tracking-wide text-emerald">Your session</p>}
+            {item.kind === 'session' && <p className="text-xs font-semibold uppercase tracking-wide text-emerald">Your track</p>}
             <h2 className="font-semibold">{item.title}</h2>
             {item.detail && <p className="text-xs text-muted-foreground">{item.detail}</p>}
             <div role="radiogroup" aria-label={`Rating for ${item.title}`} className="flex gap-1">

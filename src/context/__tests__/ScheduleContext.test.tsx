@@ -46,7 +46,7 @@ describe('ScheduleProvider (local)', () => {
     expect(ownScheduleKind('ambassador')).toBe('volunteering');
     expect(ownScheduleKind('attendee')).toBeNull();
 
-    await expect(result.current.reserveSession(s.id, 'volunteering')).rejects.toThrow('assigned by an admin');
+    await expect(result.current.reserveSession(s.id, 'volunteering')).rejects.toThrow('assigned by an organizer');
     expect(result.current.listFor('volunteering')).toEqual([]);
     expect(result.current.sessionCounts[s.id].volunteersEnrolled).toBe(s.volunteersEnrolled);
   });
@@ -57,8 +57,8 @@ describe('ScheduleProvider (local)', () => {
     const { result } = renderHook(() => useSchedule(), { wrapper });
     await waitFor(() => expect(result.current.volunteerSchedule).toEqual([s.id]));
 
-    await expect(result.current.releaseSession(s.id)).rejects.toThrow('Only an admin');
-    await expect(result.current.reserveSession(s.id, 'competing')).rejects.toThrow('assigned by an admin');
+    await expect(result.current.releaseSession(s.id)).rejects.toThrow('Only an organizer');
+    await expect(result.current.reserveSession(s.id, 'competing')).rejects.toThrow('assigned by an organizer');
     expect(result.current.volunteerSchedule).toEqual([s.id]);
   });
 

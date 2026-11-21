@@ -27,7 +27,7 @@ export const DAY_PARTS: DayPart[] = [
   {
     name: 'Opening keynote',
     points: [
-      'The whole Summit together before the sessions begin',
+      'The whole Summit together before the tracks begin',
       'Last year’s keynote speaker was Sabeer Bhatia',
     ],
     pending: 'This year’s speaker to be announced',
@@ -60,7 +60,7 @@ export const DAY_PARTS: DayPart[] = [
     name: 'Landing',
     points: [
       'Everyone back together in the gym',
-      'Take home the feedback from your sessions',
+      'Take home the feedback from your tracks',
       'The day wraps by 5 PM',
     ],
     photo: { n: 26, alt: 'Students and families fill the gym bleachers' },

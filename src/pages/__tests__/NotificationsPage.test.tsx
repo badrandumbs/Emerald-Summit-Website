@@ -81,7 +81,7 @@ describe('Notifications', () => {
   test('says what shows up when empty', () => {
     state.notifications = [];
     renderPage();
-    expect(screen.getByText(/Session reminders, new posts for you/)).toBeInTheDocument();
+    expect(screen.getByText(/Track reminders, new posts for you/)).toBeInTheDocument();
   });
 });
 

@@ -267,7 +267,7 @@ export function AnnouncementsProvider({ children }: { children: ReactNode }) {
     async (draft: AnnouncementDraft) => {
       const created = await createAnnouncement(draft, {
         id: profile?.id,
-        name: profile?.name ?? 'Summit Admin',
+        name: profile?.name ?? 'Summit Organizer',
       });
       // Optimistic: realtime will confirm, but the author shouldn't wait for
       // a round trip to see their own post.

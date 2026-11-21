@@ -146,7 +146,7 @@ export interface ReplacedItem {
 function replacedItemsFrom(raw: unknown): ReplacedItem[] {
   return (Array.isArray(raw) ? raw : []).map((r: Record<string, unknown>) => ({
     sessionId: String(r.session_id),
-    title: typeof r.title === 'string' ? r.title : 'a session',
+    title: typeof r.title === 'string' ? r.title : 'a track',
     kind: r.kind === 'registered_this' || r.kind === 'managing' ? r.kind : 'registered',
     participationType: r.participation_type === 'participant' || r.participation_type === 'spectator' || r.participation_type === 'expert'
       ? r.participation_type : null,
@@ -200,7 +200,7 @@ export function describeReplacement(item: ReplacedItem, who: 'they' | 'you'): st
   if (item.kind === 'managing') {
     line = `"${item.title}", which ${they ? 'they manage' : 'you manage'}. ${they ? 'They' : 'You'}'ll stop managing it.`;
   } else if (item.kind === 'registered_this') {
-    line = `${they ? 'Their' : 'Your'} sign-up to ${doing} in this session. ${they ? "They'll" : "You'll"} manage it instead.`;
+    line = `${they ? 'Their' : 'Your'} sign-up to ${doing} in this track. ${they ? "They'll" : "You'll"} manage it instead.`;
   } else {
     line = `"${item.title}", where ${they ? "they're" : "you're"} signed up to ${doing}.`;
   }

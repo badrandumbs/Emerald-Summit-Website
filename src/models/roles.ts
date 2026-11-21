@@ -46,7 +46,7 @@ export const USER_ROLES: RoleInfo[] = [
   },
   {
     name: 'admin',
-    label: 'Admin',
+    label: 'Organizer',
     description:
       'Manage the Summit, announcements, and content.',
     icon: ShieldCheck, // admin_panel_settings_outlined

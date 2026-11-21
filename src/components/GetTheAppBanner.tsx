@@ -100,7 +100,7 @@ export default function GetTheAppBanner() {
         >
           <div className="relative flex items-center gap-3 rounded-2xl border border-border bg-card p-3 pr-3 text-card-foreground shadow-xl shadow-black/15">
             <img
-              src="/apple-touch-icon.png"
+              src="/apple-touch-icon-dragon.png"
               alt=""
               width={48}
               height={48}

@@ -32,7 +32,7 @@ export default function MetricsPage() {
 
   return (
     <AppShell>
-      <PageHeader label="Admin" title="Metrics" />
+      <PageHeader label="Organizer" title="Metrics" />
       <div className="mx-auto max-w-4xl space-y-6">
         <FilterChips<Who>
           options={[['participants', 'Participants'], ['parents', 'Parents & spectators'], ['everyone', 'Everyone']]}
@@ -64,8 +64,8 @@ function Charts({ data, who }: { data: SummitMetrics; who: Who }) {
       <StatTiles stats={[
         ['Signed up', String(people.length)],
         ['Schools', String(schools.size)],
-        ['In a session', String(inSessions.size)],
-        ['Session sign-ups', String(regs.length)],
+        ['In a track', String(inSessions.size)],
+        ['Track sign-ups', String(regs.length)],
       ]} />
       <MetricsSection title="Sign-ups by school">
         <p className="-mt-2 text-xs text-muted-foreground">Accounts that finished sign-up, by the school they picked.</p>
@@ -78,12 +78,12 @@ function Charts({ data, who }: { data: SummitMetrics; who: Who }) {
         <HeatTable
           table={crossTab(regs.map((r) => [byId.get(r.userId)!.school, r.disciplineName, r.userId]), USER_DISCIPLINES.map((d) => d.label), NO_SCHOOL_LABEL)}
           cornerLabel="School"
-          emptyText={`No ${noun} have registered for a session yet.`}
+          emptyText={`No ${noun} have registered for a track yet.`}
         />
       </MetricsSection>
       <MetricsSection title="Interest by discipline">
-        <p className="-mt-2 text-xs text-muted-foreground">People registered for at least one session in each.</p>
-        <BarList rows={countBy(regs.map((r) => [r.disciplineName, r.userId]))} total={inSessions.size} emptyText={`No ${noun} have registered for a session yet.`} />
+        <p className="-mt-2 text-xs text-muted-foreground">People registered for at least one track in each.</p>
+        <BarList rows={countBy(regs.map((r) => [r.disciplineName, r.userId]))} total={inSessions.size} emptyText={`No ${noun} have registered for a track yet.`} />
       </MetricsSection>
       {who !== 'parents' && (
         <>

@@ -14,7 +14,7 @@ import {
   type SessionPhoto,
 } from '../../services/sessionPhotos';
 
-const UPLOAD_FAILED = 'Could not upload. You may not manage this session.';
+const UPLOAD_FAILED = 'Could not upload. You may not manage this track.';
 
 export default function SessionPhotosEditor({
   sessionId,
@@ -49,7 +49,7 @@ export default function SessionPhotosEditor({
     return (
       <div className="flex items-start gap-2.5 rounded-lg bg-muted/60 p-3 text-xs">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-        <p>Save the session first, then reopen it to add photos.</p>
+        <p>Save the track first, then reopen it to add photos.</p>
       </div>
     );
   }

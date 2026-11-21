@@ -55,7 +55,7 @@ export default function SessionVolunteers({ session, canAssign }: { session: Ses
     setError(null);
     fetchSessionVolunteers(session.id)
       .then(setList)
-      .catch(() => setError("Couldn't load this session's volunteers. Try again."));
+      .catch(() => setError("Couldn't load this track's volunteers. Try again."));
     if (canAssign) {
       fetchSessionRoster(session.id)
         .then((roster) => setSignedUp(roster.filter((r) => r.role === 'volunteer')))
@@ -75,7 +75,7 @@ export default function SessionVolunteers({ session, canAssign }: { session: Ses
         setConverting({ userId, personName, type, items });
       } else {
         // Backend without volunteer_conflict_override.sql: the old refusal.
-        setBlocked(`${personName} is signed up for this session, so they can't manage it. They need to remove it from their day first.`);
+        setBlocked(`${personName} is signed up for this track, so they can't manage it. They need to remove it from their day first.`);
       }
     } finally {
       setBusy(false);
@@ -89,10 +89,10 @@ export default function SessionVolunteers({ session, canAssign }: { session: Ses
     try {
       await assignManagerReplacingConflicts(session.id, userId);
       setConverting(null);
-      toast.success(`${personName} now manages this session and is off its roster. They've been told.`);
+      toast.success(`${personName} now manages this track and is off its roster. They've been told.`);
       load();
     } catch {
-      toast.error('Could not make them a manager. Admins only.');
+      toast.error('Could not make them a manager. Organizers only.');
     } finally {
       setBusy(false);
     }
@@ -129,15 +129,15 @@ export default function SessionVolunteers({ session, canAssign }: { session: Ses
         } else {
           // Backend without volunteer_conflict_override.sql: the old refusal.
           setBlocked(result.conflictKind === 'registered_this'
-            ? `${name} is signed up for this session, so they can't manage it. They need to remove it from their day first.`
-            : `${name} has a schedule conflict and can't be added to this session. It overlaps with "${result.conflictingTitle ?? 'another session'}".`);
+            ? `${name} is signed up for this track, so they can't manage it. They need to remove it from their day first.`
+            : `${name} has a schedule conflict and can't be added to this track. It overlaps with "${result.conflictingTitle ?? 'another track'}".`);
         }
       } else {
-        toast.success(`Assigned ${name} to this session`);
+        toast.success(`Assigned ${name} to this track`);
         load();
       }
     } catch {
-      toast.error('Could not assign. Admins only.');
+      toast.error('Could not assign. Organizers only.');
     } finally {
       setBusy(false);
     }
@@ -153,7 +153,7 @@ export default function SessionVolunteers({ session, canAssign }: { session: Ses
       toast.success(`Assigned ${personName}. ${replaced.length} ${replaced.length === 1 ? 'thing was' : 'things were'} taken off their day, and they've been told.`);
       load();
     } catch {
-      toast.error('Could not assign. Admins only.');
+      toast.error('Could not assign. Organizers only.');
     } finally {
       setBusy(false);
     }
@@ -196,7 +196,7 @@ export default function SessionVolunteers({ session, canAssign }: { session: Ses
   return (
     <div className="space-y-4 py-2">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">The people managing this session.</p>
+        <p className="text-sm text-muted-foreground">The people managing this track.</p>
         {canAssign && (
           <Button type="button" size="sm" disabled={busy} onClick={() => void openPicker()} className="bg-emerald text-white hover:bg-emerald-deep">
             <Plus className="h-4 w-4" /> Assign a volunteer to manage
@@ -206,15 +206,15 @@ export default function SessionVolunteers({ session, canAssign }: { session: Ses
       {canAssign && (
         <p className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
           Managers can see everyone signed up for this session (participants, spectators and experts) with their
-          contact details, mark attendance, and remove someone from the session. They can't edit the session's
+          contact details, mark attendance, and remove someone from the track. They can't edit the track's
           details, like its description, time, room or photos.
         </p>
       )}
       {list.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted-foreground">
           {canAssign
-            ? 'No volunteers assigned yet. Assign volunteers so they can manage this session.'
-            : 'No one has been assigned to manage this session yet.'}
+            ? 'No volunteers assigned yet. Assign volunteers so they can manage this track.'
+            : 'No one has been assigned to manage this track yet.'}
         </p>
       ) : (
         <ul className="divide-y divide-border rounded-2xl border border-border px-4">
@@ -239,7 +239,7 @@ export default function SessionVolunteers({ session, canAssign }: { session: Ses
 
       {canAssign && convertible.length > 0 && (
         <section aria-labelledby="signed-up-volunteers" className="space-y-2 pt-2">
-          <h3 id="signed-up-volunteers" className="text-sm font-semibold">Volunteers signed up for this session</h3>
+          <h3 id="signed-up-volunteers" className="text-sm font-semibold">Volunteers signed up for this track</h3>
           <p className="text-sm text-muted-foreground">
             They're on the roster. Assigning one to be a manager takes them off the roster so they can run the session instead.
           </p>

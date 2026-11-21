@@ -3,6 +3,11 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import SponsorTerraces from '../SponsorTerraces';
 import { SPONSOR_EMAIL, SPONSOR_TIERS } from '../../models/sponsors';
 
+const SAMPLE = [
+  { name: 'Acme Co', tier: 'Cornerstone' as const, url: 'https://acme.example/', logo: '/sponsors/acme.png' },
+  { name: 'Corner Cafe', tier: 'Keystone' as const, url: 'https://cafe.example/', logo: '/sponsors/cafe.png' },
+];
+
 const terraces = () => within(screen.getByRole('list', { name: /Sponsor tiers/ })).getAllByRole('button');
 
 test('one terrace per tier, highest first, with Capstone out to start', () => {
@@ -13,22 +18,25 @@ test('one terrace per tier, highest first, with Capstone out to start', () => {
   expect(screen.getByText('No sponsors at this level yet')).toBeInTheDocument();
 });
 
-test('picking a terrace shows that tier, its sponsors as links, and an email for that tier', () => {
+test('with no sponsors yet, every terrace is open', () => {
   render(<SponsorTerraces />);
+  for (const b of terraces()) expect(b.getAttribute('aria-label')).toMatch(/no sponsors yet$/);
+});
+
+test('picking a terrace shows that tier, its sponsors as links, and an email for that tier', () => {
+  render(<SponsorTerraces sponsors={SAMPLE} />);
   fireEvent.mouseEnter(terraces()[4]);
   expect(terraces()[4]).toHaveAttribute('aria-pressed', 'true');
   expect(screen.getByRole('heading', { name: 'Cornerstone' })).toBeInTheDocument();
   expect(screen.getByText('$500')).toBeInTheDocument();
-  for (const name of ['Prepaze Academy', 'YoungWonks', 'Praan Health']) {
-    expect(screen.getByRole('link', { name })).toHaveAttribute('target', '_blank');
-  }
+  expect(screen.getByRole('link', { name: 'Acme Co' })).toHaveAttribute('target', '_blank');
   const email = screen.getByRole('link', { name: /Become a Cornerstone sponsor/ });
   expect(email.getAttribute('href')).toMatch(new RegExp(`^mailto:${SPONSOR_EMAIL}\\?subject=Cornerstone`));
 });
 
 test('keyboard focus picks a terrace too', () => {
-  render(<SponsorTerraces />);
+  render(<SponsorTerraces sponsors={SAMPLE} />);
   fireEvent.focus(terraces()[1]);
   expect(screen.getByRole('heading', { name: 'Keystone' })).toBeInTheDocument();
-  expect(screen.getByRole('link', { name: 'Brightfox' })).toHaveAttribute('href', 'https://gobrightfox.com/');
+  expect(screen.getByRole('link', { name: 'Corner Cafe' })).toHaveAttribute('href', 'https://cafe.example/');
 });

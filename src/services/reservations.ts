@@ -47,16 +47,16 @@ function checkOutcome(data: { outcome?: string; conflicting_title?: string } | n
   const outcome = data?.outcome;
   if (outcome === expected) return;
   const messages: Record<string, string> = {
-    full: 'This session is full.',
+    full: 'This track is full.',
     conflict: data?.conflicting_title
-      ? `This overlaps with ${data.conflicting_title}.` : 'This overlaps with another session.',
+      ? `This overlaps with ${data.conflicting_title}.` : 'This overlaps with another track.',
     participation_closed: 'Participation is closed. Only spectators can register now.',
     expert_not_approved: 'Your expert application must be approved before you can register as an expert.',
-    owner_transfer_required: 'Transfer team ownership in the mobile app before leaving this session.',
+    owner_transfer_required: 'Transfer team ownership in the mobile app before leaving this track.',
     project_name_required: 'Add your project details in the mobile app before registering.',
     team_full: 'That team is full.',
     team_not_found: 'We could not find that team.',
-    team_wrong_session: 'That team is for a different session.',
+    team_wrong_session: 'That team is for a different track.',
     removed_from_team: 'The team owner removed you from this team.',
   };
   throw new Error(messages[outcome ?? ''] ?? `Could not update registration (${outcome ?? 'no result'}).`);
@@ -64,7 +64,7 @@ function checkOutcome(data: { outcome?: string; conflicting_title?: string } | n
 
 /** Writes use the mobile RPC so capacity and time conflicts stay server-enforced. */
 export async function reserve(sessionId: string, kind: ReservationKind): Promise<void> {
-  if (kind === 'volunteering') throw new Error('Volunteer sessions are assigned by an admin.');
+  if (kind === 'volunteering') throw new Error('Volunteer tracks are assigned by an organizer.');
   if (!(await canSaveSchedule())) throw new Error('Sign in to save your schedule.');
   const type: ParticipationType = kind === 'judging' ? 'expert' : kind === 'spectating' ? 'spectator' : 'participant';
   const { data, error } = await supabase!.rpc('register_for_session', {

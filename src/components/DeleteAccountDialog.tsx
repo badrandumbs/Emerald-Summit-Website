@@ -58,7 +58,7 @@ export default function DeleteAccountDialog({ open, onOpenChange, email, onDelet
           <div className="space-y-4">
             <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
               <li>Your profile and QR pass are deleted.</li>
-              <li>You're taken off every session on your day and any team you're on.</li>
+              <li>You're taken off every track on your day and any team you're on.</li>
               <li>To come back, you'd sign up again from the start.</li>
             </ul>
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

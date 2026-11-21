@@ -160,7 +160,7 @@ export default function RegistrationForm({
 
         <div className="space-y-5">
           {!askSoloOrTeam ? (
-            <Note>This session is solo only. Every participant works on their own project.</Note>
+            <Note>This track is solo only. Every participant works on their own project.</Note>
           ) : (
             <div className="space-y-3">
               <p className="text-sm font-semibold">{DEFAULT_QUESTIONS.soloOrTeam}</p>
@@ -170,7 +170,7 @@ export default function RegistrationForm({
               </div>
               <Note>
                 {soloOnly
-                  ? "This session is now solo only. You can stay on your team or go solo, but teams can't be created or joined."
+                  ? "This track is now solo only. You can stay on your team or go solo, but teams can't be created or joined."
                   : DEFAULT_QUESTIONS.unsureNote}
               </Note>
             </div>
@@ -209,7 +209,7 @@ export default function RegistrationForm({
                 'team-project',
                 newTeamName,
                 setNewTeamName,
-                `You'll get a team code (like ${teamCodePrefix(session.track, session.disciplineName ?? '')}1234) to share with your teammates. They enter it when they register for this session. Teams here can have up to ${maxTeamSize} members, and you'll be the team's owner.`,
+                `You'll get a team code (like ${teamCodePrefix(session.track, session.disciplineName ?? '')}1234) to share with your teammates. They enter it when they register for this track. Teams here can have up to ${maxTeamSize} members, and you'll be the team's owner.`,
               )}
 
               {teamAction === 'joinTeam' && (confirmedTeam ? (
@@ -252,7 +252,7 @@ export default function RegistrationForm({
             <div className="space-y-3">
               <div>
                 <p className="text-sm font-semibold">A few more questions</p>
-                <p className="text-xs text-muted-foreground">The session organizers ask participants to share this.</p>
+                <p className="text-xs text-muted-foreground">The track organizers ask participants to share this.</p>
               </div>
               {questions.map((q) => (
                 <div key={q.id} className="space-y-1.5">

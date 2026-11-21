@@ -63,21 +63,21 @@ export default function SchedulePage() {
             <span className="font-bold">{added.length} session{added.length !== 1 ? 's' : ''}</span>
             {showTimes && booked > 0 && <span className="text-muted-foreground">{'  ·  '}{formatMinutes(booked)} booked</span>}
           </p>
-          {isVolunteer && <p className="text-sm text-muted-foreground">Volunteer sessions are assigned by an admin.</p>}
+          {isVolunteer && <p className="text-sm text-muted-foreground">Volunteer tracks are assigned by an organizer.</p>}
           {added.length > 0 && fits > 0 && (
             <p className="mt-0.5 text-sm text-muted-foreground">
-              {fits} open {fits === 1 ? 'session still fits' : 'sessions still fit'} around these.{' '}
+              {fits} open {fits === 1 ? 'track still fits' : 'tracks still fit'} around these.{' '}
               <Link to="/disciplines" className="font-semibold text-emerald hover:underline">Find one</Link>
             </p>
           )}
         </div>
-        <Link to="/disciplines" className="inline-flex items-center gap-2 text-sm font-semibold text-emerald hover:underline">Browse sessions <ArrowRight className="h-4 w-4" /></Link>
+        <Link to="/disciplines" className="inline-flex items-center gap-2 text-sm font-semibold text-emerald hover:underline">Browse tracks <ArrowRight className="h-4 w-4" /></Link>
       </div>
       {added.length === 0 && !scheduleError ? (
         <div className="glass flex flex-col items-center gap-3 rounded-2xl px-6 py-16 text-center">
           <CalendarDays className="h-9 w-9 text-muted-foreground/60" />
-          <h2 className="text-lg font-semibold">No sessions on your schedule yet.</h2>
-          <p className="text-sm text-muted-foreground">{isVolunteer ? 'Your sessions will appear here when an admin assigns them.' : 'Explore the disciplines to find sessions and add them to your day.'}</p>
+          <h2 className="text-lg font-semibold">No tracks on your schedule yet.</h2>
+          <p className="text-sm text-muted-foreground">{isVolunteer ? 'Your tracks will appear here when an organizer assigns them.' : 'Explore the disciplines to find tracks and add them to your day.'}</p>
           <Link to="/disciplines" className="mt-2 rounded-xl bg-emerald px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-deep">Explore the disciplines</Link>
         </div>
       ) : (

@@ -63,15 +63,15 @@ import { REGISTRATION_CLOSED_MESSAGE, TBD, useSiteSwitches } from '../../service
 
 /** Why Participate is greyed out for a middle schooler, in the chooser. */
 const GRADE_BLOCK_CHOICE_TEXT: Record<GradeBlock, string> = {
-  eighth_grade_not_allowed: "This session isn't open to 8th graders. You can spectate it.",
+  eighth_grade_not_allowed: "This track isn't open to 8th graders. You can spectate it.",
   middle_school_not_allowed: 'Participating is for high schoolers. You can spectate.',
 };
 
 const MODE_TEXT: Record<AddMode, { title: string; blurb: string; icon: typeof Plus }> = {
   participate: { title: 'Participate', blurb: "Join in and take part. You'll tell us about your project first.", icon: User },
   spectate: { title: 'Spectate', blurb: 'Watch and follow along, without taking part.', icon: Eye },
-  expert: { title: 'Serve as an expert', blurb: 'Lead or advise as the session expert.', icon: Award },
-  manage: { title: 'Manage this session', blurb: "Run this session. It's added to your schedule.", icon: Users },
+  expert: { title: 'Serve as an expert', blurb: 'Lead or advise as the track expert.', icon: Award },
+  manage: { title: 'Manage this track', blurb: "Run this track. It's added to your schedule.", icon: Users },
 };
 
 const TYPE_FOR: Record<Exclude<AddMode, 'manage'>, ParticipationType> = {
@@ -189,7 +189,7 @@ export default function SessionView({
     // The catalog may still be loading from the database.
     return MOCK_SESSIONS.length === 0
       ? <div className="mx-auto max-w-3xl space-y-4 px-6 py-16"><Skeleton className="h-10 w-64" /><Skeleton className="h-64 w-full rounded-2xl" /></div>
-      : <p className="py-16 text-center text-muted-foreground">This session isn't available anymore.</p>;
+      : <p className="py-16 text-center text-muted-foreground">This track isn't available anymore.</p>;
   }
 
   const s = session;
@@ -269,7 +269,7 @@ export default function SessionView({
         setBlocked({ title: "Couldn't register", body: result.message });
         break;
       case 'full':
-        setBlocked({ title: 'Session full', body: `This session has reached its capacity of ${s.capacity}. You can still join the waitlist on the day.` });
+        setBlocked({ title: 'Track full', body: `This track has reached its capacity of ${s.capacity}. You can still join the waitlist on the day.` });
         break;
       case 'conflict':
         setBlocked({ title: 'Time conflict', body: conflictMessage(result.conflictKind, result.conflictingTitle, role) });
@@ -277,7 +277,7 @@ export default function SessionView({
       case 'participation_closed':
         setBlocked({
           title: 'Participant registration closed',
-          body: `Registration to participate closed${deadline && showTimes ? ` on ${formatDeadline(deadline)}` : ''}. You can still add this session as a spectator while seats are left.`,
+          body: `Registration to participate closed${deadline && showTimes ? ` on ${formatDeadline(deadline)}` : ''}. You can still add this track as a spectator while seats are left.`,
         });
         break;
     }
@@ -297,8 +297,8 @@ export default function SessionView({
       setBlocked({
         title: 'Time conflict',
         body: result.conflictKind === 'registered_this'
-          ? "You're signed up for this session. Remove it from your day first to manage it."
-          : `Managing this overlaps with "${result.conflictingTitle ?? 'another session'}", which is already on your schedule.`,
+          ? "You're signed up for this track. Remove it from your day first to manage it."
+          : `Managing this overlaps with "${result.conflictingTitle ?? 'another track'}", which is already on your schedule.`,
       });
       return;
     }
@@ -337,14 +337,14 @@ export default function SessionView({
   const removeFromDay = async () => {
     let newOwnerId: string | undefined;
     if (registeredType === 'participant') {
-      const handOff = await handOffIfNeeded('remove this session');
+      const handOff = await handOffIfNeeded('remove this track');
       if (!handOff.proceed) return;
       newOwnerId = handOff.newOwnerId;
     }
     const result = await guarded(() => toggleRegistration(s.id, { add: false, newOwnerId }));
     if (!result) return;
     if (result.outcome === 'invalid_project') {
-      setBlocked({ title: "Couldn't remove this session", body: result.message });
+      setBlocked({ title: "Couldn't remove this track", body: result.message });
       void loadProject();
       return;
     }
@@ -483,7 +483,7 @@ export default function SessionView({
       )}
 
       <section>
-        <h2 className="mb-2 font-semibold">About this session</h2>
+        <h2 className="mb-2 font-semibold">About this track</h2>
         <p className="whitespace-pre-line leading-relaxed">{s.description}</p>
       </section>
       {(s.pageBlocks ?? []).filter((b) => b.title.trim() || b.body.trim()).map((b, i) => (
@@ -512,10 +512,10 @@ export default function SessionView({
             <Button asChild className="bg-emerald text-white hover:bg-emerald-deep"><Link to="/roles">Sign in to add this to your day</Link></Button>
           ) : null
         ) : waitingExpert ? (
-          <p className="rounded-xl bg-muted/60 px-4 py-3 text-sm">An admin has to approve your expert account before you can add sessions.</p>
+          <p className="rounded-xl bg-muted/60 px-4 py-3 text-sm">An organizer has to approve your expert account before you can add tracks.</p>
         ) : managing ? (
           <div className="space-y-3 rounded-2xl bg-emerald/10 p-4 text-sm">
-            <p>{role === 'admin' ? "You're managing this session." : "You're managing this session. It was added to your schedule by an admin."}</p>
+            <p>{role === 'admin' ? "You're managing this track." : "You're managing this track. It was added to your schedule by an organizer."}</p>
             {role === 'admin' && <Button variant="outline" size="sm" disabled={busy} onClick={() => void setManage(false)}>Stop managing</Button>}
           </div>
         ) : registeredType ? (
@@ -566,7 +566,7 @@ export default function SessionView({
           </Button>
         )}
         {canEdit && (
-          <Button variant="outline" onClick={() => setEditorOpen(true)}><Pencil className="h-4 w-4" /> Edit session page</Button>
+          <Button variant="outline" onClick={() => setEditorOpen(true)}><Pencil className="h-4 w-4" /> Edit track page</Button>
         )}
         {schedule.scheduleError && signedIn && (
           <p role="alert" className="text-sm text-destructive">We could not load your saved schedule. Refresh the page to retry.</p>
@@ -575,7 +575,7 @@ export default function SessionView({
 
       {suggested.length > 0 && (
         <section className="border-t border-border pt-6">
-          <h2 className="font-semibold">Sessions similar to this</h2>
+          <h2 className="font-semibold">Tracks similar to this</h2>
           <p className="mt-1 text-xs text-muted-foreground">More in {disciplineLabel || 'this discipline'} that fit an open slot on your schedule.</p>
           <div className="-mx-1 mt-3 flex snap-x gap-3 overflow-x-auto px-1 pb-2">
             {suggested.map((x) => (
@@ -622,10 +622,10 @@ export default function SessionView({
           </TabsList>
           <TabsContent value="session">{about}</TabsContent>
           <TabsContent value="participants">
-            <SessionRoster session={s} types={['participant', 'spectator']} canMarkAttendance={canMarkAttendance} emptyMessage="No participants have registered for this session yet." />
+            <SessionRoster session={s} types={['participant', 'spectator']} canMarkAttendance={canMarkAttendance} emptyMessage="No participants have registered for this track yet." />
           </TabsContent>
           <TabsContent value="experts">
-            <SessionRoster session={s} types={['expert']} canMarkAttendance={canMarkAttendance} emptyMessage="No experts have registered for this session yet." />
+            <SessionRoster session={s} types={['expert']} canMarkAttendance={canMarkAttendance} emptyMessage="No experts have registered for this track yet." />
           </TabsContent>
           <TabsContent value="volunteers"><SessionVolunteers session={s} canAssign={role === 'admin'} /></TabsContent>
           <TabsContent value="metrics"><SessionMetrics session={s} /></TabsContent>
@@ -668,7 +668,7 @@ export default function SessionView({
             {role === 'volunteer' && (
               <p className="flex gap-2 pt-1 text-xs text-muted-foreground">
                 <Info className="h-4 w-4 shrink-0" />
-                To manage this session, an admin has to assign you. You'll be notified if they do.
+                To manage this session, an organizer has to assign you. You'll be notified if they do.
               </p>
             )}
           </div>
@@ -737,7 +737,7 @@ export default function SessionView({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Leave team?</DialogTitle>
-            <DialogDescription>You'll stay registered for this session as a solo participant.</DialogDescription>
+            <DialogDescription>You'll stay registered for this track as a solo participant.</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             <Label htmlFor="solo-name">{projectPromptOf(s)}</Label>
@@ -763,7 +763,7 @@ export default function SessionView({
           <DialogHeader>
             <DialogTitle>Remove {removing?.name}?</DialogTitle>
             <DialogDescription>
-              They'll be taken off your team but stay registered for this session, and they'll be notified. They won't be able to rejoin your team with its code.
+              They'll be taken off your team but stay registered for this track, and they'll be notified. They won't be able to rejoin your team with its code.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

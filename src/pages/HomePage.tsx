@@ -59,29 +59,29 @@ const QUICK_ACTIONS: Record<string, QuickAction[]> = {
     {
       to: '/schedule',
       label: 'My schedule',
-      sub: 'The sessions you serve as an expert',
+      sub: 'The tracks you serve as an expert',
       icon: Gavel,
     },
   ],
   attendee: [
     {
       to: '/disciplines',
-      label: 'Browse sessions',
-      sub: 'Add the sessions you want to watch',
+      label: 'Browse tracks',
+      sub: 'Add the tracks you want to watch',
       icon: CalendarDays,
     },
   ],
   volunteer: [
     {
       to: '/schedule',
-      label: 'View assigned sessions',
-      sub: 'Sessions assigned by an admin',
+      label: 'View assigned tracks',
+      sub: 'Tracks assigned by an organizer',
       icon: CalendarDays,
     },
     {
       to: '/volunteer',
-      label: "Sessions I'm managing",
-      sub: 'Take attendance for sessions you run',
+      label: "Tracks I'm managing",
+      sub: 'Take attendance for tracks you run',
       icon: BookUser,
     },
   ],
@@ -277,7 +277,7 @@ export default function HomePage() {
 
   const ownIds = ownKind ? listFor(ownKind) : [];
   const scheduleLabel =
-    ownKind === 'volunteering' ? 'View assigned sessions' : 'Browse sessions';
+    ownKind === 'volunteering' ? 'View assigned tracks' : 'Browse tracks';
   const ownLabel: AgendaKind =
     ownKind === 'judging' ? 'Expert' : ownKind === 'volunteering' ? 'Volunteering' : 'Participating';
   const agenda: AgendaItem[] = MOCK_SESSIONS.filter(
@@ -299,7 +299,7 @@ export default function HomePage() {
   const primaryAction = actions[0];
 
   const heroSub = next
-    ? `You have ${agenda.length} session${agenda.length === 1 ? '' : 's'} on your schedule. First up: ${next.session.title}${showTimes ? ` at ${next.session.time}` : ''}.`
+    ? `You have ${agenda.length} track${agenda.length === 1 ? '' : 's'} on your schedule. First up: ${next.session.title}${showTimes ? ` at ${next.session.time}` : ''}.`
     : null;
 
   const stats = [
@@ -407,7 +407,7 @@ export default function HomePage() {
                     {ownKind === 'volunteering' ? 'No shifts yet' : 'Nothing on your day yet'}
                   </div>
                   <div className="mt-1 text-[13px] text-white/75">
-                    {ownKind === 'volunteering' ? 'An admin will assign your sessions.' : 'Browse the disciplines to add a session.'}
+                    {ownKind === 'volunteering' ? 'An organizer will assign your tracks.' : 'Browse the disciplines to add a track.'}
                   </div>
                 </>
               )}
@@ -448,7 +448,7 @@ export default function HomePage() {
                     <CalendarDays className="h-6 w-6" />
                   </span>
                   <div className="mt-3 text-[17px] font-semibold">
-                    {ownKind === 'volunteering' ? 'No volunteer shifts yet' : 'No sessions yet'}
+                    {ownKind === 'volunteering' ? 'No volunteer shifts yet' : 'No tracks yet'}
                   </div>
                   <button
                     type="button"

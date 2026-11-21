@@ -56,7 +56,7 @@ export default function RoomsPage() {
 
   return (
     <AppShell>
-      <PageHeader label="Admin" title="Manage rooms" actions={
+      <PageHeader label="Organizer" title="Manage rooms" actions={
         <Button onClick={() => setEditing({ room: null, name: '' })} className="bg-emerald text-white hover:bg-emerald-deep"><Plus className="h-4 w-4" /> Add room</Button>
       } />
       <div className="mx-auto max-w-3xl">
@@ -65,7 +65,7 @@ export default function RoomsPage() {
         ) : rooms == null ? (
           <Skeleton className="h-32 w-full" />
         ) : rooms.length === 0 ? (
-          <p className="py-10 text-center text-sm text-muted-foreground">No rooms yet. Add the rooms your sessions will use, then pick one when creating a session.</p>
+          <p className="py-10 text-center text-sm text-muted-foreground">No rooms yet. Add the rooms your tracks will use, then pick one when creating a track.</p>
         ) : (
           <ul className="divide-y divide-border rounded-2xl border border-border px-4">
             {rooms.map((r) => (

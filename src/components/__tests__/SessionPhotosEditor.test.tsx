@@ -33,7 +33,7 @@ const imgs = (container: HTMLElement) => [...container.querySelectorAll('img')].
 describe('SessionPhotosEditor', () => {
   test('a new session asks to be saved first', () => {
     render(<SessionPhotosEditor hero={null} onHeroChange={vi.fn()} />);
-    expect(screen.getByText('Save the session first, then reopen it to add photos.')).toBeInTheDocument();
+    expect(screen.getByText('Save the track first, then reopen it to add photos.')).toBeInTheDocument();
     expect(photos.fetch).not.toHaveBeenCalled();
   });
 
@@ -73,7 +73,7 @@ describe('SessionPhotosEditor', () => {
     const { container } = render(<SessionPhotosEditor sessionId="s1" hero={null} onHeroChange={vi.fn()} />);
     const input = container.querySelectorAll<HTMLInputElement>('input[type=file]')[1];
     await userEvent.upload(input, new File(['x'], 'c.jpg', { type: 'image/jpeg' }));
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Could not upload. You may not manage this session.'));
+    await waitFor(() => expect(toastError).toHaveBeenCalledWith('Could not upload. You may not manage this track.'));
   });
 
   test('removing a gallery photo deletes the file', async () => {

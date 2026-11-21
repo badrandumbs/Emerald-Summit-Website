@@ -32,13 +32,8 @@ export interface Sponsor {
 }
 
 /**
- * EAF's current sponsors (from the organizers, Nov 14, 2026). Add one here
- * with its logo in public/sponsors/ and it shows up under its tier. Logos are
- * cut from EAF's "Our Cornerstone Sponsors" graphic.
+ * The Summit '27 sponsors. Empty until this year's are confirmed (the four
+ * listed before were last year's). Add one here with its logo in
+ * public/sponsors/ and it shows up on its tier's terrace.
  */
-export const SPONSORS: Sponsor[] = [
-  { name: 'Brightfox', tier: 'Keystone', url: 'https://gobrightfox.com/', logo: '/sponsors/brightfox.png' },
-  { name: 'Prepaze Academy', tier: 'Cornerstone', url: 'https://prepazeacademy.com/', logo: '/sponsors/prepaze-academy.png' },
-  { name: 'YoungWonks', tier: 'Cornerstone', url: 'https://www.youngwonks.com/', logo: '/sponsors/youngwonks.png' },
-  { name: 'Praan Health', tier: 'Cornerstone', url: 'https://praan.health/', logo: '/sponsors/praan-health.png' },
-];
+export const SPONSORS: Sponsor[] = [];

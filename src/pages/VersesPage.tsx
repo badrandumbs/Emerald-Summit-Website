@@ -100,7 +100,7 @@ function VersesBody({ mine }: { mine: Set<string> }) {
       <PageHeader
         label="Emerald Summit 2027"
         title={`The ${count} disciplines`}
-        sub={`Every track at the Summit lives in one of ${count} disciplines. Open one to see its tracks and sessions.`}
+        sub={`Every track at the Summit lives in one of ${count} disciplines. Open one to see its tracks.`}
         actions={profile?.role === 'admin' ? (
           <Button onClick={() => setCreating(true)} className="bg-emerald-deep text-white hover:bg-emerald">
             <Plus className="h-4 w-4" /> New discipline

@@ -75,14 +75,14 @@ const PLURAL: Record<string, string> = {
   expert: 'experts',
   attendee: 'parents and spectators',
   volunteer: 'volunteers',
-  admin: 'admins',
+  admin: 'organizers',
 };
 
 /** The app's lead-in line above the list of session changes. */
 export function roleChangeLeadIn(role: string, label: string): string {
   return role === 'attendee'
-    ? `As a ${label}, you can only spectate. These sessions change:`
-    : `Some of your sessions change, because ${PLURAL[role] ?? `${label.toLowerCase()}s`} can't take part in them the way you do now:`;
+    ? `As a ${label}, you can only spectate. These tracks change:`
+    : `Some of your tracks change, because ${PLURAL[role] ?? `${label.toLowerCase()}s`} can't take part in them the way you do now:`;
 }
 
 /**

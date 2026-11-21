@@ -158,7 +158,7 @@ export default function AnnouncementComposer({
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
             <span>
               {configured
-                ? "Local bypass sign-in has no credentials to publish with. Sign in with a real admin account to post to everyone; uploads stay in memory until then."
+                ? "Local bypass sign-in has no credentials to publish with. Sign in with a real organizer account to post to everyone; uploads stay in memory until then."
                 : 'Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to publish to other devices. Uploaded files are previewed from memory and won\'t persist.'}
             </span>
           </div>

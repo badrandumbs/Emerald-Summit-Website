@@ -66,7 +66,7 @@ export default function PhotoPermissionPage() {
 
   const load = useCallback(() => {
     setError(null);
-    fetchPhotoPermissions().then(setPeople).catch(() => setError('Could not load photo permission. Admins only.'));
+    fetchPhotoPermissions().then(setPeople).catch(() => setError('Could not load photo permission. Organizers only.'));
   }, []);
   useEffect(() => { if (ready) load(); }, [ready, load]);
 
@@ -93,7 +93,7 @@ export default function PhotoPermissionPage() {
 
   return (
     <AppShell>
-      <PageHeader label="Admin" title="Photo permission" actions={
+      <PageHeader label="Organizer" title="Photo permission" actions={
         <Button variant="outline" onClick={load}><RefreshCw className="h-4 w-4" /> Refresh</Button>
       } />
       <div className="mx-auto max-w-3xl space-y-4">

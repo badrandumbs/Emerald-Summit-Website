@@ -110,11 +110,11 @@ export default function VolunteerHoursPage() {
           </div>
           <p className="rounded-lg bg-muted/60 px-3 py-2 text-sm text-muted-foreground">
             {status.date
-              ? `Each session you manage on ${formatDay(localDay(status.date))} is added to your total after it ends, counted from its start time to its end time.`
-              : 'Each session you manage on Summit day is added to your total after it ends, counted from its start time to its end time. They will start counting once the Summit date is set.'}
+              ? `Each track you manage on ${formatDay(localDay(status.date))} is added to your total after it ends, counted from its start time to its end time.`
+              : 'Each track you manage on Summit day is added to your total after it ends, counted from its start time to its end time. They will start counting once the Summit date is set.'}
           </p>
           {sessions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">You are not managing any sessions yet. When an admin assigns you one, its hours show up here.</p>
+            <p className="text-sm text-muted-foreground">You are not managing any tracks yet. When an organizer assigns you one, its hours show up here.</p>
           ) : (
             <ul className="divide-y divide-border rounded-2xl border border-border px-4">
               {sessions.map((s) => (

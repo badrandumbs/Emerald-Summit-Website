@@ -163,7 +163,7 @@ export async function loadSummitContent(): Promise<void> {
     supabase.from('sessions_with_counts').select('*').order('start_time', { ascending: true }),
   ]);
   if (disciplines.error || sessions.error) {
-    console.warn('Could not load Summit sessions.', disciplines.error ?? sessions.error);
+    console.warn('Could not load Summit tracks.', disciplines.error ?? sessions.error);
     // A configured shared backend must never present sample seats as live data.
     replaceTracks([]);
     replaceSessions([]);
@@ -351,7 +351,7 @@ export async function saveTrack(input: TrackInput, originalName?: string): Promi
     return 'local';
   }
 
-  throw new Error('Tracks are sessions in the Summit database. Edit the session instead.');
+  throw new Error('Edit this track from its discipline page instead.');
 }
 
 /** Deletes a track. One that still has sessions can't be deleted. */
@@ -364,7 +364,7 @@ export async function deleteTrack(verse: string, name: string): Promise<SaveResu
     changed();
     return 'local';
   }
-  throw new Error('Tracks are sessions in the Summit database. Delete the session instead.');
+  throw new Error('Delete this track from its discipline page instead.');
 }
 
 // ---------------------------------------------------------------------------

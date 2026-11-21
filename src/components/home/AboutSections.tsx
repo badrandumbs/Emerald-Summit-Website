@@ -13,11 +13,11 @@ import { cn } from '@/lib/utils';
 
 const EAF_SITE = 'https://www.ehsacademics.org';
 /**
- * EAF's Zeffy donation form, "Be the catalyst for learning and discovery".
+ * EAF's Zeffy donation form (the one the organizers sent on Nov 20, 2026).
  * Computers and tablets get it embedded in a popup (the embed's iframe, the
  * same URL Zeffy's embed code falls back to); phones open the full page.
  */
-const ZEFFY_FORM = 'be-the-catalyst-for-learning-and-discovery';
+const ZEFFY_FORM = '6938c617-88ca-483d-ab7d-997e94ed8b6c';
 export const EAF_DONATE_URL = `https://www.zeffy.com/en-US/donation-form/${ZEFFY_FORM}`;
 export const EAF_DONATE_EMBED_URL = `https://www.zeffy.com/embed/donation-form/${ZEFFY_FORM}`;
 export const EAF_VOLUNTEER_URL = `${EAF_SITE}/get-involved/parent-volunteering`;

@@ -54,7 +54,7 @@ describe('removing someone from a session', () => {
   test('confirming removes them and refreshes the roster', async () => {
     const user = userEvent.setup();
     show();
-    await user.click(await screen.findByRole('button', { name: 'Remove Totally Real Person from this session' }));
+    await user.click(await screen.findByRole('button', { name: 'Remove Totally Real Person from this track' }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText(/can't sign up for it again/)).toBeInTheDocument();
 
@@ -79,11 +79,11 @@ describe('removing someone from a session', () => {
     ]);
     const user = userEvent.setup();
     show();
-    await user.click(await screen.findByRole('button', { name: 'Remove Lone Owner from this session' }));
+    await user.click(await screen.findByRole('button', { name: 'Remove Lone Owner from this track' }));
     expect(await screen.findByText(/the team is deleted too/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
-    await user.click(await screen.findByRole('button', { name: 'Remove Pat Kim from this session' }));
+    await user.click(await screen.findByRole('button', { name: 'Remove Pat Kim from this track' }));
     expect(await screen.findByText(/passes to the teammate who joined first/)).toBeInTheDocument();
   });
 
