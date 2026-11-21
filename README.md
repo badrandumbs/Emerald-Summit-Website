@@ -350,9 +350,9 @@ Tickets come in two categories, bugs and feedback (`bug_reports.kind`). Profile 
 
 ## Landing hero
 
-The hero (`src/pages/WelcomePage.tsx`, styles in `src/landing/landing.css`) shows the event name, date, hours, venue and actions immediately. A real photograph from the previous Summit (`public/gallery/photo-19.jpg`) sits beside the details on wide screens and below them on phones. **Get started** opens the portal entry and **Learn more** scrolls to About. There is no mountain/sun intro, delayed navigation, gradient wordmark or scroll lock.
+The hero (`src/pages/WelcomePage.tsx`, styles in `src/landing/landing.css`) keeps the original full-screen mountain-and-sun composition: a central sunrise, centered two-line wordmark, event details and actions, and the same three ridge profiles from `skyGeometry.ts` along the bottom. `SummitLandscape.tsx` draws it with matte green silhouettes and a solid mint-green sun, rather than video, particle stars, neon rays, gradients or glitter. The sun keeps its original 4.1-second rise from behind the central summit; reduced motion shows the final still. The text and navigation are available immediately, without a scroll lock or reveal gate. **Get started** opens the portal entry and **Learn more** scrolls to About.
 
-The landing nav (`src/components/LandingNav.tsx`) links to About, Disciplines, FAQ and Contact. Contact opens the closing band above the footer, with **Get started** and `contact@ehsacademics.org`. Panels use 8px corners, controls 6px, and photographs 4px. Colors follow the selected light or dark theme.
+The landing nav (`src/components/LandingNav.tsx`) links to About, Disciplines, FAQ and Contact. Contact opens the closing band above the footer, with **Get started** and `contact@ehsacademics.org`. Panels use 8px corners, controls 6px, and photographs 4px. The landscape and hero keep the same green palette in both themes; the rest of the page follows the selected theme.
 
 **Below the hero**, in order:
 - **What is Emerald Summit?** A short answer, a photo mosaic of the owner's photos that swaps every 4.5 seconds while on screen (`src/components/PhotoMosaic.tsx`; the leaderboard and award photos are left out), and four figures with notes, in this order (Nov 20, 2026): 1 Day, 6 Disciplines, 20+ Tracks, 30+ Visiting experts.
@@ -445,7 +445,7 @@ Every page has a theme button (`src/components/ThemeToggle.tsx`): a sun or moon 
 - **Dark** is black, after the mobile app's night theme (`lib/theme.dart`): a black page with dark cards, mint for primary actions, and the navy chrome (sidebar, auth and roles panels, landing bands) turned black. The tokens are the `.dark` block in `src/index.css`. `navy` and `navy-bright` are CSS variables there, so `bg-navy` follows the theme.
 - **Light** is the familiar mist theme with the navy sidebar. Discover's panels and the verse pages switch to daytime versions of each world: the same page structure on a colorful pale tint of the verse's hue (TechVerse is light blue instead of deep navy), with deeper accents so they read. `vibeFor(id, theme)` in `src/models/verseVibes.ts` returns the right palette; the light palettes are the `LIGHT` table there.
 
-The landing hero follows the page's light or dark theme.
+The landing hero uses the same deep-green sky, matte-green ridges, mint sun and pale-green wordmark in both themes.
 
 The design source is the Figma file [Emerald Summit — Portal Redesign](https://www.figma.com/design/qqeSVs9y0OOfjFgnveZZTV). It holds the color variables and reusable components. Headings there use Plus Jakarta Sans as a stand-in for Satoshi, which Figma doesn't provide.
 

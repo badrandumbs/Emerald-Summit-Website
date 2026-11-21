@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import LandingNav from '../components/LandingNav';
+import SummitLandscape from '../components/SummitLandscape';
 import FaqSection from '../components/FaqSection';
 import OrbitalUniverses from '../components/OrbitalUniverses';
 import PhotoMosaic from '../components/PhotoMosaic';
@@ -84,48 +85,38 @@ export default function WelcomePage() {
 
   return (
     <div className="lp lp-page">
-      <LandingNav />
+      <LandingNav overlay />
 
       <main id="main">
-        <section className="lp-hero" aria-labelledby="hero-title">
+        <section className="lp-hero lp-night" aria-labelledby="hero-title">
+          <SummitLandscape />
           <div className="container lp-hero__inner">
-            <div className="lp-hero__copy">
-              <p className="lp-hero__lede">
-                The Tri-Valley’s largest student-led STEAM conference
+            <p className="lp-hero__lede">
+              The Tri-Valley’s largest student-led STEAM conference
+            </p>
+            <h1 id="hero-title" className="lp-hero__title">
+              <span>Emerald</span>
+              <span>Summit</span>
+            </h1>
+            <div className="lp-hero__aside">
+              <p className="lp-hero__when">
+                <span>Saturday, January 23, 2027</span>
+                <span>9 AM to 5 PM</span>
+                <span>{VENUE}</span>
               </p>
-              <h1 id="hero-title" className="lp-hero__title">
-                Emerald<br />Summit
-              </h1>
-              <div className="lp-hero__aside">
-                <p className="lp-hero__when">
-                  <span>Saturday, January 23, 2027</span>
-                  <span>9 AM to 5 PM</span>
-                  <span>{VENUE}</span>
-                </p>
-                <div className="lp-hero__actions">
-                  <button type="button" className="lp-btn" onClick={() => navigate('/home')}>
-                    Get started
-                  </button>
-                  <button
-                    type="button"
-                    className="lp-btn lp-btn--quiet"
-                    onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                  >
-                    Learn more
-                  </button>
-                </div>
+              <div className="lp-hero__actions">
+                <button type="button" className="lp-btn" onClick={() => navigate('/home')}>
+                  Get started
+                </button>
+                <button
+                  type="button"
+                  className="lp-btn lp-btn--quiet"
+                  onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                >
+                  Learn more
+                </button>
               </div>
             </div>
-            <figure className="lp-hero__photo">
-              <img
-                src={photo(19)}
-                alt="Two students show their project to a visiting expert"
-                width={1200}
-                height={798}
-                fetchPriority="high"
-              />
-              <figcaption>Projects and conversations from a previous Summit.</figcaption>
-            </figure>
           </div>
         </section>
 
