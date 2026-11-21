@@ -1846,7 +1846,10 @@ has it too since Nov 14, 2026; see below.
     the Code of Conduct is EAF's "Emerald Summit 2026 Code of Conduct" (EAF
     Field Trip Waiver Form Version 11.02.2025.1) and the expert one is
     "Guest Expert Policy: Emerald Summit '27" (Nov 14, 2026), both as
-    written, titles and footer included. The only changes: the signature
+    written, titles and footer included. Since Nov 20, 2026 the Code of
+    Conduct's title reads "Emerald Summit 2027 Code of Conduct" on both
+    the app and the website (title only; the version stayed
+    `conduct-2026-11-15`, so nobody agrees again). The only changes: the signature
     lines are replaced by the checkbox, and the two media options say "of
     me" instead of "of my child", because the account holder answers, not
     a parent. No parent or guardian consent (the user's call). They live in
