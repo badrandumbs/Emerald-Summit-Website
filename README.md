@@ -2076,29 +2076,57 @@ has it too since Nov 14, 2026; see below.
   deleted." If the function is missing: "Deleting accounts isn't turned on
   yet. Contact the Summit team to delete your account."; any other failure:
   "Couldn't delete your account. Nothing was changed."
-  - **Backend: not run yet.** The SQL is the website's
-    `scripts/delete_my_account.sql`. Copy it into `supabase/` here and run
-    it on the shared project. It deletes only the caller's `auth.users`
-    row; the foreign keys decide what goes with it, and any reference with
-    no `ON DELETE` rule makes the whole delete fail. Check team ownership,
-    volunteer hours, bug reports and announcements first.
+  - **Backend: live.** Akhil ran it on the shared project (confirmed Nov
+    20, 2026: the function exists and anonymous calls are refused). The
+    SQL is the website's `scripts/delete_my_account.sql`; it isn't in
+    `supabase/` here yet, so copy it in to keep the record. It deletes only
+    the caller's `auth.users` row; the foreign keys decide what goes with
+    it, and any reference with no `ON DELETE` rule makes the whole delete
+    fail. The app only needs the Profile button and the two-step dialog.
   - The app needs it before launch anyway: the App Store and Google Play
     both require apps that create accounts to let people delete them.
-- [ ] **Sponsors left Home** (website, Nov 17, 2026). The website moved
-  sponsors from Home to the public landing page ("Who helps make the
-  Summit happen?", a stepped mountain of tiers; data now in
-  `src/models/sponsors.ts`). Home there is Support EAF, Links and About the
-  app. The app has no landing page, so decide whether `SponsorsSection`
-  stays on the app's Home ([dashboard_screen.dart](lib/screens/dashboard_screen.dart))
-  or goes.
+- [ ] **No sponsors shown anywhere for now** (website, Nov 17 and Nov 20,
+  2026; the Nov 20 part is on the website's `akhil-changes` branch, not
+  on `main` yet). Sponsors left the website's Home on Nov 17, and after the
+  Nov 20 meeting they are off the public site too: the organizers don't
+  want unpaid sponsors getting free advertising, so there's no "past
+  sponsors" list either. Sponsors will come back in a planned **Summit 27**
+  tab in the signed-in dashboard. Remove `SponsorsSection` from the app's
+  Home ([dashboard_screen.dart](lib/screens/dashboard_screen.dart)); Home
+  is then Support EAF, Links and About the app, like the website.
 - [ ] **Spelling: Nihtahli Anand** (website, Nov 17, 2026). About the app
   lists "Nihtahli Anand", not "Nithali Anand". Fix `_developersAndTesters`
   in [home_about_sections.dart](lib/widgets/home_about_sections.dart).
+- [ ] **Say "track" and "organizer" on screen** (website, Nov 20, 2026;
+  on the `akhil-changes` branch, not on `main` yet). After the Nov 20
+  meeting, everything people read says **track**, not "session", and
+  **Organizer**, not "Admin" (the role label too: "Organizer"). Examples
+  from the website: "Browse tracks", "Add the tracks you want to watch",
+  "View assigned tracks", "Tracks assigned by an organizer", "Tracks I'm
+  managing", "An organizer will assign your tracks.", "No tracks yet", and
+  the FAQ's "8th graders can in some tracks". Only on-screen words change:
+  code names, tables, columns and role keys stay (`Session`, `sessions`,
+  `SummitRole.admin`). The Code of Conduct text still says "Sessions",
+  because changing it makes everyone agree again. In the app, start with
+  `SummitRole.admin => 'Admin'` in
+  [user_profile.dart](lib/models/user_profile.dart), `admin('Admin',
+  'Admins')` in [volunteer_contact.dart](lib/widgets/volunteer_contact.dart),
+  then every visible "session" string.
+- [ ] **New Zeffy donation form** (website, Nov 20, 2026; on the
+  `akhil-changes` branch, not on `main` yet). Donate uses the form the
+  organizers sent on Nov 20, id `6938c617-88ca-483d-ab7d-997e94ed8b6c`
+  ("Fuel the Journey of Learning and Discovery"). The app's `eafDonateUrl`
+  in [home_about_sections.dart](lib/widgets/home_about_sections.dart) still
+  points at `be-the-catalyst-for-learning-and-discovery`. Donating happens
+  only from the dashboard's Support EAF section; the website's landing
+  page no longer has a donate button.
 
 Website-only on purpose, no app work: the public landing page (hero, the
 arrival, the Summit figure, the FAQ, the universes orbit, and since Nov 17,
-2026 the sponsor terraces, the Support EAF seal in the corner, role badges
-that link to each role's sign-up, and the date line's "Dublin, CA"), the
+2026 role badges that link to each role's sign-up and the date line's
+"Dublin, CA"; the Nov 17 sponsor terraces and Support EAF corner seal were
+removed again on Nov 20, along with the stats reorder, the "Frequently
+Asked Questions" heading and the new favicon files), the
 profile setup page's wider layout, the Google button resetting after a
 sign-in that gets sent to Sign up, the
 `website_show_session_times` switch, the header search jumping to pages, the
