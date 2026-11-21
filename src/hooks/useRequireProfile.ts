@@ -2,6 +2,7 @@ import { useAuth } from '../context/AuthContext';
 import { needsProfileSetup } from '../services/auth';
 import { missingGateField } from '../models/profileFields';
 import { needsCodeOfConduct } from '../models/codeOfConduct';
+import { needsBeamentor } from '../models/beamentor';
 
 /**
  * Shared guard for the authenticated tabs. Returns a `redirect` path when the
@@ -31,6 +32,10 @@ export function useRequireProfile(options: { allowPendingExpert?: boolean } = {}
   if (needsProfileSetup(profile) || missingGateField(profile as Parameters<typeof missingGateField>[0])
     || needsCodeOfConduct(profile)) {
     return { ready: false, redirect: '/profile', roleName };
+  }
+  // Then an expert applies for BeAMentor and ticks that it was submitted.
+  if (needsBeamentor(profile)) {
+    return { ready: false, redirect: '/expert/beamentor', roleName };
   }
   if (!options.allowPendingExpert && roleName === 'expert' && profile?.expert_status !== 'approved') {
     return { ready: false, redirect: '/home', roleName };

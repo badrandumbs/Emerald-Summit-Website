@@ -68,6 +68,10 @@ function FlowingPaths({ position, color }: { position: number; color: string }) 
  * Two-column auth page: a navy aside (brand, the role or page identity, and
  * flowing paths in `accent`) and a pane for the form. Collapses to the pane
  * alone on small screens, with the brand shown above the content.
+ *
+ * `fullScreen` drops the aside at every size, for the sign-up questions after
+ * someone has signed in: the form gets the whole screen, with the brand and a
+ * small role tag above it instead.
  */
 export default function AuthLayout({
   accent,
@@ -77,10 +81,10 @@ export default function AuthLayout({
   backLabel = 'Back',
   onBack,
   children,
-  wide = false,
+  fullScreen = false,
 }: {
-  /** A narrower aside and a wider form column, for long forms like profile setup. */
-  wide?: boolean;
+  /** No aside: the form takes the whole screen (sign-up questions after sign-in). */
+  fullScreen?: boolean;
   /** Hex color for the paths and the identity tile. */
   accent: string;
   icon: LucideIcon;
@@ -93,8 +97,8 @@ export default function AuthLayout({
   children: ReactNode;
 }) {
   return (
-    <section className={cn('relative min-h-svh overflow-x-clip bg-background lg:grid', wide ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,2.5fr)]' : 'lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]')}>
-      <aside className="relative hidden h-svh flex-col overflow-hidden bg-navy p-10 text-white dark:border-r dark:border-white/10 lg:sticky lg:top-0 lg:flex xl:p-14">
+    <section className={cn('relative min-h-svh overflow-x-clip bg-background', !fullScreen && 'lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]')}>
+      {!fullScreen && <aside className="relative hidden h-svh flex-col overflow-hidden bg-navy p-10 text-white dark:border-r dark:border-white/10 lg:sticky lg:top-0 lg:flex xl:p-14">
         <div className="absolute inset-0 opacity-90">
           <FlowingPaths position={1} color={accent} />
           <FlowingPaths position={-1} color={accent} />
@@ -129,9 +133,9 @@ export default function AuthLayout({
           </div>
           <div className="mt-4 text-[13px] text-white/55">Emerald Summit 2027, Dublin, CA</div>
         </div>
-      </aside>
+      </aside>}
 
-      <div className={cn('relative flex min-h-svh flex-col justify-center px-6 py-20 sm:px-10', wide ? 'pt-28 lg:pb-20 lg:pt-36' : 'lg:py-16')}>
+      <div className={cn('relative flex min-h-svh flex-col justify-center px-6 py-20 sm:px-10', fullScreen ? 'pt-24 lg:pb-20 lg:pt-28' : 'lg:py-16')}>
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
           <div
             className="absolute -right-24 -top-40 h-[520px] w-[520px] rounded-full opacity-60"
@@ -155,14 +159,22 @@ export default function AuthLayout({
         </button>
         <ThemeToggle className={cn(AUTH_ENTER, 'absolute right-5 top-6 z-10 sm:right-8 sm:top-8')} />
 
-        <div className={cn('relative z-10 mx-auto w-full', wide ? 'max-w-[960px]' : 'max-w-[420px]')}>
-          <div className={cn(AUTH_ENTER, 'mb-8 lg:hidden')}>
+        <div className={cn('relative z-10 mx-auto w-full', fullScreen ? 'max-w-[960px]' : 'max-w-[420px]')}>
+          <div className={cn(AUTH_ENTER, 'mb-8 flex flex-wrap items-center justify-between gap-4', !fullScreen && 'lg:hidden')}>
             <BrandMark
               logoClassName="h-10 w-10"
               titleClassName="text-[16px] font-bold"
               subtitleClassName="text-[12px] text-muted-foreground"
               gap="gap-3"
             />
+            {fullScreen && (
+              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background/70 py-1 pl-1 pr-3 text-[13px] font-medium">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full text-white" style={{ background: accent }}>
+                  <Icon className="h-4 w-4" strokeWidth={1.9} />
+                </span>
+                <span><span className="text-muted-foreground">{eyebrow} · </span>{title}</span>
+              </span>
+            )}
           </div>
           {children}
         </div>

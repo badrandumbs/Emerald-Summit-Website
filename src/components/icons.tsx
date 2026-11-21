@@ -8,6 +8,7 @@ import {
   ArrowClockwise,
   ArrowElbowDownLeft,
   ArrowRight as PhArrowRight,
+  ArrowSquareOut,
   ArrowsLeftRight,
   ArrowsOut,
   Bell as PhBell,
@@ -186,6 +187,7 @@ export const Keyboard = duotone(PhKeyboard, 'Keyboard');
 export const LayoutDashboard = duotone(SquaresFour, 'LayoutDashboard');
 export const Lightbulb = duotone(PhLightbulb, 'Lightbulb');
 export const Link2 = duotone(Link, 'Link2');
+export const ExternalLink = duotone(ArrowSquareOut, 'ExternalLink');
 export const Loader2 = duotone(CircleNotch, 'Loader2');
 export const Lock = duotone(PhLock, 'Lock');
 export const LogOut = duotone(SignOut, 'LogOut');

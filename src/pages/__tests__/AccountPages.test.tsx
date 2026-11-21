@@ -91,7 +91,7 @@ describe('unified profile', () => {
     state.profile = { ...state.profile, role: 'admin' };
     state.guard = { ready: true, redirect: null, roleName: 'admin' };
     render(<MemoryRouter initialEntries={['/account']}><Routes><Route path="/account" element={<SettingsPage />} /></Routes></MemoryRouter>);
-    for (const name of [/Metrics/, /Expert approvals/, /Manage rooms/, /Track volunteer hours/]) {
+    for (const name of [/Metrics/, /Expert verification/, /Manage rooms/, /Track volunteer hours/]) {
       expect(screen.getByRole('button', { name })).toBeInTheDocument();
     }
     // Front desk scans passes with the camera, so on the website it's labelled app-only.

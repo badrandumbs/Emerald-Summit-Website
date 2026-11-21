@@ -14,6 +14,8 @@ import { useAuth } from '../context/AuthContext';
 import { agreeToCodeOfConduct, needsProfileSetup, saveProfileDetails, signOut } from '../services/auth';
 import CodeOfConductWindow from '../components/CodeOfConductWindow';
 import { Checkbox } from '@/components/ui/checkbox';
+import ExpertPhotoInput from '../components/ExpertPhotoInput';
+import { tracksBeamentor } from '../models/beamentor';
 
 const SECTION_HEADING = 'font-display text-2xl font-bold tracking-tight';
 // What sits under a heading is indented a little, except the agreement box.
@@ -57,6 +59,7 @@ export default function ProfileSetupPage() {
   // The Code of Conduct's photo permission: true grants, false does not.
   const [photoConsent, setPhotoConsent] = useState<boolean | null>(null);
   const [agreed, setAgreed] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
 
   const roleName = profile?.role as string | undefined;
   const subtype = profile?.volunteer_subtype as string | null | undefined;
@@ -70,7 +73,9 @@ export default function ProfileSetupPage() {
   useEffect(() => {
     if (prefilled || loadingProfile) return;
     const details = (profile?.details ?? {}) as Record<string, unknown>;
-    setName(((profile?.name as string | undefined) ?? session?.user.user_metadata?.full_name ?? '').trim());
+    // Google and LinkedIn give a name with the sign-in; an emailed code does not.
+    const meta = session?.user.user_metadata ?? {};
+    setName(((profile?.name as string | undefined) || meta.full_name || meta.name || '').trim());
     setAnswers(Object.fromEntries(Object.entries(details).map(([k, v]) => [k, v == null ? '' : String(v)])));
     setPrefilled(true);
   }, [profile, loadingProfile, prefilled, session]);
@@ -93,6 +98,8 @@ export default function ProfileSetupPage() {
       : [VOLUNTEER_GRADE_FIELD]
     : formFields(roleName, subtype);
   const email = (session?.user.email ?? profile?.email ?? '').trim();
+  // Experts add a headshot once expert_beamentor.sql has made its bucket.
+  const askPhoto = roleName === 'expert' && !gateOnly && !conductOnly && tracksBeamentor(profile);
   const role = roleByName(roleName) ?? USER_ROLES[0];
   const label = roleLabelFor(role.name, subtype);
 
@@ -134,6 +141,7 @@ export default function ProfileSetupPage() {
     setIsSaving(true);
     try {
       const out = Object.fromEntries(fields.map((f) => [f.key, answers[f.key] ?? '']));
+      if (askPhoto) out.photo_url = answers.photo_url ?? '';
       await saveProfileDetails(gateOnly ? (profile?.name as string) ?? name : name, out, onboarding);
       if (askConduct) await agreeToCodeOfConduct(agreement.version, media ? photoConsent : null);
       await refreshProfile();
@@ -169,7 +177,7 @@ export default function ProfileSetupPage() {
 
   return (
     <AuthLayout
-      wide
+      fullScreen
       accent={role.color}
       icon={role.icon}
       eyebrow="Set up your profile"
@@ -216,6 +224,13 @@ export default function ProfileSetupPage() {
               </div>
               <p id="email-help" className="mt-1.5 text-[12px] text-muted-foreground">From your sign-in. Summit emails go here.</p>
             </div>
+            {askPhoto && (
+              <ExpertPhotoInput
+                value={answers.photo_url ?? ''}
+                onChange={(url) => setAnswers((a) => ({ ...a, photo_url: url }))}
+                onBusyChange={setPhotoBusy}
+              />
+            )}
             {roleFields}
             </div>
           </section>
@@ -268,7 +283,7 @@ export default function ProfileSetupPage() {
         <Button
           type="submit"
           className="glow-emerald h-12 w-full rounded-xl bg-primary text-[15px] font-semibold hover:bg-emerald"
-          disabled={isSaving || (askConduct && (!agreed || (media != null && photoConsent == null)))}
+          disabled={isSaving || photoBusy || (askConduct && (!agreed || (media != null && photoConsent == null)))}
         >
           {isSaving ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : conductOnly ? 'Agree and continue' : gateOnly ? 'Save and continue' : 'Continue'}
         </Button>

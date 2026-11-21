@@ -279,7 +279,7 @@ export default function LoginPage() {
             </p>
           )}
           {needsList && <p className="flex items-start gap-2 text-[12.5px] leading-relaxed text-muted-foreground"><ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: role.color }} />{role.label}s need their sign-in email on the Summit team's {role.label.toLowerCase()} list.</p>}
-          {role.name === 'expert' && <p className="text-[12.5px] leading-relaxed text-muted-foreground">Experts need approval from the Summit team before taking part.</p>}
+          {role.name === 'expert' && <p className="text-[12.5px] leading-relaxed text-muted-foreground">After signing up, experts apply for BeAMentor clearance, which a Summit organizer verifies.</p>}
         </div>
 
       </div>

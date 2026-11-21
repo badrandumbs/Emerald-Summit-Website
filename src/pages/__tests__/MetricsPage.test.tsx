@@ -24,6 +24,7 @@ vi.mock('../../hooks/useRequireProfile', () => ({ useRequireRole: () => ({ ready
 vi.mock('../../services/organizer', () => ({
   fetchSummitMetrics: async () => data,
   fetchExpertRequests: async () => [{ userId: 'w' }],
+  fetchExpertDashboard: async () => [{ userId: 'e', stage: 'verified' }, { userId: 'w', stage: 'not_verified' }],
 }));
 vi.mock('../../services/summitContent', () => ({ contentSource: () => 'database', useSummitContent: () => 0 }));
 
@@ -34,8 +35,9 @@ describe('Organizer metrics', () => {
     render(<MemoryRouter><MetricsPage /></MemoryRouter>);
     await screen.findByText('Expert accounts');
     expect(tile('Expert accounts')).toBe('2');
-    expect(await screen.findByText('Waiting for approval')).toBeInTheDocument();
-    expect(tile('Approved')).toBe('1');
+    expect(await screen.findByText('Not verified')).toBeInTheDocument();
+    expect(tile('Not verified')).toBe('1');
+    expect(tile('Verified')).toBe('1');
     expect(tile('Serving in a track')).toBe('1');
     expect(screen.getByRole('link', { name: s2.title })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: s1.title })).toBeNull();

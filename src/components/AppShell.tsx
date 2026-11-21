@@ -29,6 +29,7 @@ import BrandMark from './BrandMark';
 import QrPassModal from './QrPassModal';
 import ChangeRoleDialog from './ChangeRoleDialog';
 import { cn } from '@/lib/utils';
+import BeamentorBanner from './BeamentorBanner';
 
 type NavGroup = 'My Summit' | 'Account';
 
@@ -486,7 +487,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         <main className="min-w-0 px-4 pb-24 pt-[4.5rem] sm:px-6 lg:px-8 lg:pb-12 lg:pt-7">
-          <div className="mx-auto max-w-[1400px]">{children}</div>
+          <div className="mx-auto max-w-[1400px]"><BeamentorBanner />{children}</div>
         </main>
       </div>
 

@@ -23,6 +23,7 @@ const VolunteerDashboard = lazy(() => import('./pages/VolunteerDashboard'));
 const SessionPage = lazy(() => import('./pages/SessionPage'));
 const VolunteerHoursPage = lazy(() => import('./pages/VolunteerHoursPage'));
 const ExpertApprovalsPage = lazy(() => import('./pages/ExpertApprovalsPage'));
+const BeAMentorPage = lazy(() => import('./pages/BeAMentorPage'));
 const RoomsPage = lazy(() => import('./pages/RoomsPage'));
 const MetricsPage = lazy(() => import('./pages/MetricsPage'));
 const SummitFollowupPage = lazy(() => import('./pages/SummitFollowupPage'));
@@ -68,6 +69,7 @@ export default function App() {
           <Route path="/volunteer" element={<VolunteerDashboard />} />
           <Route path="/volunteer/hours" element={<VolunteerHoursPage />} />
           <Route path="/admin/experts" element={<ExpertApprovalsPage />} />
+          <Route path="/expert/beamentor" element={<BeAMentorPage />} />
           <Route path="/admin/rooms" element={<RoomsPage />} />
           <Route path="/admin/metrics" element={<MetricsPage />} />
           <Route path="/admin/reports" element={<BugReportsPage />} />

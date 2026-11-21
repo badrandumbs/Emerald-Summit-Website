@@ -39,6 +39,9 @@ export type Profile = {
   code_of_conduct_agreed_at?: string | null;
   /** The Code of Conduct's photo permission answer; null if not answered. */
   photo_consent?: boolean | null;
+  /** BeAMentor clearance (expert_beamentor.sql); absent until that SQL runs. */
+  beamentor_submitted_at?: string | null;
+  beamentor_verified_at?: string | null;
 };
 
 /** What a student adds at registration, beyond the basic profile. */
@@ -622,6 +625,54 @@ export async function fetchExpertStatus(): Promise<string | null> {
     .eq('id', session.user.id).single();
   if (error) throw error;
   return (data?.expert_status as string | null) ?? null;
+}
+
+/**
+ * The expert ticked "I have submitted my BeAMentor application"
+ * (mark_beamentor_submitted, app repo expert_beamentor.sql). The server also
+ * opens the app to them (expert_status = 'approved') until an organizer verifies.
+ */
+export async function markBeamentorSubmitted(): Promise<void> {
+  await requireRealSession();
+  const { error } = await requireSupabase().rpc('mark_beamentor_submitted');
+  if (error) throw error;
+}
+
+const EXPERT_PHOTO_BUCKET = 'expert_photos';
+const EXPERT_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+export const EXPERT_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+
+/** Why a photo can't be used, or null when it can. */
+export function expertPhotoProblem(file: File): string | null {
+  if (!EXPERT_PHOTO_TYPES.includes(file.type)) return 'Use a JPG, PNG or WebP photo.';
+  if (file.size > EXPERT_PHOTO_MAX_BYTES) return 'That photo is over 5 MB. Try a smaller one.';
+  return null;
+}
+
+/**
+ * Uploads the expert's photo to expert_photos/<user id>/ and returns its public
+ * URL. Older photos in the folder are removed afterwards. The caller saves the
+ * URL as details.photo_url.
+ */
+export async function uploadExpertPhoto(file: File): Promise<string> {
+  const problem = expertPhotoProblem(file);
+  if (problem) throw new Error(problem);
+  const session = await requireRealSession();
+  const bucket = requireSupabase().storage.from(EXPERT_PHOTO_BUCKET);
+  const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+  const name = `photo-${Date.now()}.${ext}`;
+  const path = `${session.user.id}/${name}`;
+  const { error } = await bucket.upload(path, file, { contentType: file.type, upsert: false });
+  if (error) throw new Error("Couldn't upload that photo. Try again.");
+  // Best effort: an old photo left behind does no harm.
+  try {
+    const { data: old } = await bucket.list(session.user.id);
+    const stale = (old ?? []).map((o) => o.name).filter((n) => n !== name);
+    if (stale.length > 0) await bucket.remove(stale.map((n) => `${session.user.id}/${n}`));
+  } catch {
+    // ignore
+  }
+  return bucket.getPublicUrl(path).data.publicUrl;
 }
 
 /** Clears the one-time "expert request wasn't approved" note, as the app does. */

@@ -35,6 +35,7 @@ import QuoteCard from '../components/home/QuoteCard';
 import { pickGreeting } from '../models/greetings';
 import LinksCard from '../components/home/LinksCard';
 import { ExpertDeclinedDialog, ExpertPending, needsExpertApproval } from '../components/ExpertStatus';
+import { needsBeamentor } from '../models/beamentor';
 import { AboutAppCard, SupportEafCard } from '../components/home/AboutSections';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -250,6 +251,9 @@ export default function HomePage() {
   if (isSignedIn && (needsProfileSetup(profile) || missingGateField(profile as Parameters<typeof missingGateField>[0])
     || needsCodeOfConduct(profile))) {
     return <Navigate to="/profile" replace />;
+  }
+  if (isSignedIn && needsBeamentor(profile)) {
+    return <Navigate to="/expert/beamentor" replace />;
   }
 
   if (!isSignedIn) {

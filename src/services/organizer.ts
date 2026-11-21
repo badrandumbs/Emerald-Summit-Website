@@ -249,6 +249,52 @@ export async function fetchExpertRequests(): Promise<ExpertRequest[]> {
   }));
 }
 
+/** An expert in the app has ticked BeAMentor; an organizer has verified it or not yet. */
+export type ExpertStage = 'not_verified' | 'verified';
+
+export interface ExpertDashboardRow extends ExpertRequest {
+  title: string | null;
+  company: string | null;
+  photoUrl: string | null;
+  stage: ExpertStage;
+  beamentorSubmittedAt: string | null;
+  verifiedAt: string | null;
+  verifiedByName: string | null;
+}
+
+const text = (v: unknown): string | null => (typeof v === 'string' && v.trim() ? v.trim() : null);
+
+/**
+ * Every expert in the app for the admin dashboard (fetch_expert_dashboard,
+ * expert_beamentor.sql). Experts still signing up, who have not ticked
+ * BeAMentor, cannot use the app yet and are left out.
+ */
+export async function fetchExpertDashboard(): Promise<ExpertDashboardRow[]> {
+  const rows = await rpc<Record<string, unknown>[] | null>('fetch_expert_dashboard');
+  return (rows ?? []).flatMap((r) => {
+    const d = (r.details && typeof r.details === 'object' ? r.details : {}) as Record<string, unknown>;
+    const submittedAt = text(r.beamentor_submitted_at);
+    const verifiedAt = text(r.beamentor_verified_at);
+    if (!submittedAt && !verifiedAt) return [];
+    return [{
+      userId: String(r.user_id),
+      fullName: text(r.full_name) ?? '',
+      email: text(r.email) ?? '',
+      expertise: text(d.expertise),
+      bio: text(d.bio),
+      phone: text(d.phone),
+      title: text(d.title),
+      company: text(d.company),
+      photoUrl: text(d.photo_url),
+      requestedAt: text(r.requested_at),
+      beamentorSubmittedAt: submittedAt,
+      verifiedAt,
+      verifiedByName: text(r.verified_by_name),
+      stage: verifiedAt ? 'verified' as const : 'not_verified' as const,
+    }];
+  });
+}
+
 /** False when the request was already handled by someone else. */
 export async function reviewExpert(userId: string, approve: boolean): Promise<boolean> {
   const res = await rpc<unknown>('review_expert', { p_user_id: userId, p_approve: approve });

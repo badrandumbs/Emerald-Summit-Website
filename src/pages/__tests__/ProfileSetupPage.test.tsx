@@ -78,11 +78,13 @@ test('participants pick a school and give a grade; the phone is optional', async
   expect(state.save).toHaveBeenCalledWith('Summit Team', { school: 'Dublin High School', grade: '11', phone: '' }, true);
 });
 
-test('experts give their area of expertise and a one-line bio', () => {
+test('experts give their title, company, area of expertise and a short bio', () => {
   state.role = 'expert';
   render(<MemoryRouter><ProfileSetupPage /></MemoryRouter>);
+  expect(screen.getByLabelText('Job title')).toBeRequired();
+  expect(screen.getByLabelText('Company or organization')).toBeRequired();
   expect(screen.getByLabelText('Area of expertise')).toBeRequired();
-  expect(screen.getByLabelText('One-line bio')).toBeRequired();
+  expect(screen.getByLabelText('Short bio')).toBeRequired();
 });
 
 test('the grade question says middle schoolers come with an adult', () => {

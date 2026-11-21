@@ -15,7 +15,22 @@ import { MOCK_SESSIONS } from '../models/sessions';
 import {
   compareGrades, countBy, crossTab, expertSummary, NO_SCHOOL_LABEL, registeredPeople, type SummitMetrics,
 } from '../models/metrics';
-import { fetchExpertRequests, fetchSummitMetrics } from '../services/organizer';
+import { fetchExpertDashboard, fetchExpertRequests, fetchSummitMetrics } from '../services/organizer';
+
+/** Verified and not verified experts; verified is null before expert_beamentor.sql runs. */
+type ExpertCounts = { verified: number | null; notVerified: number };
+
+async function loadExpertCounts(): Promise<ExpertCounts> {
+  try {
+    const rows = await fetchExpertDashboard();
+    return {
+      verified: rows.filter((r) => r.stage === 'verified').length,
+      notVerified: rows.filter((r) => r.stage === 'not_verified').length,
+    };
+  } catch {
+    return { verified: null, notVerified: (await fetchExpertRequests()).length };
+  }
+}
 import { contentSource, useSummitContent } from '../services/summitContent';
 import { BarList, FilterChips, HeatTable, MetricsSection, StatTiles } from '../components/MetricsBits';
 
@@ -25,15 +40,15 @@ const NOUN: Record<Who, string> = { participants: 'participants', parents: 'pare
 export default function MetricsPage() {
   const { ready, redirect } = useRequireRole(['admin']);
   const [data, setData] = useState<SummitMetrics | null>(null);
-  // Experts waiting for approval; null if that list could not load.
-  const [waiting, setWaiting] = useState<number | null>(null);
+  // Experts verified and not verified; null if those lists could not load.
+  const [counts, setCounts] = useState<ExpertCounts | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [who, setWho] = useState<Who>('participants');
 
   const load = useCallback(() => {
     setError(null);
     fetchSummitMetrics().then(setData).catch(() => setError("Couldn't load metrics. Try again."));
-    fetchExpertRequests().then((r) => setWaiting(r.length)).catch(() => setWaiting(null));
+    loadExpertCounts().then(setCounts).catch(() => setCounts(null));
   }, []);
   useEffect(() => { if (ready) load(); }, [ready, load]);
 
@@ -50,7 +65,7 @@ export default function MetricsPage() {
           <Skeleton className="h-64 w-full" />
         ) : (
           <>
-            <Experts data={data} waiting={waiting} />
+            <Experts data={data} counts={counts} />
             <div className="space-y-6 border-t border-border pt-8">
               <div className="space-y-1">
                 <h2 className="font-display text-xl font-bold">Who is registered</h2>
@@ -72,7 +87,8 @@ export default function MetricsPage() {
   );
 }
 
-function Experts({ data, waiting }: { data: SummitMetrics; waiting: number | null }) {
+function Experts({ data, counts }: { data: SummitMetrics; counts: ExpertCounts | null }) {
+  const notVerified = counts?.notVerified ?? null;
   useSummitContent();
   // Keynotes have no experts. The bundled sample sessions are not real tracks.
   const sessions = contentSource() === 'database' ? MOCK_SESSIONS.filter((s) => s.track !== 'keynote') : null;
@@ -83,15 +99,15 @@ function Experts({ data, waiting }: { data: SummitMetrics; waiting: number | nul
       <h2 className="font-display text-xl font-bold">Experts</h2>
       <StatTiles stats={[
         ['Expert accounts', String(e.accounts)],
-        ['Approved', waiting == null ? '–' : String(Math.max(0, e.accounts - waiting))],
-        ['Waiting for approval', waiting == null ? '–' : String(waiting)],
+        ['Verified', counts == null ? '–' : String(counts.verified ?? Math.max(0, e.accounts - counts.notVerified))],
+        ['Not verified', notVerified == null ? '–' : String(notVerified)],
         ['Serving in a track', String(e.serving)],
         ['Expert sign-ups', String(e.signUps)],
         ['Tracks with no expert', sessions == null ? '–' : String(uncovered.length)],
       ]} />
-      {waiting != null && waiting > 0 && (
+      {notVerified != null && notVerified > 0 && (
         <p className="-mt-2 text-sm">
-          <Link to="/admin/experts" className="font-medium text-emerald hover:underline">Review waiting experts</Link>
+          <Link to="/admin/experts" className="font-medium text-emerald hover:underline">Verify experts</Link>
         </p>
       )}
       <MetricsSection title="Experts by discipline">

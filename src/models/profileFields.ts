@@ -58,8 +58,10 @@ export function onboardingFields(role: string | undefined): ProfileField[] {
       ];
     case 'expert':
       return [
+        { key: 'title', label: 'Job title', required: true, hint: 'e.g. Senior Robotics Engineer' },
+        { key: 'company', label: 'Company or organization', required: true, hint: 'e.g. Lawrence Livermore National Laboratory' },
         { key: 'expertise', label: 'Area of expertise', required: true, hint: 'e.g. Robotics, Bioengineering' },
-        { key: 'bio', label: 'One-line bio', required: true, multiline: true, hint: EXPERT_BIO_HINTS[0] },
+        { key: 'bio', label: 'Short bio', required: true, multiline: true, hint: EXPERT_BIO_HINTS[0] },
         { key: 'phone', label: 'Mobile number (optional)', helper: `Only used to reach you on the day of the Summit if necessary. ${PHONE_PRIVACY_NOTE}`, type: 'tel' },
       ];
     case 'attendee':

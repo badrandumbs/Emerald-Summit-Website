@@ -20,6 +20,8 @@ import { roleByName, roleLabelFor, USER_ROLES } from '../models/roles';
 import { deleteMyAccount, saveProfileDetails, signOut, type Profile } from '../services/auth';
 import { formFields } from '../models/profileFields';
 import ProfileFieldInput from '../components/ProfileFieldInput';
+import ExpertPhotoInput from '../components/ExpertPhotoInput';
+import { tracksBeamentor } from '../models/beamentor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -73,6 +75,8 @@ function ProfileSettings({ profile, onSaved }: { profile: Profile; onSaved: () =
   const [name, setName] = useState(profile.name ?? '');
   const [answers, setAnswers] = useState<Record<string, string>>(() => detailsOf(profile));
   const [isSaving, setIsSaving] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const askPhoto = profile.role === 'expert' && tracksBeamentor(profile);
 
   useEffect(() => {
     setName(profile.name ?? '');
@@ -80,7 +84,8 @@ function ProfileSettings({ profile, onSaved }: { profile: Profile; onSaved: () =
   }, [profile]);
 
   const saved = detailsOf(profile);
-  const isDirty = name !== (profile.name ?? '') || fields.some((f) => (answers[f.key] ?? '') !== (saved[f.key] ?? ''));
+  const isDirty = name !== (profile.name ?? '') || fields.some((f) => (answers[f.key] ?? '') !== (saved[f.key] ?? ''))
+    || (askPhoto && (answers.photo_url ?? '') !== (saved.photo_url ?? ''));
   const isDirtyRef = useRef(isDirty);
   isDirtyRef.current = isDirty;
 
@@ -107,7 +112,9 @@ function ProfileSettings({ profile, onSaved }: { profile: Profile; onSaved: () =
     }
     setIsSaving(true);
     try {
-      await saveProfileDetails(name, Object.fromEntries(fields.map((f) => [f.key, answers[f.key] ?? ''])), false);
+      const out = Object.fromEntries(fields.map((f) => [f.key, answers[f.key] ?? '']));
+      if (askPhoto) out.photo_url = answers.photo_url ?? '';
+      await saveProfileDetails(name, out, false);
       await onSaved();
       isDirtyRef.current = false;
       toast.success('Profile updated');
@@ -129,6 +136,9 @@ function ProfileSettings({ profile, onSaved }: { profile: Profile; onSaved: () =
           <Label htmlFor="profile-name">Full name</Label>
           <Input id="profile-name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
+        {askPhoto && (
+          <ExpertPhotoInput value={answers.photo_url ?? ''} onChange={(url) => setAnswers((a) => ({ ...a, photo_url: url }))} onBusyChange={setPhotoBusy} />
+        )}
         {fields.map((f) => (
           <ProfileFieldInput key={f.key} field={f} value={answers[f.key] ?? ''} onChange={(v) => setAnswers((a) => ({ ...a, [f.key]: v }))} />
         ))}
@@ -136,7 +146,7 @@ function ProfileSettings({ profile, onSaved }: { profile: Profile; onSaved: () =
           <Label htmlFor="profile-email">Email</Label>
           <Input id="profile-email" type="email" value={profile.email} readOnly />
         </div>
-        <Button onClick={handleSave} disabled={isSaving}>{isSaving ? 'Saving…' : 'Save profile'}</Button>
+        <Button onClick={handleSave} disabled={isSaving || photoBusy}>{isSaving ? 'Saving…' : 'Save profile'}</Button>
       </div>
     </div>
   );
@@ -210,7 +220,7 @@ function ProfileHub({ profile }: { profile: Profile }) {
           {canCheckIn && <AppOnlyRow icon={ScanLine} title="Front desk check-in" subtitle="Scanning QR passes needs the phone camera, so check people in from the Emerald Summit app." />}
           {isAdmin && <SettingsRow icon={ChartLine} title="Metrics" subtitle="Who signed up, from which schools, for what" onClick={() => navigate('/admin/metrics')} />}
           {isAdmin && <SettingsRow icon={CameraOff} title="Photo permission" subtitle="Who did not allow photos" onClick={() => navigate('/admin/photo-permission')} />}
-          {isAdmin && <SettingsRow icon={ShieldCheck} title="Expert approvals" subtitle="Approve or decline expert sign-ups" onClick={() => navigate('/admin/experts')} />}
+          {isAdmin && <SettingsRow icon={ShieldCheck} title="Expert verification" subtitle="Verify experts' BeAMentor clearance" onClick={() => navigate('/admin/experts')} />}
           {isAdmin && <SettingsRow icon={Inbox} title="Bug reports and feedback" subtitle="What people reported, with their details" onClick={() => navigate('/admin/reports')} />}
           {isAdmin && <SettingsRow icon={MapPin} title="Manage rooms" subtitle="The rooms tracks can be held in" onClick={() => navigate('/admin/rooms')} />}
           <SettingsRow icon={ArrowLeftRight} title="Change role" subtitle={`Currently ${roleLabel}`} onClick={() => setChangeRoleOpen(true)} />
