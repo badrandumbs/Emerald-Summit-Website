@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Deep emerald launch background — matches the Flutter sunburst splash and
+    <!-- Deep emerald launch background — matches the Flutter mountain-and-sun splash and
          the iOS launch storyboard so a cold start has no white flash. -->
-    <color name="launch_background">#02100B</color>
+    <color name="launch_background">#102D26</color>
 	<color name="ic_launcher_background">#FFFFFF</color>
 </resources>
