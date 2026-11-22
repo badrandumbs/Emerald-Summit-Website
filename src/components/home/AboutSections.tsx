@@ -58,11 +58,24 @@ export function LinkButton({
 }
 
 /**
- * Donate: on a phone, a link that opens Zeffy's page in a new tab (an
- * embedded payment form in a popup is cramped there); anywhere else, a
- * popup with the Zeffy form embedded, so people give without leaving.
+ * A Zeffy form button: on a phone, a link that opens Zeffy's page in a new tab
+ * (an embedded payment form in a popup is cramped there); anywhere else, a
+ * popup with the form embedded, so people give without leaving. Donate and
+ * Become a sponsor each use their own form.
  */
-export function DonateButton() {
+export function ZeffyFormButton({
+  label,
+  dialogTitle,
+  pageUrl,
+  embedUrl,
+  icon: Icon,
+}: {
+  label: string;
+  dialogTitle: string;
+  pageUrl: string;
+  embedUrl: string;
+  icon: AppIcon;
+}) {
   const phone = useIsPhoneScreen();
   const [open, setOpen] = useState(false);
   // Zeffy's form takes a few seconds to appear; say so instead of a blank box.
@@ -76,20 +89,20 @@ export function DonateButton() {
       setLoaded(false);
     }
   };
-  if (phone) return <LinkButton href={EAF_DONATE_URL} primary icon={HeartHandshake}>Donate</LinkButton>;
+  if (phone) return <LinkButton href={pageUrl} primary icon={Icon}>{label}</LinkButton>;
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className={buttonClass(true)}>
-        Donate
-        <HeartHandshake className="h-3.5 w-3.5" aria-hidden />
+        {label}
+        <Icon className="h-3.5 w-3.5" aria-hidden />
       </button>
       <Dialog open={open} onOpenChange={openChange}>
         <DialogContent className="flex max-h-[92vh] max-w-2xl flex-col gap-0 overflow-hidden p-0">
           <DialogHeader className="border-b border-border px-5 py-4 pr-12 text-left">
-            <DialogTitle className="font-display text-lg">Donate to EAF</DialogTitle>
+            <DialogTitle className="font-display text-lg">{dialogTitle}</DialogTitle>
             <DialogDescription className="text-[13px]">
               Secure form by Zeffy. EAF is a 501(c)(3) nonprofit, so your gift is tax-deductible.{' '}
-              <a href={EAF_DONATE_URL} target="_blank" rel="noreferrer" className="font-semibold text-emerald underline-offset-2 hover:underline">
+              <a href={pageUrl} target="_blank" rel="noreferrer" className="font-semibold text-emerald underline-offset-2 hover:underline">
                 Open in a new tab
               </a>
             </DialogDescription>
@@ -98,12 +111,12 @@ export function DonateButton() {
             {!loaded && (
               <p className="absolute inset-0 flex items-center justify-center gap-2 text-sm text-muted-foreground" role="status">
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                Loading the donation form…
+                Loading the form…
               </p>
             )}
             <iframe
               title="Donation form powered by Zeffy"
-              src={EAF_DONATE_EMBED_URL}
+              src={embedUrl}
               allow="payment"
               // Zeffy's page reports loaded before it draws the form (about
               // 2 s more), so the message stays up a little past onLoad.
@@ -117,6 +130,18 @@ export function DonateButton() {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+export function DonateButton() {
+  return (
+    <ZeffyFormButton
+      label="Donate"
+      dialogTitle="Donate to EAF"
+      pageUrl={EAF_DONATE_URL}
+      embedUrl={EAF_DONATE_EMBED_URL}
+      icon={HeartHandshake}
+    />
   );
 }
 

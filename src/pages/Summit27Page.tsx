@@ -4,13 +4,20 @@
 // Volunteer with EAF) sits under every subtab. Sponsors stay off the public
 // site: the organizers don't want unpaid sponsors getting free advertising.
 import { Navigate, NavLink, useParams } from 'react-router-dom';
-import { Handshake, Keynote, Mail, Team, type AppIcon } from '@/components/icons';
+import { Handshake, Keynote, Team, type AppIcon } from '@/components/icons';
 import AppShell from '../components/AppShell';
 import PageHeader from '../components/PageHeader';
-import { LinkButton, SupportEafCard } from '../components/home/AboutSections';
+import { LinkButton, SupportEafCard, ZeffyFormButton } from '../components/home/AboutSections';
 import { useRequireProfile } from '../hooks/useRequireProfile';
 import { SUMMIT_DATE_LABEL, SUMMIT_HOURS, VENUE } from '../models/summitFacts';
-import { SPONSORS, SPONSOR_EMAIL, SPONSOR_TIERS, SPONSORSHIP_DETAILS_URL, type Sponsor } from '../models/sponsors';
+import {
+  SPONSORS,
+  SPONSOR_FORM_EMBED_URL,
+  SPONSOR_FORM_URL,
+  SPONSOR_TIERS,
+  SPONSORSHIP_DETAILS_URL,
+  type Sponsor,
+} from '../models/sponsors';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
@@ -70,13 +77,13 @@ export function SponsorTiers({ sponsors = SPONSORS }: { sponsors?: Sponsor[] }) 
         })}
       </ol>
       <div className="flex flex-wrap gap-2.5">
-        <LinkButton
-          href={`mailto:${SPONSOR_EMAIL}?subject=${encodeURIComponent("Sponsoring Emerald Summit '27")}`}
-          primary
-          icon={Mail}
-        >
-          Become a sponsor
-        </LinkButton>
+        <ZeffyFormButton
+          label="Become a sponsor"
+          dialogTitle="Become a sponsor"
+          pageUrl={SPONSOR_FORM_URL}
+          embedUrl={SPONSOR_FORM_EMBED_URL}
+          icon={Handshake}
+        />
         <LinkButton href={SPONSORSHIP_DETAILS_URL}>Sponsorship details</LinkButton>
       </div>
     </div>

@@ -9,6 +9,15 @@ export const SPONSORSHIP_DETAILS_URL = `${EAF_SITE}/initiatives/emerald-summit-2
 /** The sponsor page says "Questions? Email contact@ehsacademics.org" (its sign-up form is closed). */
 export const SPONSOR_EMAIL = 'contact@ehsacademics.org';
 
+/**
+ * EAF's Zeffy form for sponsors ("Be the Catalyst for Learning and Discovery",
+ * sent by the organizers on Nov 22, 2026). A separate form from the Donate one.
+ * Become a sponsor opens it in a popup (a new tab on phones), like Donate.
+ */
+const SPONSOR_ZEFFY_FORM = 'be-the-catalyst-for-learning-and-discovery';
+export const SPONSOR_FORM_URL = `https://www.zeffy.com/en-US/donation-form/${SPONSOR_ZEFFY_FORM}`;
+export const SPONSOR_FORM_EMBED_URL = `https://www.zeffy.com/embed/donation-form/${SPONSOR_ZEFFY_FORM}`;
+
 export type SponsorTierName = 'Capstone' | 'Keystone' | 'Pillar' | 'Foundation' | 'Cornerstone';
 
 /**

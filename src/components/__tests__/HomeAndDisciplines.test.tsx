@@ -23,6 +23,8 @@ import {
   EAF_VOLUNTEER_URL,
   SupportEafCard,
 } from '../home/AboutSections';
+import { SponsorTiers } from '../../pages/Summit27Page';
+import { SPONSOR_FORM_EMBED_URL, SPONSOR_FORM_URL } from '../../models/sponsors';
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -87,6 +89,16 @@ describe('About, Support EAF and Sponsors', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  test('Become a sponsor opens the sponsor Zeffy form in a popup, not the Donate one', async () => {
+    const user = userEvent.setup();
+    render(<SponsorTiers sponsors={[]} />);
+    await user.click(screen.getByRole('button', { name: /Become a sponsor/ }));
+    const dialog = screen.getByRole('dialog', { name: 'Become a sponsor' });
+    expect(within(dialog).getByTitle('Donation form powered by Zeffy')).toHaveAttribute('src', SPONSOR_FORM_EMBED_URL);
+    expect(within(dialog).getByRole('link', { name: /Open in a new tab/ })).toHaveAttribute('href', SPONSOR_FORM_URL);
+    expect(SPONSOR_FORM_URL).not.toBe(EAF_DONATE_URL);
   });
 
   test('About the app credits the student developers', () => {

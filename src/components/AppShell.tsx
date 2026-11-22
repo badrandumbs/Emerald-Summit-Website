@@ -20,11 +20,10 @@ import {
   Team,
   Handshake,
   HeartHandshake,
-  Mail,
   type LucideIcon,
 } from '@/components/icons';
 import { EAF_DONATE_URL } from './home/AboutSections';
-import { SPONSOR_EMAIL, SPONSOR_TIERS, SPONSORSHIP_DETAILS_URL } from '../models/sponsors';
+import { SPONSOR_FORM_URL, SPONSOR_TIERS, SPONSORSHIP_DETAILS_URL } from '../models/sponsors';
 import { USER_DISCIPLINES } from '../models/disciplines';
 import { useSummitContent } from '../services/summitContent';
 import { useAuth } from '../context/AuthContext';
@@ -151,9 +150,9 @@ const LINK_HITS: (SearchHit & { words: string[] })[] = [
   {
     key: 'become-sponsor',
     label: 'Become a sponsor',
-    sub: `Email ${SPONSOR_EMAIL}`,
-    to: `mailto:${SPONSOR_EMAIL}?subject=${encodeURIComponent("Sponsoring Emerald Summit '27")}`,
-    icon: Mail,
+    sub: 'Zeffy sponsorship form · opens in a new tab',
+    to: SPONSOR_FORM_URL,
+    icon: Handshake,
     words: ['sponsor', 'sponsorship', 'support eaf'],
   },
   {
