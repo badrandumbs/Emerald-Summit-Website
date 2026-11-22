@@ -84,6 +84,10 @@ export function roleByName(name: string | undefined): RoleInfo | undefined {
 
 export const SUPPORT_EMAIL = 'support@ehsacademics.org';
 
+/** When the allowlist could not be read (offline, server error): not a refusal. */
+export const ALLOWLIST_CHECK_FAILED_MESSAGE =
+  `Couldn't check the list. Try again. If this keeps happening, please email ${SUPPORT_EMAIL}.`;
+
 /** The message for a role the sheets or the database refused: what to do next. */
 export function notEligibleMessage(roleName: string): string {
   const label = (roleByName(roleName)?.label ?? roleName).toLowerCase();

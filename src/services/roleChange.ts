@@ -3,7 +3,7 @@
 // then save the role and re-read what the server kept. The server moves
 // sessions down to spectating and refuses gated roles off the allowlist.
 import { supabase } from '../lib/supabase';
-import { notEligibleMessage } from '../models/roles';
+import { ALLOWLIST_CHECK_FAILED_MESSAGE, notEligibleMessage } from '../models/roles';
 import { isAllowlisted, profileFromRow, storedRole, type Profile } from './auth';
 
 export interface RoleChangeTeam {
@@ -94,11 +94,13 @@ export async function checkRoleEligible(role: string): Promise<void> {
   if (role !== 'volunteer' && role !== 'admin') return;
   const { data: auth } = await client().auth.getSession();
   const email = auth.session?.user.email;
-  let eligible = false;
+  let eligible: boolean;
   try {
     eligible = email != null && await isAllowlisted(email, role);
   } catch {
-    eligible = false;
+    // Could not read the list: say so, rather than telling a listed person
+    // they are not on it.
+    throw new Error(ALLOWLIST_CHECK_FAILED_MESSAGE);
   }
   if (!eligible) throw new Error(notEligibleMessage(role));
 }

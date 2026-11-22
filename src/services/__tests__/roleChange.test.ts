@@ -1,11 +1,17 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 
 const { backend, db } = vi.hoisted(() => {
-  const db = { keptRole: null as string | null, preview: [] as unknown[], updates: [] as unknown[] };
+  const db = { keptRole: null as string | null, preview: [] as unknown[], updates: [] as unknown[], email: undefined as string | undefined, allowlist: 'none' as 'none' | 'listed' | 'error' };
   const backend = {
     rpc: vi.fn(async () => ({ data: db.preview, error: null })),
-    auth: { getSession: async () => ({ data: { session: { user: { id: 'me' } } } }) },
-    from: () => {
+    auth: { getSession: async () => ({ data: { session: { user: { id: 'me', email: db.email } } } }) },
+    from: (table: string) => {
+      if (table === 'role_allowlist') {
+        const a: any = { select: () => a, eq: () => a, maybeSingle: async () => (db.allowlist === 'error'
+          ? { data: null, error: new Error('offline') }
+          : { data: db.allowlist === 'listed' ? { email: db.email } : null, error: null }) };
+        return a;
+      }
       let payload: Record<string, unknown> = {};
       const b: any = {
         update: (p: Record<string, unknown>) => { payload = p; db.updates.push(p); return b; },
@@ -25,6 +31,8 @@ const rc = await import('../roleChange');
 beforeEach(() => {
   db.keptRole = null;
   db.updates = [];
+  db.email = undefined;
+  db.allowlist = 'none';
   backend.rpc.mockClear();
 });
 
@@ -50,5 +58,17 @@ describe('role change', () => {
     expect(db.updates[0]).toMatchObject({ role: 'expert' });
     db.keptRole = 'participant';
     await expect(rc.changeRole('admin')).rejects.toThrow(/not on the list of people allowed to be an organizer. Please email support@ehsacademics.org/);
+  });
+
+  test('says to try again when the list cannot be read, and to email support when not on it', async () => {
+    db.email = 'me@example.com';
+    db.allowlist = 'error';
+    await expect(rc.checkRoleEligible('volunteer')).rejects.toThrow(
+      "Couldn't check the list. Try again. If this keeps happening, please email support@ehsacademics.org.");
+    db.allowlist = 'none';
+    await expect(rc.checkRoleEligible('volunteer')).rejects.toThrow(
+      'Your email is not on the list of people allowed to be a volunteer. Please email support@ehsacademics.org.');
+    db.allowlist = 'listed';
+    await expect(rc.checkRoleEligible('volunteer')).resolves.toBeUndefined();
   });
 });
