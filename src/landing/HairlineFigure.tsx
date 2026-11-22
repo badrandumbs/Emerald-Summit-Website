@@ -19,7 +19,7 @@ interface Figure {
   mount: (
     host: { stage: HTMLElement; svg: SVGSVGElement; read: { textContent: string | null } },
     value: number,
-  ) => { set: (v: number) => void; destroy: () => void };
+  ) => { set: (v: number) => void; show?: (i: number) => void; destroy: () => void };
 }
 
 interface HL {
@@ -92,6 +92,7 @@ export default function HairlineFigure({
   onRead,
   onPick,
   intensity = 0.5,
+  steps = 0,
   className,
 }: {
   name: string;
@@ -103,6 +104,12 @@ export default function HairlineFigure({
   onPick?: (index: number) => void;
   /** 0 to 1, mapped onto the figure's own range as the bench's slider does. */
   intensity?: number;
+  /**
+   * Step through this many parts as the page scrolls through the figure's
+   * section, first part at its top, last at its bottom. 0 leaves it to the
+   * pointer and the one-lap tour.
+   */
+  steps?: number;
   className?: string;
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
@@ -118,6 +125,7 @@ export default function HairlineFigure({
     let playing: { stop: () => void } | null = null;
     let io: IntersectionObserver | null = null;
     let cancelled = false;
+    let onScroll: (() => void) | null = null;
     const picked = (e: Event) => onPickRef.current?.((e as CustomEvent<number>).detail);
     stage.addEventListener('hairline:pick', picked);
 
@@ -136,6 +144,28 @@ export default function HairlineFigure({
         };
         handle = figure.mount({ stage, svg, read }, value);
         if (text === null) read.textContent = 'rest';
+
+        // Scroll-driven: the section is a tall track whose content stays pinned
+        // (.lp-pin in landing.css), and the scroll through it is split evenly
+        // between the parts. Only a change of step calls show, so a hover or
+        // tap holds until the next step.
+        if (steps > 0 && handle.show) {
+          const show = handle.show;
+          const section = stage.closest('section') ?? stage;
+          let step = -1;
+          // Browsers already fire scroll at most once a frame, and this is one rect read.
+          onScroll = () => {
+            const r = section.getBoundingClientRect(), vh = window.innerHeight;
+            if (r.bottom < 0 || r.top > vh) return;
+            const p = -r.top / Math.max(1, r.height - vh);
+            const next = Math.min(steps - 1, Math.max(0, Math.floor(p * steps)));
+            if (next !== step) { step = next; show(next); }
+          };
+          window.addEventListener('scroll', onScroll, { passive: true });
+          window.addEventListener('resize', onScroll);
+          onScroll();
+          return;
+        }
 
         // One lap of the figure's own tour the first time it comes into view,
         // so the story plays once; a real pointer takes over at any moment.
@@ -159,12 +189,16 @@ export default function HairlineFigure({
     return () => {
       cancelled = true;
       stage.removeEventListener('hairline:pick', picked);
+      if (onScroll) {
+        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener('resize', onScroll);
+      }
       io?.disconnect();
       playing?.stop();
       handle?.destroy();
       stage.replaceChildren();
     };
-  }, [name, intensity]);
+  }, [name, intensity, steps]);
 
   return <div ref={stageRef} className={className} role="img" aria-label={label} />;
 }

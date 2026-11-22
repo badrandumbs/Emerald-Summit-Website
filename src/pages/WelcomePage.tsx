@@ -123,12 +123,6 @@ export default function WelcomePage() {
   const holdRef = useRef<ReturnType<typeof setTimeout>>();
   const [part, setPart] = useState(0);
   const [badge, setBadge] = useState(-1);
-  // The badge picked so far, read synchronously by the click (state lags a render).
-  const badgeRef = useRef(-1);
-  const pickBadge = (i: number) => {
-    badgeRef.current = i;
-    setBadge(i);
-  };
 
   useEffect(() => {
     if (playingIntro) markIntroPlayed();
@@ -347,8 +341,8 @@ export default function WelcomePage() {
         </section>
 
         {/* The day from the peak down: the Summit figure, and the part of the day it has out. */}
-        <section id="day" className="lp-section lp-day" aria-labelledby="day-title">
-          <div className="container lp-grid lp-day__inner">
+        <section id="day" className="lp-section lp-day lp-pin" aria-labelledby="day-title">
+          <div className="container lp-grid lp-day__inner lp-pin__stage">
             <div className="lp-day__head">
               <h2 id="day-title">What happens on Summit day?</h2>
             </div>
@@ -358,6 +352,7 @@ export default function WelcomePage() {
                 label="The Summit day as a stepped mountain of six terraces, check-in at the peak down to the landing at the base, with Emerald High's flag on top"
                 className="lp-hairline lp-hairline--summit"
                 onPick={setPart}
+                steps={DAY_PARTS.length}
               />
               <figcaption className="lp-day__hint">
                 {touch ? 'Tap' : 'Hover over'} a terrace to see that part of the day.
@@ -389,19 +384,17 @@ export default function WelcomePage() {
         <FaqSection />
 
         {/* The close: who you're coming as, on the badge rack, and the way in. */}
-        <section id="roles" className="lp-section lp-roles" aria-labelledby="roles-title">
-          <div className="container lp-grid lp-roles__inner">
+        <section id="roles" className="lp-section lp-roles lp-pin" aria-labelledby="roles-title">
+          <div className="container lp-grid lp-roles__inner lp-pin__stage">
             {/* The figure is a picture for screen readers; the role rows beside it are the real links. */}
-            <figure
-              className="lp-roles__figure"
-              // Any badge opens the roles page, where people pick how they're joining.
-              onClick={() => { if (badgeRef.current >= 0) navigate('/roles'); }}
-            >
+            {/* Not clickable: scrolling alone swings the badges (the role rows are the links). */}
+            <figure className="lp-roles__figure">
               <HairlineFigure
                 name="badges"
                 label="Five lanyard badges hanging on a rack, one for each way to sign in to the Summit"
                 className="lp-hairline"
-                onPick={pickBadge}
+                onPick={setBadge}
+                steps={BADGE_ROLES.length}
               />
             </figure>
             <div className="lp-roles__text">

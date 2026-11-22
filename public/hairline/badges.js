@@ -121,6 +121,8 @@ function mount({ stage, svg, read }, value) {
 
   return {
     set: (v) => { PART = v; const a = act; act = -2; setActive(a); },
+    // The page's auto-advance: swing out badge i.
+    show: (i) => take(i),
     destroy: bag.dispose,
   };
 }

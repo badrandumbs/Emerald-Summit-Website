@@ -158,6 +158,8 @@ function mount({ stage, svg, read }, value) {
 
   return {
     set: (v) => { GAP = v; const a = act; act = -2; setActive(a); },
+    // The page's auto-advance: bring out terrace i, counted from the peak (0 is the top one).
+    show: (i) => take(N - 1 - i),
     destroy: bag.dispose,
   };
 }
