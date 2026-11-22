@@ -4,9 +4,8 @@
 // ehsacademics.org (Initiatives → Emerald Summit '27 → Sponsor; checked
 // Nov 14, 2026). The old Google Sites page (sites.google.com/view/
 // ehs-academic-foundation) is out of date: don't use it.
-import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, HeartHandshake, Loader2, type AppIcon } from '@/components/icons';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useEffect, useId, useRef, useState } from 'react';
+import { ArrowRight, HeartHandshake, Loader2, X, type AppIcon } from '@/components/icons';
 import { useIsPhoneScreen } from '@/lib/device';
 import SummitLogo from '../SummitLogo';
 import { cn } from '@/lib/utils';
@@ -17,6 +16,7 @@ const EAF_SITE = 'https://www.ehsacademics.org';
  * Computers and tablets get it embedded in a popup (the embed's iframe, the
  * same URL Zeffy's embed code falls back to); phones open the full page.
  */
+const ZEFFY_ORIGIN = 'https://www.zeffy.com';
 const ZEFFY_FORM = '6938c617-88ca-483d-ab7d-997e94ed8b6c';
 export const EAF_DONATE_URL = `https://www.zeffy.com/en-US/donation-form/${ZEFFY_FORM}`;
 export const EAF_DONATE_EMBED_URL = `https://www.zeffy.com/embed/donation-form/${ZEFFY_FORM}`;
@@ -77,58 +77,147 @@ export function ZeffyFormButton({
   icon: AppIcon;
 }) {
   const phone = useIsPhoneScreen();
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const titleId = useId();
+  const descId = useId();
+  // A cold Zeffy form takes 3 to 5 seconds to draw, so it starts loading
+  // (hidden) as soon as the button is near the screen, and stays loaded: by
+  // the time someone clicks, the popup opens on a finished form. That's why
+  // this is a native <dialog> and not the Radix one, which unmounts (and so
+  // reloads the iframe) every time it closes.
+  const [preload, setPreload] = useState(false);
+  const [drawn, setDrawn] = useState(false);
   const [open, setOpen] = useState(false);
-  // Zeffy's form takes a few seconds to appear; say so instead of a blank box.
-  const [loaded, setLoaded] = useState(false);
-  const revealTimer = useRef<number | undefined>(undefined);
-  useEffect(() => () => window.clearTimeout(revealTimer.current), []);
-  const openChange = (next: boolean) => {
-    setOpen(next);
-    if (!next) {
-      window.clearTimeout(revealTimer.current);
-      setLoaded(false);
+  const fallback = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (phone || preload) return;
+    const el = buttonRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) setPreload(true);
+    }, { rootMargin: '600px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [phone, preload]);
+
+  // Zeffy's embed posts its height ({ id: 'zeffy-iframe', height }) once the
+  // form is drawn, about half a second after the iframe's load event.
+  useEffect(() => {
+    if (!preload) return;
+    const onMessage = (e: MessageEvent) => {
+      if (e.origin === ZEFFY_ORIGIN && e.source === frameRef.current?.contentWindow) setDrawn(true);
+    };
+    window.addEventListener('message', onMessage);
+    return () => {
+      window.removeEventListener('message', onMessage);
+      window.clearTimeout(fallback.current);
+    };
+  }, [preload]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    // Out of the tab order and the accessibility tree while closed.
+    dialog.inert = !open;
+    if (open && !dialog.open) {
+      if (typeof dialog.showModal === 'function') dialog.showModal();
+      else dialog.setAttribute('open', '');
+      closeRef.current?.focus();
+    } else if (!open && dialog.open) {
+      if (typeof dialog.close === 'function') dialog.close();
+      else dialog.removeAttribute('open');
     }
-  };
+  }, [open, preload]);
+
+  // The page behind the popup stays put, as with the other dialogs.
+  useEffect(() => {
+    if (!open) return;
+    const root = document.documentElement;
+    const before = root.style.overflow;
+    root.style.overflow = 'hidden';
+    return () => {
+      root.style.overflow = before;
+    };
+  }, [open]);
+
   if (phone) return <LinkButton href={pageUrl} primary icon={Icon}>{label}</LinkButton>;
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className={buttonClass(true)}>
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={() => {
+          setPreload(true);
+          setOpen(true);
+        }}
+        className={buttonClass(true)}
+      >
         {label}
         <Icon className="h-3.5 w-3.5" aria-hidden />
       </button>
-      <Dialog open={open} onOpenChange={openChange}>
-        <DialogContent className="flex max-h-[92vh] max-w-2xl flex-col gap-0 overflow-hidden p-0">
-          <DialogHeader className="border-b border-border px-5 py-4 pr-12 text-left">
-            <DialogTitle className="font-display text-lg">{dialogTitle}</DialogTitle>
-            <DialogDescription className="text-[13px]">
-              Secure form by Zeffy. EAF is a 501(c)(3) nonprofit, so your gift is tax-deductible.{' '}
-              <a href={pageUrl} target="_blank" rel="noreferrer" className="font-semibold text-emerald underline-offset-2 hover:underline">
-                Open in a new tab
-              </a>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="relative h-[min(72vh,760px)] w-full">
-            {!loaded && (
-              <p className="absolute inset-0 flex items-center justify-center gap-2 text-sm text-muted-foreground" role="status">
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                Loading the form…
+      {preload && (
+        <dialog
+          ref={dialogRef}
+          aria-labelledby={titleId}
+          aria-describedby={descId}
+          // Escape (the browser's cancel) and the ×.
+          onClose={() => setOpen(false)}
+          // A click on the dimmed backdrop lands on the <dialog> itself.
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setOpen(false);
+          }}
+          // Closed, it stays laid out but invisible and inert (see below):
+          // Zeffy only draws its form once its frame is displayed, so a
+          // display: none popup would still make people wait on first open.
+          className="m-auto max-h-[92vh] w-[calc(100%-2rem)] max-w-2xl overflow-hidden rounded-lg border border-border bg-background p-0 text-foreground shadow-lg backdrop:bg-black/80 [&:not([open])]:pointer-events-none [&:not([open])]:fixed [&:not([open])]:inset-0 [&:not([open])]:-z-10 [&:not([open])]:block [&:not([open])]:opacity-0"
+        >
+          <div className="flex max-h-[92vh] flex-col">
+            <div className="relative border-b border-border px-5 py-4 pr-12 text-left">
+              <h2 id={titleId} className="font-display text-lg font-semibold leading-none tracking-tight">{dialogTitle}</h2>
+              <p id={descId} className="mt-1.5 text-[13px] text-muted-foreground">
+                Secure form by Zeffy. EAF is a 501(c)(3) nonprofit, so your gift is tax-deductible.{' '}
+                <a href={pageUrl} target="_blank" rel="noreferrer" className="font-semibold text-emerald underline-offset-2 hover:underline">
+                  Open in a new tab
+                </a>
               </p>
-            )}
-            <iframe
-              title="Donation form powered by Zeffy"
-              src={embedUrl}
-              allow="payment"
-              // Zeffy's page reports loaded before it draws the form (about
-              // 2 s more), so the message stays up a little past onLoad.
-              onLoad={() => {
-                window.clearTimeout(revealTimer.current);
-                revealTimer.current = window.setTimeout(() => setLoaded(true), 2000);
-              }}
-              className={cn('absolute inset-0 h-full w-full border-0 transition-opacity', loaded ? 'opacity-100' : 'opacity-0')}
-            />
+              <button
+                ref={closeRef}
+                type="button"
+                onClick={() => setOpen(false)}
+                className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <X className="h-4 w-4" aria-hidden />
+                <span className="sr-only">Close</span>
+              </button>
+            </div>
+            <div className="relative h-[min(72vh,760px)] w-full">
+              {!drawn && (
+                <p className="absolute inset-0 flex items-center justify-center gap-2 text-sm text-muted-foreground" role="status">
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                  Loading the form…
+                </p>
+              )}
+              <iframe
+                ref={frameRef}
+                title="Donation form powered by Zeffy"
+                src={embedUrl}
+                allow="payment"
+                // In case Zeffy stops posting its height message, show the
+                // form 2 s after load anyway (how long it used to take to draw).
+                onLoad={() => {
+                  window.clearTimeout(fallback.current);
+                  fallback.current = window.setTimeout(() => setDrawn(true), 2000);
+                }}
+                className={cn('absolute inset-0 h-full w-full border-0 transition-opacity', drawn ? 'opacity-100' : 'opacity-0')}
+              />
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </dialog>
+      )}
     </>
   );
 }

@@ -72,6 +72,42 @@ describe('About, Support EAF and Sponsors', () => {
     expect(within(dialog).getByRole('link', { name: /Open in a new tab/ })).toHaveAttribute('href', EAF_DONATE_URL);
   });
 
+  test('The Zeffy form loads before the click, once Donate is near the screen, and shows when Zeffy says it is drawn', async () => {
+    let seen: IntersectionObserverCallback = () => {};
+    vi.stubGlobal('IntersectionObserver', class {
+      constructor(cb: IntersectionObserverCallback) { seen = cb; }
+      observe() {}
+      disconnect() {}
+    });
+    try {
+      const user = userEvent.setup();
+      const { container } = render(<SupportEafCard />);
+      expect(container.querySelector('iframe')).toBeNull();
+      act(() => seen([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver));
+      const frame = container.querySelector('iframe')!;
+      expect(frame).toHaveAttribute('src', EAF_DONATE_EMBED_URL);
+      // Not shown yet: nothing to see, and no dialog in the page.
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      // A message from another frame doesn't count.
+      act(() => window.dispatchEvent(new MessageEvent('message', { origin: 'https://www.zeffy.com', data: { id: 'zeffy-iframe' } })));
+      await user.click(screen.getByRole('button', { name: /Donate/ }));
+      const dialog = screen.getByRole('dialog', { name: 'Donate to EAF' });
+      expect(within(dialog).getByRole('status')).toHaveTextContent('Loading the form');
+      act(() => window.dispatchEvent(new MessageEvent('message', {
+        origin: 'https://www.zeffy.com',
+        source: frame.contentWindow,
+        data: { id: 'zeffy-iframe', height: 700 },
+      })));
+      expect(within(dialog).queryByRole('status')).not.toBeInTheDocument();
+      // Closing keeps the loaded form for next time.
+      await user.click(within(dialog).getByRole('button', { name: 'Close' }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(container.querySelector('iframe')).toBe(frame);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   test('On a phone, Donate opens the Zeffy page in a new tab instead', () => {
     const matchMedia = vi.fn((query: string) => ({
       matches: query === '(max-width: 48rem)',
