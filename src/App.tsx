@@ -1,7 +1,8 @@
-import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import ScrollToTop from './components/ScrollToTop';
 import GetTheAppBanner from './components/GetTheAppBanner';
+import PageRouteBoundary from './components/PageRouteBoundary';
+import { lazyPage } from './lib/staleBuild';
 // Eager: the landing page is the most common entry point, so it ships in the
 // main bundle rather than costing a round-trip on first paint. Every other
 // route — including the drag-and-drop scheduler and its dnd/redux
@@ -9,28 +10,28 @@ import GetTheAppBanner from './components/GetTheAppBanner';
 // for pages most visitors never open.
 import WelcomePage from './pages/WelcomePage';
 
-const HomePage = lazy(() => import('./pages/HomePage'));
-const LoginPage = lazy(() => import('./pages/LoginPage'));
-const RolesPage = lazy(() => import('./pages/RolesPage'));
-const ProfileSetupPage = lazy(() => import('./pages/ProfileSetupPage'));
-const SchedulePage = lazy(() => import('./pages/SchedulePage'));
-const AnnouncementsPage = lazy(() => import('./pages/AnnouncementsPage'));
-const SettingsPage = lazy(() => import('./pages/SettingsPage'));
-const DirectoryPage = lazy(() => import('./pages/DirectoryPage'));
-const ResourcesPage = lazy(() => import('./pages/ResourcesPage'));
-const VersesPage = lazy(() => import('./pages/VersesPage'));
-const VolunteerDashboard = lazy(() => import('./pages/VolunteerDashboard'));
-const SessionPage = lazy(() => import('./pages/SessionPage'));
-const VolunteerHoursPage = lazy(() => import('./pages/VolunteerHoursPage'));
-const ExpertApprovalsPage = lazy(() => import('./pages/ExpertApprovalsPage'));
-const BeAMentorPage = lazy(() => import('./pages/BeAMentorPage'));
-const RoomsPage = lazy(() => import('./pages/RoomsPage'));
-const MetricsPage = lazy(() => import('./pages/MetricsPage'));
-const SummitFollowupPage = lazy(() => import('./pages/SummitFollowupPage'));
-const ArchiePage = lazy(() => import('./pages/ArchiePage'));
-const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
-const BugReportsPage = lazy(() => import('./pages/BugReportsPage'));
-const PhotoPermissionPage = lazy(() => import('./pages/PhotoPermissionPage'));
+const HomePage = lazyPage(() => import('./pages/HomePage'));
+const LoginPage = lazyPage(() => import('./pages/LoginPage'));
+const RolesPage = lazyPage(() => import('./pages/RolesPage'));
+const ProfileSetupPage = lazyPage(() => import('./pages/ProfileSetupPage'));
+const SchedulePage = lazyPage(() => import('./pages/SchedulePage'));
+const AnnouncementsPage = lazyPage(() => import('./pages/AnnouncementsPage'));
+const SettingsPage = lazyPage(() => import('./pages/SettingsPage'));
+const DirectoryPage = lazyPage(() => import('./pages/DirectoryPage'));
+const ResourcesPage = lazyPage(() => import('./pages/ResourcesPage'));
+const VersesPage = lazyPage(() => import('./pages/VersesPage'));
+const VolunteerDashboard = lazyPage(() => import('./pages/VolunteerDashboard'));
+const SessionPage = lazyPage(() => import('./pages/SessionPage'));
+const VolunteerHoursPage = lazyPage(() => import('./pages/VolunteerHoursPage'));
+const ExpertApprovalsPage = lazyPage(() => import('./pages/ExpertApprovalsPage'));
+const BeAMentorPage = lazyPage(() => import('./pages/BeAMentorPage'));
+const RoomsPage = lazyPage(() => import('./pages/RoomsPage'));
+const MetricsPage = lazyPage(() => import('./pages/MetricsPage'));
+const SummitFollowupPage = lazyPage(() => import('./pages/SummitFollowupPage'));
+const ArchiePage = lazyPage(() => import('./pages/ArchiePage'));
+const NotificationsPage = lazyPage(() => import('./pages/NotificationsPage'));
+const BugReportsPage = lazyPage(() => import('./pages/BugReportsPage'));
+const PhotoPermissionPage = lazyPage(() => import('./pages/PhotoPermissionPage'));
 
 function LegacyApplicationRedirect() {
   const { role } = useParams();
@@ -42,7 +43,7 @@ export default function App() {
     <>
       <ScrollToTop />
       <GetTheAppBanner />
-      <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <PageRouteBoundary>
         <Routes>
           <Route path="/" element={<WelcomePage />} />
           <Route path="/home" element={<HomePage />} />
@@ -77,7 +78,7 @@ export default function App() {
           <Route path="/follow-up" element={<SummitFollowupPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </Suspense>
+      </PageRouteBoundary>
     </>
   );
 }

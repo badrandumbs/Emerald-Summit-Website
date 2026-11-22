@@ -11,9 +11,14 @@ import { Toaster } from '@/components/ui/sonner';
 import App from './App';
 import { loadSummitContent } from './services/summitContent';
 import { installDiagnostics } from './lib/diagnostics';
+import { installStaleBuildReload } from './lib/staleBuild';
 
 // Start recording recent pages, errors and failed requests for bug reports.
 installDiagnostics();
+
+// After a deploy, a page file this tab doesn't have any more reloads into the
+// new build instead of leaving a blank screen (src/lib/staleBuild.ts).
+installStaleBuildReload();
 
 // Tracks and sessions come from the database when it's reachable; until then
 // (or without it) the bundled lists in src/models show.
