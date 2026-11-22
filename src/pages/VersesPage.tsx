@@ -1,8 +1,6 @@
 import { useEffect, useState, type KeyboardEvent } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { ArrowRight, Check, Plus } from '@/components/icons';
-import { Button } from '@/components/ui/button';
-import NewDisciplineDialog from '../components/verse/NewDisciplineDialog';
+import { ArrowRight, Check } from '@/components/icons';
 import AppShell from '../components/AppShell';
 import PageHeader from '../components/PageHeader';
 import VerseMotif from '../components/verse/VerseMotif';
@@ -59,11 +57,9 @@ export default function VersesPage() {
 
 function VersesBody({ mine }: { mine: Set<string> }) {
   useSummitContent();
-  const { profile } = useAuth();
   const { ready, redirect } = useRequireProfile();
   const wide = useWideScreen();
   const [active, setActive] = useState(0);
-  const [creating, setCreating] = useState(false);
   const count = countWord(USER_DISCIPLINES.length);
 
   if (redirect) return <Navigate to={redirect} replace />;
@@ -101,13 +97,7 @@ function VersesBody({ mine }: { mine: Set<string> }) {
         label="Emerald Summit 2027"
         title="Disciplines"
         sub={`Every track at the Summit lives in one of ${count} disciplines. Open one to see its tracks.`}
-        actions={profile?.role === 'admin' ? (
-          <Button onClick={() => setCreating(true)} className="bg-emerald-deep text-white hover:bg-emerald">
-            <Plus className="h-4 w-4" /> New discipline
-          </Button>
-        ) : undefined}
       />
-      {profile?.role === 'admin' && <NewDisciplineDialog open={creating} onOpenChange={setCreating} />}
 
       {wide ? (
         <div
@@ -176,7 +166,7 @@ function VersePanel({
         else if (e.target === e.currentTarget) openVerse(discipline.name, originOf(e));
       }}
       className={cn(
-        'group relative overflow-hidden rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        'group relative overflow-hidden rounded-[22px] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         stacked
           ? 'min-h-[300px]'
           : 'min-w-0 cursor-pointer transition-[flex-grow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
@@ -313,7 +303,7 @@ function EnterButton({
       type="button"
       tabIndex={tabIndex}
       onClick={onClick}
-      className="inline-flex items-center gap-2 rounded-md px-5 py-2.5 text-sm font-bold transition-transform hover:translate-x-0.5"
+      className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition-transform hover:translate-x-0.5"
       style={{ background: vibe.accent, color: vibe.background }}
     >
       {label} <ArrowRight className="h-4 w-4" />

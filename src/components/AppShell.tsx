@@ -53,7 +53,7 @@ const NAV_ITEMS: NavItem[] = [
     group: 'My Summit',
     roles: ['participant', 'attendee', 'expert', 'volunteer', 'ambassador', 'admin'],
   },
-  { to: '/disciplines', label: 'Explore & Register', icon: Compass, group: 'My Summit' },
+  { to: '/disciplines', label: 'Explore', icon: Compass, group: 'My Summit' },
   { to: '/announcements', label: 'Announcements', icon: Megaphone, group: 'My Summit' },
   { to: '/archie', label: 'Ask Archie', icon: Sparkles, group: 'My Summit' },
   { to: '/account', label: 'Profile', icon: UserRound, group: 'Account' },
@@ -504,7 +504,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             }
           >
             <Icon className="h-5 w-5" />
-            <span className={to === '/disciplines' ? 'max-w-16 whitespace-normal text-center leading-tight' : 'truncate'}>{label}</span>
+            <span className="truncate">{label}</span>
           </NavLink>
         ))}
       </nav>

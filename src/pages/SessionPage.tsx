@@ -83,7 +83,7 @@ function SessionWorld({
           <button
             type="button"
             onClick={() => close(onBack)}
-            className="mb-8 inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-semibold transition-colors"
+            className="mb-8 inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors"
             style={{ background: rgba(vibe.surface, 0.7), color: vibe.text }}
           >
             <ChevronLeft className="h-4 w-4" /> Back

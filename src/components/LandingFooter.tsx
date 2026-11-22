@@ -35,7 +35,8 @@ export default function LandingFooter() {
             subtitleClassName="text-[13px] text-white/70"
           />
           <p>
-            A student-run STEAM Summit for Tri-Valley high schoolers, with six
+            A student-run STEAM+ Summit for Tri-Valley high schoolers: science,
+            technology, engineering, arts and math, plus business and law. Six
             disciplines, one day, 100% free.
           </p>
         </div>

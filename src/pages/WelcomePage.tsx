@@ -295,7 +295,7 @@ export default function WelcomePage() {
             custom={playingIntro ? AFTER_INTRO_DELAY : 0.1}
           >
             <motion.p className="lp-hero__lede" variants={rise}>
-              The Tri-Valley’s largest student-led STEAM conference
+              The Tri-Valley’s largest student-led conference
             </motion.p>
 
             <motion.h1 id="hero-title" className="lp-hero__title" variants={playingIntro ? undefined : rise}>
@@ -314,13 +314,6 @@ export default function WelcomePage() {
               <div className="lp-hero__actions">
                 <button type="button" className="lp-btn" onClick={() => navigate('/home')}>
                   Get started
-                </button>
-                <button
-                  type="button"
-                  className="lp-btn lp-btn--quiet"
-                  onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                >
-                  Learn more
                 </button>
               </div>
             </motion.div>

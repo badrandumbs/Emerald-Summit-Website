@@ -23,7 +23,6 @@ import {
   EAF_VOLUNTEER_URL,
   SupportEafCard,
 } from '../home/AboutSections';
-import NewDisciplineDialog from '../verse/NewDisciplineDialog';
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -96,43 +95,5 @@ describe('About, Support EAF and Sponsors', () => {
     expect(about).toHaveTextContent('100% built by Emerald High School students');
     expect(about).toHaveTextContent('Arjun Mahajan and Akhil Muthyala');
     expect(about).toHaveTextContent('Nihtahli Anand, Arush Singh, Guhan Bala and Deep Shah');
-  });
-});
-
-describe('New discipline', () => {
-  test('checks the id and name with the app wording', async () => {
-    const user = userEvent.setup();
-    render(<NewDisciplineDialog open onOpenChange={vi.fn()} />);
-    await user.type(screen.getByLabelText('Id (slug)'), 'Health Verse');
-    await user.click(screen.getByRole('button', { name: /Create discipline/ }));
-    expect(screen.getByRole('alert')).toHaveTextContent('Id must be lowercase letters, numbers, or _.');
-    await user.clear(screen.getByLabelText('Id (slug)'));
-    await user.type(screen.getByLabelText('Id (slug)'), 'healthverse');
-    await user.click(screen.getByRole('button', { name: /Create discipline/ }));
-    expect(screen.getByRole('alert')).toHaveTextContent('Name is required.');
-    expect(mocks.create).not.toHaveBeenCalled();
-  });
-
-  test('creates it and closes', async () => {
-    const user = userEvent.setup();
-    const onOpenChange = vi.fn();
-    mocks.create.mockResolvedValue(undefined);
-    render(<NewDisciplineDialog open onOpenChange={onOpenChange} />);
-    await user.type(screen.getByLabelText('Id (slug)'), 'HealthVerse');
-    await user.type(screen.getByLabelText('Name'), 'HealthVerse');
-    await user.type(screen.getByLabelText('Tagline'), 'Medicine & public health');
-    await user.click(screen.getByRole('button', { name: /Create discipline/ }));
-    expect(mocks.create).toHaveBeenCalledWith({ id: 'healthverse', name: 'HealthVerse', tagline: 'Medicine & public health', icon: 'category' });
-    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
-  });
-
-  test('a taken id says so', async () => {
-    const user = userEvent.setup();
-    mocks.create.mockRejectedValue(new Error('duplicate key'));
-    render(<NewDisciplineDialog open onOpenChange={vi.fn()} />);
-    await user.type(screen.getByLabelText('Id (slug)'), 'techverse');
-    await user.type(screen.getByLabelText('Name'), 'TechVerse');
-    await user.click(screen.getByRole('button', { name: /Create discipline/ }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Could not create. The id may already be taken.');
   });
 });
