@@ -1,8 +1,11 @@
 // The participant registration form, ported from the app's
-// session_registration_screen.dart. Always asks the built-in project question
-// (solo with a project name, or a team: create one and get a code, or join a
+// session_registration_screen.dart. Asks the built-in project question (solo
+// with a project name, or a team: create one and get a code, or join a
 // teammate's by code after confirming its project), then the session's own
-// questions. Editing an existing registration prefills it, and a team member
+// questions. A track can switch the project name off (askProjectName); then
+// only solo or team is asked, and a new team is named after its creator by
+// the database. A track with every question off never opens this form.
+// Editing an existing registration prefills it, and a team member
 // can stay on their team.
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -59,6 +62,7 @@ export default function RegistrationForm({
   // Solo-only sessions skip the question, unless they're already on a team.
   const askSoloOrTeam = !soloOnly || onTeamNow;
   const prompt = projectPromptOf(session);
+  const askName = session.askProjectName !== false;
   const questions = session.questions ?? [];
 
   const [isTeam, setIsTeam] = useState<boolean | null>(initialProject ? initialProject.isTeam : soloOnly ? false : null);
@@ -114,16 +118,16 @@ export default function RegistrationForm({
     let project: ProjectChoice;
     if (isTeam == null) return setError("Choose whether you're participating solo or as a team.");
     if (!isTeam) {
-      if (!soloName.trim()) return setError(projectMissing);
+      if (askName && !soloName.trim()) return setError(projectMissing);
       project = { action: 'solo', projectName: soloName.trim() };
     } else if (teamAction === 'createTeam') {
-      if (!newTeamName.trim()) return setError(projectMissing);
+      if (askName && !newTeamName.trim()) return setError(projectMissing);
       project = { action: 'createTeam', projectName: newTeamName.trim() };
     } else if (teamAction === 'joinTeam') {
       if (!confirmedTeam) return setError('Enter your team code and select "Find team" to confirm it.');
       project = { action: 'joinTeam', teamCode: confirmedTeam.code };
     } else if (teamAction === 'stayOnTeam') {
-      project = { action: 'stayOnTeam', projectName: stayName.trim() || undefined };
+      project = { action: 'stayOnTeam', projectName: askName ? stayName.trim() || undefined : undefined };
     } else {
       return setError('Create a team or join one with a code.');
     }
@@ -143,11 +147,13 @@ export default function RegistrationForm({
     );
 
   const projectField = (id: string, value: string, set: (v: string) => void, helper?: string) => (
-    <div className="space-y-2">
-      <Label htmlFor={id} className="text-sm font-semibold">{prompt}</Label>
-      <Input id={id} value={value} placeholder="Your answer" onChange={(e) => set(e.target.value)} />
-      {helper && <p className="text-xs text-muted-foreground">{helper}</p>}
-    </div>
+    askName ? (
+      <div className="space-y-2">
+        <Label htmlFor={id} className="text-sm font-semibold">{prompt}</Label>
+        <Input id={id} value={value} placeholder="Your answer" onChange={(e) => set(e.target.value)} />
+        {helper && <p className="text-xs text-muted-foreground">{helper}</p>}
+      </div>
+    ) : helper ? <p className="text-sm text-muted-foreground">{helper}</p> : null
   );
 
   return (
@@ -200,7 +206,7 @@ export default function RegistrationForm({
 
               {teamAction === 'stayOnTeam' && (
                 <div className="space-y-2">
-                  {projectField('stay-project', stayName, setStayName, 'Changing this changes it for your whole team.')}
+                  {projectField('stay-project', stayName, setStayName, askName ? 'Changing this changes it for your whole team.' : undefined)}
                   {initialProject?.teamCode && <p className="text-sm">Team code: {initialProject.teamCode}</p>}
                 </div>
               )}
@@ -284,7 +290,9 @@ export default function RegistrationForm({
               <DialogTitle>Confirm your team</DialogTitle>
               <DialogDescription asChild>
                 <div className="space-y-2 text-sm">
-                  {session.customProjectPrompt ? (
+                  {!askName ? (
+                    <p>Is this your team?<br /><strong>{pendingTeam?.projectName}</strong></p>
+                  ) : session.customProjectPrompt ? (
                     <p>Is this your team?<br />{prompt}<br /><strong>"{pendingTeam?.projectName}"</strong></p>
                   ) : (
                     <p>Is your project name <strong>"{pendingTeam?.projectName}"</strong>?</p>

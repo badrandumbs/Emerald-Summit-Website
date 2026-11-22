@@ -50,7 +50,7 @@ export default function ProjectCard({
         </p>
       ) : (
         <div className="mt-2 space-y-3">
-          <p className="text-lg font-semibold">{p.projectName}</p>
+          {p.projectName && <p className="text-lg font-semibold">{p.projectName}</p>}
           {p.isTeam && p.teamCode && (
             <div className="space-y-1.5">
               <TeamCodeChip code={p.teamCode} />

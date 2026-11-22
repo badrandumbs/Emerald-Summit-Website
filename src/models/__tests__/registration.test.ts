@@ -9,6 +9,7 @@ import {
   parseQuestions,
   participationClosed,
   participationGradeBlock,
+  registrationAsksAnything,
   registrationResultFrom,
   teamCodePrefix,
   teamLookupFrom,
@@ -21,7 +22,9 @@ import { safeAttachmentUrl } from '../../services/announcements';
 
 describe('registration rules ported from the app', () => {
   test('register_for_session outcomes map like RegistrationResult', () => {
-    expect(registrationResultFrom({ outcome: 'added', team_code: 'TV1234' })).toEqual({ outcome: 'added', teamCode: 'TV1234' });
+    expect(registrationResultFrom({ outcome: 'added', team_code: 'TV1234' })).toEqual({ outcome: 'added', teamCode: 'TV1234', projectName: null });
+    expect(registrationResultFrom({ outcome: 'added', team_code: 'TV1234', project_name: "Alex's team" }))
+      .toEqual({ outcome: 'added', teamCode: 'TV1234', projectName: "Alex's team" });
     expect(registrationResultFrom({ outcome: 'conflict', conflicting_title: 'Robots', conflict_kind: 'managing' }))
       .toEqual({ outcome: 'conflict', conflictingTitle: 'Robots', conflictKind: 'managing' });
     expect(registrationResultFrom({ outcome: 'choose_new_owner' })).toEqual({
@@ -167,5 +170,26 @@ describe('participationGradeBlock', () => {
     expect(gradeBlockFromError('eighth_grade_not_allowed')).toBe('eighth_grade_not_allowed');
     expect(gradeBlockFromError('middle_school_not_allowed')).toBe('middle_school_not_allowed');
     expect(gradeBlockFromError('registration_closed')).toBeNull();
+  });
+});
+
+describe('tracks that ask fewer questions', () => {
+  const q = [{ id: 'q1', prompt: 'Why this track?' }];
+  test('questions switched off asks nothing, whatever else is set', () => {
+    expect(registrationAsksAnything({ askQuestions: false, maxTeamSize: 4, questions: q })).toBe(false);
+    expect(registrationAsksAnything({ askQuestions: false }, true)).toBe(false);
+  });
+  test('defaults still open the form', () => {
+    expect(registrationAsksAnything({})).toBe(true);
+    expect(registrationAsksAnything({ maxTeamSize: 1 })).toBe(true);
+  });
+  test('no project name still asks solo or team where teams are allowed', () => {
+    expect(registrationAsksAnything({ askProjectName: false, maxTeamSize: 4 })).toBe(true);
+  });
+  test('solo only with no project name and no own questions asks nothing', () => {
+    expect(registrationAsksAnything({ askProjectName: false, maxTeamSize: 1 })).toBe(false);
+    expect(registrationAsksAnything({ askProjectName: false, maxTeamSize: 1, questions: q })).toBe(true);
+    // Someone on a team from before can still choose to stay or go solo.
+    expect(registrationAsksAnything({ askProjectName: false, maxTeamSize: 1 }, true)).toBe(true);
   });
 });

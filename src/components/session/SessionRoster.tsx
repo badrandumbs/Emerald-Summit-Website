@@ -36,7 +36,7 @@ interface Group {
 
 const byName = (a: RosterEntry, b: RosterEntry) => a.name.toLowerCase().localeCompare(b.name.toLowerCase());
 
-export function groupRoster(roster: RosterEntry[], maxTeamSize: number): Group[] {
+export function groupRoster(roster: RosterEntry[], maxTeamSize: number, askQuestions = true): Group[] {
   if (!roster.some((e) => e.type === 'participant')) return [];
   const teams = new Map<string, RosterEntry[]>();
   const projects: Group[] = [];
@@ -50,7 +50,8 @@ export function groupRoster(roster: RosterEntry[], maxTeamSize: number): Group[]
       if (!teams.has(e.teamId)) teams.set(e.teamId, []);
       teams.get(e.teamId)!.push(e);
     } else if (e.isTeam === false) {
-      projects.push({ title: e.projectName || 'Untitled project', detail: 'Solo', members: [e], isProject: true, isTeam: false });
+      // A track without the project question saves solo work unnamed.
+      projects.push({ title: e.projectName || e.name || e.email || 'Untitled project', detail: 'Solo', members: [e], isProject: true, isTeam: false });
     } else unshared.push(e);
   }
   for (const members of teams.values()) {
@@ -70,7 +71,9 @@ export function groupRoster(roster: RosterEntry[], maxTeamSize: number): Group[]
   projects.sort((a, b) => (a.isTeam !== b.isTeam ? (a.isTeam ? -1 : 1) : a.title.toLowerCase().localeCompare(b.title.toLowerCase())));
   return [
     ...projects,
-    ...(unshared.length ? [{ title: 'Project not shared yet', detail: 'Registered before the team question, or still deciding', members: unshared, isProject: false, isTeam: false }] : []),
+    ...(unshared.length ? [askQuestions
+      ? { title: 'Project not shared yet', detail: 'Registered before the team question, or still deciding', members: unshared, isProject: false, isTeam: false }
+      : { title: 'Participants', detail: 'This track does not ask participants any questions', members: unshared, isProject: false, isTeam: false }] : []),
     ...(spectators.length ? [{ title: 'Spectators', members: spectators, isProject: false, isTeam: false }] : []),
     ...(experts.length ? [{ title: 'Experts', members: experts, isProject: false, isTeam: false }] : []),
   ];
@@ -168,7 +171,7 @@ export default function SessionRoster({
   if (!roster) return <div className="space-y-3 py-4"><Skeleton className="h-14 w-full" /><Skeleton className="h-14 w-full" /></div>;
 
   const present = roster.filter((e) => e.attended).length;
-  const groups = groupRoster(roster, session.maxTeamSize ?? DEFAULT_MAX_TEAM_SIZE);
+  const groups = groupRoster(roster, session.maxTeamSize ?? DEFAULT_MAX_TEAM_SIZE, session.askQuestions !== false);
   const projectCount = groups.filter((g) => g.isProject).length;
   const prompts = Object.fromEntries((session.questions ?? []).map((q) => [q.id, q.prompt]));
   // What removing does to their team: deleted when they're the last one on it

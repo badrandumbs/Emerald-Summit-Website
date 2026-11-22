@@ -73,6 +73,8 @@ interface SessionRow {
   project_prompt?: string | null;
   participant_deadline?: string | null;
   allow_eighth_graders?: boolean | null;
+  ask_participant_questions?: boolean | null;
+  ask_project_name?: boolean | null;
   page_blocks?: unknown;
   hero_image_url?: string | null;
   sponsor?: string | null;
@@ -86,6 +88,16 @@ interface SessionRow {
 let eighthGradeColumn = false;
 export function hasEighthGradeColumn(): boolean {
   return eighthGradeColumn;
+}
+
+/**
+ * Whether the shared sessions have the ask_participant_questions and
+ * ask_project_name columns yet (participant_question_switches.sql in the app
+ * repo). Until then the editor can't save the switches and every track asks.
+ */
+let questionSwitchColumns = false;
+export function hasQuestionSwitchColumns(): boolean {
+  return questionSwitchColumns;
 }
 
 export function usesSharedBackend(): boolean {
@@ -144,6 +156,8 @@ const sessionFromRow = (r: SessionRow): Session => ({
   customProjectPrompt: r.project_prompt?.trim() || null,
   participantDeadline: r.participant_deadline ?? null,
   allowEighthGraders: r.allow_eighth_graders === true,
+  askQuestions: r.ask_participant_questions !== false,
+  askProjectName: r.ask_project_name !== false,
   pageBlocks: parsePageBlocks(r.page_blocks),
   heroImageUrl: r.hero_image_url?.trim() || null,
   sponsor: r.sponsor?.trim() || null,
@@ -172,7 +186,10 @@ export async function loadSummitContent(): Promise<void> {
     return;
   }
   const rows = (sessions.data ?? []) as SessionRow[];
-  if (rows.length > 0) eighthGradeColumn = 'allow_eighth_graders' in rows[0];
+  if (rows.length > 0) {
+    eighthGradeColumn = 'allow_eighth_graders' in rows[0];
+    questionSwitchColumns = 'ask_participant_questions' in rows[0] && 'ask_project_name' in rows[0];
+  }
   const disciplineRows = (disciplines.data ?? []) as DisciplineRow[];
   replaceDisciplines(disciplineRows);
   const names = new Set(disciplineRows.map((d) => d.id));
@@ -382,6 +399,9 @@ export interface SessionColumns {
   participant_deadline: string | null;
   /** Left out until the column exists on the shared backend. */
   allow_eighth_graders?: boolean;
+  /** Left out until the columns exist on the shared backend. */
+  ask_participant_questions?: boolean;
+  ask_project_name?: boolean;
   project_prompt: string | null;
   description: string;
   /** The session page's top photo, a public session_photos URL. */

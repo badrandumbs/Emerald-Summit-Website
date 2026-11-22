@@ -45,6 +45,10 @@ export interface Session {
   participantDeadline?: string | null;
   /** Whether 8th graders may participate (anyone may spectate). Off unless the leads tick it. */
   allowEighthGraders?: boolean;
+  /** Whether participants answer anything when registering. On unless the editors switch it off. */
+  askQuestions?: boolean;
+  /** Whether the project question is asked. On unless the editors switch it off. */
+  askProjectName?: boolean;
   pageBlocks?: SessionPageBlock[];
   heroImageUrl?: string | null;
   sponsor?: string | null;

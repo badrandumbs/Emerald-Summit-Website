@@ -154,6 +154,21 @@ export interface MyProject {
 
 export const teamsAllowed = (maxTeamSize: number) => maxTeamSize >= 2;
 
+/**
+ * Whether registering to participate opens the form at all. A track with its
+ * questions switched off asks nothing, and so does a solo-only track with no
+ * project question and no questions of its own (unless the person is on a
+ * team from before, who can still choose to stay or go solo).
+ */
+export function registrationAsksAnything(
+  s: { askQuestions?: boolean; askProjectName?: boolean; maxTeamSize?: number; questions?: SessionQuestion[] },
+  onTeamNow = false,
+): boolean {
+  if (s.askQuestions === false) return false;
+  if ((s.questions ?? []).length > 0 || s.askProjectName !== false || onTeamNow) return true;
+  return teamsAllowed(s.maxTeamSize ?? DEFAULT_MAX_TEAM_SIZE);
+}
+
 /** True when leaving would need a new owner: the caller owns a team with others on it. */
 export const mustHandOff = (p: MyProject | null) =>
   p != null && p.isTeam && p.isOwner && p.members.length > 1;
@@ -205,7 +220,7 @@ export function conflictKindFrom(raw: unknown): ConflictKind {
 }
 
 export type RegistrationResult =
-  | { outcome: 'added'; teamCode: string | null }
+  | { outcome: 'added'; teamCode: string | null; projectName?: string | null }
   | { outcome: 'removed' }
   | { outcome: 'full' }
   | { outcome: 'participation_closed' }
@@ -228,7 +243,11 @@ export function registrationResultFrom(raw: Record<string, unknown> | null): Reg
         conflictKind: conflictKindFrom(raw?.conflict_kind),
       };
     default:
-      return { outcome: 'added', teamCode: typeof raw?.team_code === 'string' ? raw.team_code : null };
+      return {
+        outcome: 'added',
+        teamCode: typeof raw?.team_code === 'string' ? raw.team_code : null,
+        projectName: typeof raw?.project_name === 'string' ? raw.project_name : null,
+      };
   }
 }
 

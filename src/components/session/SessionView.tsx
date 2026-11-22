@@ -26,6 +26,7 @@ import {
   formatDeadline,
   mustHandOff,
   normalizeTeamCode,
+  registrationAsksAnything,
   participationClosed,
   participationGradeBlock,
   isEighthGradeParticipant,
@@ -201,6 +202,8 @@ export default function SessionView({
   const disciplineLabel = s.disciplineName || disciplineByName(s.track)?.label || '';
   const deadline = s.participantDeadline ? new Date(s.participantDeadline) : null;
   const closed = participationClosed(s.participantDeadline);
+  // Going solo asks for a project name only where the track still asks one.
+  const asksProjectName = s.askQuestions !== false && s.askProjectName !== false;
   // Middle schoolers can always spectate; 8th graders participate only where
   // the leads allowed it. The server refuses it too (register_for_session).
   const gradeBlock = participationGradeBlock(profile?.details?.grade, s.allowEighthGraders);
@@ -260,7 +263,7 @@ export default function SessionView({
       case 'added':
         await afterChange();
         toast.success(`Added "${s.title}" (${type === 'participant' ? 'participating' : type === 'spectator' ? 'spectating' : 'expert'})`);
-        if (result.teamCode) setNewTeamCode({ code: result.teamCode, name: extra?.project && 'projectName' in extra.project ? extra.project.projectName ?? '' : '' });
+        if (result.teamCode) setNewTeamCode({ code: result.teamCode, name: result.projectName || (extra?.project && 'projectName' in extra.project ? extra.project.projectName ?? '' : '') });
         break;
       case 'removed':
         await afterChange();
@@ -330,7 +333,13 @@ export default function SessionView({
   const pickMode = async (mode: AddMode) => {
     setChoosing(false);
     if (mode === 'manage') return setManage(true);
-    if (mode === 'participate') return setForm({ editing: false, answers: {} });
+    if (mode === 'participate') {
+      // A track that asks nothing registers straight away. One that only
+      // skips the project name and allows no teams registers them solo.
+      if (s.askQuestions === false) return register('participant');
+      if (!registrationAsksAnything(s)) return register('participant', { project: { action: 'solo', projectName: '' }, answers: {} });
+      return setForm({ editing: false, answers: {} });
+    }
     await register(TYPE_FOR[mode]);
   };
 
@@ -523,7 +532,7 @@ export default function SessionView({
             <p className="rounded-2xl bg-secondary px-4 py-3 text-sm">{STATUS_LABEL[registeredType]}</p>
             {registeredType === 'participant' && (
               <>
-                {projectLoaded && (
+                {projectLoaded && (project != null || s.askQuestions !== false) && (
                   <ProjectCard
                     project={project}
                     onLeave={() => setLeaving({ name: project?.projectName ?? '', error: null })}
@@ -531,9 +540,11 @@ export default function SessionView({
                     onRemoveMember={setRemoving}
                   />
                 )}
-                <Button variant="outline" onClick={() => void editRegistration()}>
-                  <Pencil className="h-4 w-4" /> {projectLoaded && project == null ? 'Add my project details' : 'Edit my registration'}
-                </Button>
+                {registrationAsksAnything(s, project?.isTeam ?? false) && (
+                  <Button variant="outline" onClick={() => void editRegistration()}>
+                    <Pencil className="h-4 w-4" /> {projectLoaded && project == null ? 'Add my project details' : 'Edit my registration'}
+                  </Button>
+                )}
               </>
             )}
             <div>
@@ -739,18 +750,20 @@ export default function SessionView({
             <DialogTitle>Leave team?</DialogTitle>
             <DialogDescription>You'll stay registered for this track as a solo participant.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            <Label htmlFor="solo-name">{projectPromptOf(s)}</Label>
-            <Input id="solo-name" value={leaving?.name ?? ''} onChange={(e) => setLeaving((l) => l && { ...l, name: e.target.value, error: null })} />
-            {leaving?.error && <p className="text-sm text-destructive">{leaving.error}</p>}
-          </div>
+          {asksProjectName && (
+            <div className="space-y-2">
+              <Label htmlFor="solo-name">{projectPromptOf(s)}</Label>
+              <Input id="solo-name" value={leaving?.name ?? ''} onChange={(e) => setLeaving((l) => l && { ...l, name: e.target.value, error: null })} />
+              {leaving?.error && <p className="text-sm text-destructive">{leaving.error}</p>}
+            </div>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setLeaving(null)}>Cancel</Button>
             <Button
               variant="destructive"
               onClick={() => {
-                const name = leaving?.name.trim() ?? '';
-                if (!name) setLeaving((l) => l && { ...l, error: 'Please answer this to go solo.' });
+                const name = asksProjectName ? leaving?.name.trim() ?? '' : '';
+                if (asksProjectName && !name) setLeaving((l) => l && { ...l, error: 'Please answer this to go solo.' });
                 else void leaveTeam(name);
               }}
             >Leave team</Button>

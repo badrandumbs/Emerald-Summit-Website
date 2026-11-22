@@ -1,6 +1,7 @@
 // The session editor against the shared database, matching the app's
 // session_editor_screen.dart: start and end times, seats, team size, the
-// participant deadline, the project question's wording, the session's own
+// participant deadline, whether participants are asked anything at all,
+// whether and how the project question is asked, the session's own
 // questions, page sections, hero photo and gallery, and whether 8th graders
 // may participate. Rooms stay locked and the old free-text
 // expert line is gone, as in the app. A time change that clashes with
@@ -10,6 +11,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -28,6 +30,7 @@ import {
 import {
   deleteSession,
   hasEighthGradeColumn,
+  hasQuestionSwitchColumns,
   notifyTimeConflicts,
   previewTimeConflicts,
   saveSessionColumns,
@@ -66,6 +69,9 @@ export default function SharedSessionForm({
   const [allowEighth, setAllowEighth] = useState(s?.allowEighthGraders === true);
   const eighthGradeReady = hasEighthGradeColumn();
   const [deadline, setDeadline] = useState(s?.participantDeadline ? localInput(new Date(s.participantDeadline)) : '');
+  const switchesReady = hasQuestionSwitchColumns();
+  const [askQuestions, setAskQuestions] = useState(s?.askQuestions !== false);
+  const [askProjectName, setAskProjectName] = useState(s?.askProjectName !== false);
   const [projectPrompt, setProjectPrompt] = useState(s?.customProjectPrompt ?? DEFAULT_QUESTIONS.projectName);
   const [description, setDescription] = useState(s?.description ?? '');
   const [hero, setHero] = useState<string | null>(s?.heroImageUrl ?? null);
@@ -124,6 +130,7 @@ export default function SharedSessionForm({
       max_team_size: maxTeamSize,
       participant_deadline: deadline ? new Date(deadline).toISOString() : null,
       ...(eighthGradeReady ? { allow_eighth_graders: allowEighth } : {}),
+      ...(switchesReady ? { ask_participant_questions: askQuestions, ask_project_name: askProjectName } : {}),
       project_prompt: !prompt || prompt === DEFAULT_QUESTIONS.projectName ? null : prompt,
       description: description.trim(),
       hero_image_url: hero,
@@ -245,7 +252,26 @@ export default function SharedSessionForm({
           </div>
 
           <section className="space-y-3 rounded-xl border border-border p-3">
-            <p className="text-sm font-semibold">Participant questions</p>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <Label htmlFor="ss-ask" className="text-sm font-semibold">Participant questions</Label>
+                <p id="ss-ask-help" className="mt-1 text-xs text-muted-foreground">
+                  {!switchesReady
+                    ? 'Turning questions off is available once the Summit database is updated.'
+                    : askQuestions
+                      ? 'Participants answer these when they register.'
+                      : 'Participants register without answering anything: no team or project questions. Good for workshops.'}
+                </p>
+              </div>
+              <Switch
+                id="ss-ask"
+                checked={askQuestions}
+                disabled={!switchesReady}
+                onCheckedChange={setAskQuestions}
+                aria-describedby="ss-ask-help"
+              />
+            </div>
+            {askQuestions && (<>
             <p className="text-xs font-medium text-muted-foreground">Default questions (set by the app)</p>
             <p className="text-sm">{DEFAULT_QUESTIONS.soloOrTeam}</p>
             <div className="space-y-1.5">
@@ -268,11 +294,30 @@ export default function SharedSessionForm({
               </p>
             )}
             <div className="space-y-1.5">
-              <Label htmlFor="ss-prompt">Project question (you can reword this)</Label>
-              <Input id="ss-prompt" maxLength={200} value={projectPrompt} onChange={(e) => setProjectPrompt(e.target.value)} />
-              <p className="text-xs text-muted-foreground">This is still a default question: you can change its wording but not remove it.</p>
-              {projectPrompt.trim() !== DEFAULT_QUESTIONS.projectName && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => setProjectPrompt(DEFAULT_QUESTIONS.projectName)}>Reset to default wording</Button>
+              <div className="flex items-center justify-between gap-3">
+                <Label htmlFor="ss-ask-project">Project question</Label>
+                <Switch
+                  id="ss-ask-project"
+                  checked={askProjectName}
+                  disabled={!switchesReady}
+                  onCheckedChange={setAskProjectName}
+                  aria-describedby="ss-ask-project-help"
+                />
+              </div>
+              {askProjectName ? (
+                <>
+                  <Input id="ss-prompt" aria-label="Project question wording" maxLength={200} value={projectPrompt} onChange={(e) => setProjectPrompt(e.target.value)} />
+                  <p id="ss-ask-project-help" className="text-xs text-muted-foreground">You can reword this question or switch it off.</p>
+                  {projectPrompt.trim() !== DEFAULT_QUESTIONS.projectName && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setProjectPrompt(DEFAULT_QUESTIONS.projectName)}>Reset to default wording</Button>
+                  )}
+                </>
+              ) : (
+                <p id="ss-ask-project-help" className="text-xs text-muted-foreground">
+                  {soloOnly
+                    ? 'Participants are not asked for a project name.'
+                    : "Participants are not asked for a project name. A new team is named after the person who creates it, like \"Alex's team\"."}
+                </p>
               )}
             </div>
             <p className="pt-1 text-xs font-medium text-muted-foreground">Your additional questions</p>
@@ -283,6 +328,7 @@ export default function SharedSessionForm({
               </div>
             ))}
             <Button type="button" variant="outline" size="sm" onClick={() => setQuestions((list) => [...list, { id: crypto.randomUUID(), prompt: '' }])}><Plus className="h-4 w-4" /> Add question</Button>
+            </>)}
           </section>
 
           <section className="space-y-3 rounded-xl border border-border p-3">
