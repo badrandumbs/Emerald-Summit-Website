@@ -32,3 +32,9 @@ test('follows each description, and puts unmatched or untimed tracks last', () =
   const civic = [t('Something New', '08:00'), t('Mock Trial', 'TBD'), t('Mock Trial Finals', '09:00')];
   expect(orderTracks('civicverse', civic).map((x) => x.title)).toEqual(['Mock Trial Finals', 'Mock Trial', 'Something New']);
 });
+
+test('matches at the start of a word, and the longest matching word picks the group', () => {
+  const imagine = [t('Culinary Arts', '08:00'), t('Smart Music Studio', '09:00'), t('Art Gallery', '10:00')];
+  // "Smart" is not art (so it's music), and "Culinary Arts" is culinary, not art.
+  expect(orderTracks('imaginex', imagine).map((x) => x.title)).toEqual(['Art Gallery', 'Smart Music Studio', 'Culinary Arts']);
+});
