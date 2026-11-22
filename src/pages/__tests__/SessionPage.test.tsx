@@ -103,6 +103,13 @@ beforeEach(() => {
   setSiteSwitchesForTests({ registrationOpen: true, showTimes: true });
 });
 
+test('the Summit logo next to Back takes you home', () => {
+  page();
+  const home = screen.getByRole('link', { name: 'Emerald Summit ’27, back to home' });
+  expect(home).toHaveAttribute('href', '/');
+  expect(home).toHaveTextContent('Emerald Summit ’27');
+});
+
 describe('while registration is closed and times are hidden', () => {
   beforeEach(() => setSiteSwitchesForTests({ registrationOpen: false, showTimes: false }));
 
@@ -156,7 +163,7 @@ describe('session page', () => {
     const { container } = page();
     expect(await screen.findByRole('heading', { name: 'Gallery' })).toBeInTheDocument();
     expect(state.photos).toHaveBeenCalledWith('s1');
-    expect([...container.querySelectorAll('img')].map((i) => i.getAttribute('src')))
+    expect([...container.querySelectorAll('img:not([src="/brand/summit-logo.png"])')].map((i) => i.getAttribute('src')))
       .toEqual(['https://cdn/s1/p_1.jpg', 'https://cdn/s1/p_2.jpg']);
   });
 
@@ -164,7 +171,7 @@ describe('session page', () => {
     state.schedule.mySchedule = ['s2'];
     const { container } = page();
     await waitFor(() => expect(state.photos).toHaveBeenCalled());
-    expect(container.querySelector('img')).toBeNull();
+    expect(container.querySelector('img:not([src="/brand/summit-logo.png"])')).toBeNull();
     expect(screen.queryByRole('heading', { name: 'Gallery' })).not.toBeInTheDocument();
   });
 

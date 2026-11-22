@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { expect, test, vi } from 'vitest';
 
 vi.mock('../../../lib/supabase', () => ({ supabase: null, isSupabaseConfigured: false }));
@@ -82,4 +82,31 @@ test('a Discover chip can open the discipline straight on a session', () => {
     </MemoryRouter>,
   );
   expect(screen.getByRole('heading', { name: 'Session s2' })).toBeInTheDocument();
+});
+
+test('the Summit logo takes you home from a discipline and from a track inside it', () => {
+  render(
+    <MemoryRouter initialEntries={['/disciplines?verse=techverse']}>
+      <Routes>
+        <Route path="/" element={<p>landing page</p>} />
+        <Route
+          path="/disciplines"
+          element={
+            <VersePortalProvider mine={new Set()} canSchedule={false}>
+              <p>grid</p>
+            </VersePortalProvider>
+          }
+        />
+      </Routes>
+    </MemoryRouter>,
+  );
+  const home = () => screen.getByRole('link', { name: 'Emerald Summit ’27, back to home' });
+  expect(home()).toHaveAttribute('href', '/');
+  expect(home()).toHaveTextContent('Emerald Summit ’27');
+  // Still there once a track is open.
+  const dialog = screen.getByRole('dialog', { name: 'TechVerse' });
+  fireEvent.click(dialog.querySelector('h3 a') as HTMLAnchorElement);
+  fireEvent.click(home());
+  expect(screen.getByText('landing page')).toBeInTheDocument();
+  expect(screen.queryByRole('dialog')).toBeNull();
 });

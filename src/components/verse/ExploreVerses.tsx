@@ -19,6 +19,7 @@ import { canEditVerse, useSummitContent } from '../../services/summitContent';
 import { orderTracks } from '../../models/trackOrder';
 import { SessionEditorDialog, type SessionEditorTarget } from './ContentEditors';
 import FlowingBorder from './FlowingBorder';
+import SummitHomeLink from './SummitHomeLink';
 import { growIn, useCircleReveal, type Origin } from './useCircleReveal';
 import SessionView from '../session/SessionView';
 import { toast } from 'sonner';
@@ -306,15 +307,18 @@ function VersePage({
       <div ref={content} className="absolute inset-0">
         <div ref={scroller} className="h-full overflow-y-auto">
           <div className="mx-auto max-w-4xl px-6 pb-16 pt-8 sm:px-10 sm:pt-10">
-            <button
-              ref={backButton}
-              type="button"
-              onClick={back}
-              className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors"
-              style={{ background: rgba(vibe.surface, 0.7), color: vibe.text }}
-            >
-              <ChevronLeft className="h-4 w-4" /> Back
-            </button>
+            <div className="flex items-center justify-between gap-3">
+              <button
+                ref={backButton}
+                type="button"
+                onClick={back}
+                className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors"
+                style={{ background: rgba(vibe.surface, 0.7), color: vibe.text }}
+              >
+                <ChevronLeft className="h-4 w-4" /> Back
+              </button>
+              <SummitHomeLink vibe={vibe} />
+            </div>
 
             {sessionId ? (
               <div ref={sessionPane} key={sessionId} className="mt-8">
