@@ -67,7 +67,7 @@ const QUICK_ACTIONS: Record<string, QuickAction[]> = {
   attendee: [
     {
       to: '/disciplines',
-      label: 'Browse tracks',
+      label: 'Explore & Register',
       sub: 'Add the tracks you want to watch',
       icon: CalendarDays,
     },
@@ -281,7 +281,7 @@ export default function HomePage() {
 
   const ownIds = ownKind ? listFor(ownKind) : [];
   const scheduleLabel =
-    ownKind === 'volunteering' ? 'View assigned tracks' : 'Browse tracks';
+    ownKind === 'volunteering' ? 'View assigned tracks' : 'Explore & Register';
   const ownLabel: AgendaKind =
     ownKind === 'judging' ? 'Expert' : ownKind === 'volunteering' ? 'Volunteering' : 'Participating';
   const agenda: AgendaItem[] = MOCK_SESSIONS.filter(

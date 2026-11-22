@@ -44,12 +44,29 @@ describe('ReportDialog', () => {
     expect(screen.getByRole('button', { name: 'Send feedback' })).toBeInTheDocument();
   });
 
-  test('requires a name', async () => {
-    open();
-    await userEvent.clear(screen.getByLabelText('Your name'));
+  test('keeps the profile name read-only and follows profile updates', async () => {
+    submit.mockResolvedValue({ ticketNo: 13, emailed: false });
+    const { rerender } = open();
+    const name = screen.getByLabelText('Your name');
+    expect(name).toHaveAttribute('readonly');
+    await userEvent.type(name, 'Someone else');
+    expect(name).toHaveValue('Ada Lovelace');
+
+    rerender(<ReportDialog open onOpenChange={() => {}} defaultName="Grace Hopper" email="ada@example.com" />);
+    expect(screen.getByLabelText('Your name')).toHaveValue('Grace Hopper');
+    await userEvent.click(screen.getByRole('radio', { name: /Feedback/ }));
+    expect(screen.getByLabelText('Your name')).toHaveAttribute('readonly');
+    await userEvent.type(screen.getByLabelText('Your feedback'), 'Helpful');
+    await userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
+    await waitFor(() => expect(submit).toHaveBeenCalledWith(expect.objectContaining({ name: 'Grace Hopper' })));
+  });
+
+  test('directs a missing profile name to the profile instead of an uneditable field', async () => {
+    render(<ReportDialog open onOpenChange={() => {}} defaultName="" email="ada@example.com" />);
     await userEvent.type(screen.getByLabelText('What went wrong?'), 'Broken');
     await userEvent.click(screen.getByRole('button', { name: 'Send bug report' }));
-    expect(screen.getByRole('alert')).toHaveTextContent('Please add your name.');
+    expect(screen.getByRole('alert')).toHaveTextContent('Add your name in your profile before sending a report.');
+    expect(submit).not.toHaveBeenCalled();
   });
 
   test('sends the report with screenshots and shows the ticket number', async () => {

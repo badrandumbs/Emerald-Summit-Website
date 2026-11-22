@@ -1,6 +1,6 @@
 // "Report a bug" and "Send feedback", opened from their own rows on Profile.
 // They're two categories of ticket (bug_reports.kind); the switch at the top
-// moves a ticket between them before it's sent. Name and description are
+// moves a ticket between them before it's sent. The profile name and description are
 // required; screenshots (picked, dropped or pasted) and an emailed copy
 // are optional. Everything else in the report is attached automatically
 // (src/services/bugReports.ts), and the form says what.
@@ -37,7 +37,7 @@ export default function ReportDialog({ open, onOpenChange, kind: initialKind = '
   email: string;
 }) {
   const [kind, setKind] = useState<ReportKind>(initialKind);
-  const [name, setName] = useState(defaultName);
+  const name = defaultName;
   const [description, setDescription] = useState('');
   const [shots, setShots] = useState<Shot[]>([]);
   const [emailCopy, setEmailCopy] = useState(true);
@@ -50,7 +50,6 @@ export default function ReportDialog({ open, onOpenChange, kind: initialKind = '
   const shotsRef = useRef(shots);
   shotsRef.current = shots;
 
-  useEffect(() => { if (!name) setName(defaultName); }, [defaultName]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (open) setKind(initialKind); }, [open, initialKind]);
   useEffect(() => () => shotsRef.current.forEach((s) => URL.revokeObjectURL(s.url)), []);
 
@@ -112,7 +111,7 @@ export default function ReportDialog({ open, onOpenChange, kind: initialKind = '
   };
 
   const send = async () => {
-    if (!name.trim()) return setProblem('Please add your name.');
+    if (!name.trim()) return setProblem('Add your name in your profile before sending a report.');
     if (!description.trim()) return setProblem(kind === 'bug' ? 'Please describe the bug.' : 'Please write your feedback.');
     setProblem(null);
     setSending(true);
@@ -170,7 +169,7 @@ export default function ReportDialog({ open, onOpenChange, kind: initialKind = '
 
             <div className="space-y-2">
               <Label htmlFor="report-name">Your name</Label>
-              <Input id="report-name" autoComplete="name" maxLength={MAX_NAME} value={name} onChange={(e) => setName(e.target.value)} required />
+              <Input id="report-name" autoComplete="name" maxLength={MAX_NAME} value={name} readOnly required />
             </div>
 
             <div className="space-y-2">

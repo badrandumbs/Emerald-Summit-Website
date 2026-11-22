@@ -10,21 +10,18 @@ import {
 import SummitLogo from './SummitLogo';
 import { useIsPhoneScreen } from '../lib/device';
 import { useSummitContent } from '../services/summitContent';
-import { orderTracks } from '../models/trackOrder';
+import { landingTrackTitles } from '../models/landingTracks';
 import { VERSE_DISCIPLINES as USER_DISCIPLINES } from '../models/verseVibes';
 import { MOCK_SESSIONS } from '../models/sessions';
 
 /**
- * A discipline's sessions by title, in its description's order (models/trackOrder.ts): tracks are sessions. Not the
+ * A discipline's public titles, in its description's order: tracks are sessions. Not the
  * session's `track` column, which some rows fill with the discipline's own name
  * ("NovaSphere") or a group ("Engineering Track"), so it named the discipline as
  * a track and folded sessions that share it into one.
  */
 function sessionTitles(discipline: string): string[] {
-  const titles = orderTracks(discipline, MOCK_SESSIONS.filter((s) => s.track === discipline))
-    .map((s) => s.title.trim())
-    .filter(Boolean);
-  return [...new Set(titles)];
+  return landingTrackTitles(discipline, MOCK_SESSIONS);
 }
 
 const COUNT = USER_DISCIPLINES.length;
@@ -132,7 +129,7 @@ function UniverseOrbit() {
           </div>
 
           <div className="lp-orbit__panel">
-            <h2 id="universes-title">Which discipline is yours?</h2>
+            <h2 id="universes-title">Disciplines</h2>
 
             <nav className="lp-orbit__index" aria-label="Disciplines">
               {USER_DISCIPLINES.map((u, i) => (
@@ -178,7 +175,7 @@ function UniverseIndex() {
     <section id="disciplines" className="lp-section lp-universes" aria-labelledby="universes-title">
       <div className="container">
         <div className="lp-head">
-          <h2 id="universes-title">Which discipline is yours?</h2>
+          <h2 id="universes-title">Disciplines</h2>
         </div>
         <ul className="lp-uni">
           {USER_DISCIPLINES.map((d) => (
