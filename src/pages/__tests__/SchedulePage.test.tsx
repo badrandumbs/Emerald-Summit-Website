@@ -82,7 +82,7 @@ describe('personal schedule', () => {
     const sessions = screen.getAllByRole('article');
     expect(sessions[0]).toHaveTextContent('Morning registered session');
     expect(sessions[1]).toHaveTextContent('Afternoon registered session');
-    expect(screen.getByRole('link', { name: /Explore & Register/ })).toHaveAttribute('href', '/disciplines');
+    expect(screen.getByRole('link', { name: /^Explore$/ })).toHaveAttribute('href', '/disciplines');
   });
 
   test('admin-assigned volunteer sessions have no remove action', () => {
