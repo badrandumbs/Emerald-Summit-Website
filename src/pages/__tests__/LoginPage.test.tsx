@@ -5,9 +5,9 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import LoginPage from '../LoginPage';
 
-const auth = vi.hoisted(() => ({ send: vi.fn(), verify: vi.fn(), google: vi.fn(), isTest: vi.fn(), testSignIn: vi.fn(), needsSignUp: vi.fn(), signOut: vi.fn() }));
+const auth = vi.hoisted(() => ({ send: vi.fn(), verify: vi.fn(), google: vi.fn(), linkedin: vi.fn(), isTest: vi.fn(), testSignIn: vi.fn(), needsSignUp: vi.fn(), signOut: vi.fn() }));
 vi.mock('../../context/AuthContext', () => ({ useAuth: () => ({ session: null, profile: null, clearSignInError: vi.fn() }) }));
-vi.mock('../../services/auth', () => ({ sendSignInCode: (email: string, role: string, opts?: unknown) => auth.send(email, role, opts), NoAccountError: class NoAccountError extends Error {}, verifySignInCode: (email: string, code: string) => auth.verify(email, code), signInWithGoogle: auth.google, signInWithGoogleIdToken: vi.fn(), isTestAccount: (email: string) => auth.isTest(email), signInWithTestAccount: (email: string, password: string) => auth.testSignIn(email, password), signedInAccountNeedsSignUp: () => auth.needsSignUp(), signOut: () => auth.signOut() }));
+vi.mock('../../services/auth', () => ({ sendSignInCode: (email: string, role: string, opts?: unknown) => auth.send(email, role, opts), NoAccountError: class NoAccountError extends Error {}, verifySignInCode: (email: string, code: string) => auth.verify(email, code), signInWithGoogle: auth.google, signInWithLinkedIn: (role: string) => auth.linkedin(role), signInWithGoogleIdToken: vi.fn(), isTestAccount: (email: string) => auth.isTest(email), signInWithTestAccount: (email: string, password: string) => auth.testSignIn(email, password), signedInAccountNeedsSignUp: () => auth.needsSignUp(), signOut: () => auth.signOut() }));
 vi.mock('../../lib/supabase', () => ({ isSupabaseConfigured: true, supabase: null }));
 // Google's script can't load in tests, so the page shows the redirect button.
 vi.mock('../../lib/googleIdentity', () => ({ GOOGLE_WEB_CLIENT_ID: 'web', loadGoogleIdentity: async () => null, makeNonce: async () => ({ raw: 'r', hashed: 'h' }) }));
@@ -23,11 +23,11 @@ beforeEach(() => {
   auth.signOut.mockResolvedValue(undefined);
 });
 
-test('expert email sign-in requires a verified code and offers no LinkedIn or local approval bypass', async () => {
+test('expert email sign-in requires a verified code and offers no local approval bypass', async () => {
   const user = userEvent.setup();
   render(<MemoryRouter initialEntries={['/login/expert']}><Routes><Route path="/login/:role" element={<LoginPage />} /><Route path="/home" element={<div>Signed-in dashboard</div>} /></Routes></MemoryRouter>);
   expect(await screen.findByRole('button', { name: 'Continue with Google' })).toBeInTheDocument();
-  expect(screen.queryByText('LinkedIn sign-in')).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Continue with LinkedIn' })).toBeInTheDocument();
   expect(screen.queryByText('Use demo mode')).not.toBeInTheDocument();
   await user.type(screen.getByLabelText('Email'), 'Expert@Example.com');
   await user.click(screen.getByRole('button', { name: 'Send sign-in code' }));
@@ -139,4 +139,19 @@ test('sign up skips the check and goes on to the sign-up questions', async () =>
   await signInWithCode(user);
   expect(await screen.findByText('Home page')).toBeInTheDocument();
   expect(auth.needsSignUp).not.toHaveBeenCalled();
+});
+
+test('LinkedIn is the first way in for experts, and only for experts', async () => {
+  const user = userEvent.setup();
+  auth.linkedin.mockResolvedValue(undefined);
+  const { unmount } = render(<MemoryRouter initialEntries={['/login/expert?mode=signup']}><Routes><Route path="/login/:role" element={<LoginPage />} /></Routes></MemoryRouter>);
+  const linkedin = await screen.findByRole('button', { name: 'Continue with LinkedIn' });
+  const google = screen.getByRole('button', { name: 'Continue with Google' });
+  expect(linkedin.compareDocumentPosition(google) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  await user.click(linkedin);
+  expect(auth.linkedin).toHaveBeenCalledWith('expert');
+  unmount();
+  render(<MemoryRouter initialEntries={['/login/participant']}><Routes><Route path="/login/:role" element={<LoginPage />} /></Routes></MemoryRouter>);
+  expect(await screen.findByRole('button', { name: 'Continue with Google' })).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Continue with LinkedIn' })).not.toBeInTheDocument();
 });

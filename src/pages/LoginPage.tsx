@@ -16,6 +16,7 @@ import {
 import { isSupabaseConfigured } from '../lib/supabase';
 import { isValidEmail } from '../lib/email';
 import GoogleSignInButton from '../components/GoogleSignInButton';
+import LinkedInSignInButton from '../components/LinkedInSignInButton';
 import ChangeRolePanel from '../components/ChangeRolePanel';
 import AuthLayout, { AUTH_ENTER, authStagger } from '../components/AuthLayout';
 import { Button } from '@/components/ui/button';
@@ -195,7 +196,9 @@ export default function LoginPage() {
           </h1>
           {signingUp && (
             <p className="mt-3 text-[15px] text-muted-foreground">
-              Continue with Google or your email, then tell us a bit about yourself.
+              {role.name === 'expert'
+                ? 'Continue with LinkedIn, Google or your email, then tell us a bit about yourself.'
+                : 'Continue with Google or your email, then tell us a bit about yourself.'}
             </p>
           )}
           {isOrganizer && (
@@ -212,6 +215,14 @@ export default function LoginPage() {
         )}
 
         <div style={authStagger(3)} className={cn(AUTH_ENTER, 'space-y-3')}>
+          {/* Experts can bring their name and photo from LinkedIn, so it comes first. */}
+          {role.name === 'expert' && (
+            <LinkedInSignInButton
+              roleName={role.name}
+              disabled={isChecking}
+              onStart={() => { clearSignInError(); setNotSignedUp(null); }}
+            />
+          )}
           {/* New accounts get this role (the allowlist decides volunteer/admin). */}
           <GoogleSignInButton
             roleName={role.name}

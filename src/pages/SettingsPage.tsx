@@ -137,7 +137,7 @@ function ProfileSettings({ profile, onSaved }: { profile: Profile; onSaved: () =
           <Input id="profile-name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         {askPhoto && (
-          <ExpertPhotoInput value={answers.photo_url ?? ''} onChange={(url) => setAnswers((a) => ({ ...a, photo_url: url }))} onBusyChange={setPhotoBusy} />
+          <ExpertPhotoInput value={answers.photo_url ?? ''} onChange={(url) => setAnswers((a) => ({ ...a, photo_url: url }))} onBusyChange={setPhotoBusy} returnPath="/account/edit" />
         )}
         {fields.map((f) => (
           <ProfileFieldInput key={f.key} field={f} value={answers[f.key] ?? ''} onChange={(v) => setAnswers((a) => ({ ...a, [f.key]: v }))} />

@@ -282,8 +282,78 @@ export async function signInWithGoogle(roleName: string): Promise<void> {
   if (error) throw error;
 }
 
+/** Supabase's name for the LinkedIn (OpenID Connect) provider. */
+const LINKEDIN = 'linkedin_oidc';
+
 /**
- * A failed Google sign-in comes back with `error_description` in the query or
+ * Continue with LinkedIn (website → Supabase → LinkedIn → back to /home).
+ * LinkedIn gives the name, email and photo. Supabase joins it to an existing
+ * account with the same verified email, so Google one day and LinkedIn the
+ * next reach the same account.
+ */
+export async function signInWithLinkedIn(roleName: string): Promise<void> {
+  savePendingRole(roleName);
+  const { error } = await requireSupabase().auth.signInWithOAuth({
+    provider: LINKEDIN,
+    options: { redirectTo: window.location.origin + '/home' },
+  });
+  if (error) {
+    localStorage.removeItem(PENDING_ROLE_KEY);
+    throw error;
+  }
+}
+
+/**
+ * Connects LinkedIn to the signed-in account (for someone who signed up with
+ * Google or an emailed code), then comes back to `returnPath`. Needs "Allow
+ * manual linking" on in Supabase.
+ */
+export async function connectLinkedIn(returnPath: string): Promise<void> {
+  const { error } = await requireSupabase().auth.linkIdentity({
+    provider: LINKEDIN,
+    options: { redirectTo: window.location.origin + returnPath },
+  });
+  if (error) throw new Error(`Couldn't connect LinkedIn (${error.message}). Try again.`);
+}
+
+/** What LinkedIn shared, if this account has LinkedIn connected. */
+export interface LinkedInDetails {
+  name: string | null;
+  photoUrl: string | null;
+}
+
+export function linkedInDetails(user: User | null | undefined): LinkedInDetails | null {
+  const identity = user?.identities?.find((i) => i.provider === LINKEDIN);
+  if (!identity) return null;
+  const d = (identity.identity_data ?? {}) as Record<string, unknown>;
+  const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : null);
+  const given = [str(d.given_name), str(d.family_name)].filter(Boolean).join(' ');
+  return {
+    name: str(d.name) ?? str(d.full_name) ?? (given || null),
+    photoUrl: str(d.picture) ?? str(d.avatar_url),
+  };
+}
+
+/**
+ * Copies the LinkedIn photo into expert_photos and returns its URL there.
+ * LinkedIn's photo links expire, so the Summit keeps its own copy.
+ */
+export async function importLinkedInPhoto(url: string): Promise<string> {
+  let blob: Blob;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(String(res.status));
+    blob = await res.blob();
+  } catch {
+    throw new Error("Couldn't get your LinkedIn photo. Upload one instead.");
+  }
+  const type = EXPERT_PHOTO_TYPES.includes(blob.type) ? blob.type : 'image/jpeg';
+  const ext = type === 'image/png' ? 'png' : type === 'image/webp' ? 'webp' : 'jpg';
+  return uploadExpertPhoto(new File([blob], `linkedin.${ext}`, { type }));
+}
+
+/**
+ * A failed Google or LinkedIn sign-in comes back with `error_description` in the query or
  * hash (for example a provider misconfiguration). Returns a message for the
  * roles page and removes the error from the address bar, so it isn't silently
  * dropped. Null when the URL has no error.
@@ -300,7 +370,12 @@ export function takeOAuthError(): string | null {
   const rest = query.toString();
   window.history.replaceState(window.history.state, '', pathname + (rest ? `?${rest}` : ''));
   localStorage.removeItem(PENDING_ROLE_KEY);
-  return `Google sign-in didn't finish (${raw.replace(/\+/g, ' ')}). Try again, or use your email.`;
+  const reason = raw.replace(/\+/g, ' ');
+  // Connect LinkedIn, with a LinkedIn account already on another Summit account.
+  if (/already (linked|exists)/i.test(reason)) {
+    return 'That LinkedIn account is already used by another Summit account. Sign in with LinkedIn to reach that account instead.';
+  }
+  return `Sign-in didn't finish (${reason}). Try again, or use your email.`;
 }
 
 /** Thrown by sendSignInCode when Sign in is used with an email that has no account. */

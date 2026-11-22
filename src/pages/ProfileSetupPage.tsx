@@ -11,7 +11,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Info, Mail, User } from '@/components/icons';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
-import { agreeToCodeOfConduct, needsProfileSetup, saveProfileDetails, signOut } from '../services/auth';
+import { agreeToCodeOfConduct, linkedInDetails, needsProfileSetup, saveProfileDetails, signOut } from '../services/auth';
 import CodeOfConductWindow from '../components/CodeOfConductWindow';
 import { Checkbox } from '@/components/ui/checkbox';
 import ExpertPhotoInput from '../components/ExpertPhotoInput';
@@ -75,7 +75,7 @@ export default function ProfileSetupPage() {
     const details = (profile?.details ?? {}) as Record<string, unknown>;
     // Google and LinkedIn give a name with the sign-in; an emailed code does not.
     const meta = session?.user.user_metadata ?? {};
-    setName(((profile?.name as string | undefined) || meta.full_name || meta.name || '').trim());
+    setName(((profile?.name as string | undefined) || meta.full_name || meta.name || linkedInDetails(session?.user)?.name || '').trim());
     setAnswers(Object.fromEntries(Object.entries(details).map(([k, v]) => [k, v == null ? '' : String(v)])));
     setPrefilled(true);
   }, [profile, loadingProfile, prefilled, session]);
@@ -229,6 +229,8 @@ export default function ProfileSetupPage() {
                 value={answers.photo_url ?? ''}
                 onChange={(url) => setAnswers((a) => ({ ...a, photo_url: url }))}
                 onBusyChange={setPhotoBusy}
+                returnPath="/profile"
+                autoImport
               />
             )}
             {roleFields}
