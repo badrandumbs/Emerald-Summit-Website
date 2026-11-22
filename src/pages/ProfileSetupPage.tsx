@@ -118,8 +118,8 @@ export default function ProfileSetupPage() {
   const save = async () => {
     setError(null);
     if (conductOnly) {
-      if (media && photoConsent == null) return setError('Please choose whether you grant photo permission.');
       if (!agreed) return setError(`Please tick the box to agree to the ${agreement.name}.`);
+      if (media && photoConsent == null) return setError('Please choose whether you grant photo permission.');
       setIsSaving(true);
       try {
         await agreeToCodeOfConduct(agreement.version, media ? photoConsent : null);
@@ -140,8 +140,8 @@ export default function ProfileSetupPage() {
     // An optional school may stay blank, but anything typed must name a school.
     const badSchool = fields.find((f) => f.schoolPicker && (answers[f.key] ?? '').trim() && !isRealSchoolName(answers[f.key]));
     if (badSchool) return setError("Type your school's full name.");
-    if (askConduct && media && photoConsent == null) return setError('Please choose whether you grant photo permission.');
     if (askConduct && !agreed) return setError(`Please tick the box to agree to the ${agreement.name}.`);
+    if (askConduct && media && photoConsent == null) return setError('Please choose whether you grant photo permission.');
     setIsSaving(true);
     try {
       const out = Object.fromEntries(fields.map((f) => [f.key, answers[f.key] ?? '']));
@@ -248,6 +248,20 @@ export default function ProfileSetupPage() {
 
         {askConduct && (
           <div className="space-y-16 pb-8">
+            <section className={cn(SECTION_RULE, 'space-y-4')}>
+              <h2 className={SECTION_HEADING}>{agreement.name}</h2>
+              <CodeOfConductWindow agreement={agreement} />
+              <label className="flex cursor-pointer items-start gap-3 text-base">
+                <Checkbox
+                  checked={agreed}
+                  onCheckedChange={(v) => setAgreed(v === true)}
+                  className="mt-0.5"
+                  aria-label={agreement.checkbox}
+                />
+                <span className="font-medium">{agreement.checkbox}</span>
+              </label>
+            </section>
+            {/* Asked after the agreement, once they have read the Code of Conduct. */}
             {media && (
               <div className={SECTION_RULE}>
               <fieldset>
@@ -270,19 +284,6 @@ export default function ProfileSetupPage() {
               </fieldset>
               </div>
             )}
-            <section className={cn(SECTION_RULE, 'space-y-4')}>
-              <h2 className={SECTION_HEADING}>{agreement.name}</h2>
-              <CodeOfConductWindow agreement={agreement} />
-              <label className="flex cursor-pointer items-start gap-3 text-base">
-                <Checkbox
-                  checked={agreed}
-                  onCheckedChange={(v) => setAgreed(v === true)}
-                  className="mt-0.5"
-                  aria-label={agreement.checkbox}
-                />
-                <span className="font-medium">{agreement.checkbox}</span>
-              </label>
-            </section>
           </div>
         )}
 

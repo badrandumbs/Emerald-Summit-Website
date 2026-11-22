@@ -154,6 +154,10 @@ test('sign-up ends with the Code of Conduct box, once the columns exist', async 
   expect(screen.getAllByText(CODE_OF_CONDUCT.mediaChoice!.grant)).toHaveLength(1);
   // No signature pad: ticking the box is the agreement.
   expect(screen.queryByRole('img', { name: /Signature pad/ })).toBeNull();
+  // The photo question comes after the Code of Conduct and its box.
+  const conductBox = screen.getByRole('checkbox', { name: CODE_OF_CONDUCT.checkbox });
+  const grantRadio = screen.getByRole('radio', { name: CODE_OF_CONDUCT.mediaChoice!.grant });
+  expect(conductBox.compareDocumentPosition(grantRadio) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   await user.click(screen.getByRole('checkbox', { name: CODE_OF_CONDUCT.checkbox }));
   // The photo permission question has to be answered too.
   expect(continueButton).toBeDisabled();
