@@ -9,6 +9,7 @@ import { lazyPage } from './lib/staleBuild';
 // dependencies — is loaded on demand, so visiting "/" doesn't pull in code
 // for pages most visitors never open.
 import WelcomePage from './pages/WelcomePage';
+import Summit27Page from './pages/Summit27Page';
 
 const HomePage = lazyPage(() => import('./pages/HomePage'));
 const LoginPage = lazyPage(() => import('./pages/LoginPage'));
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="/sessions/:id" element={<SessionPage />} />
           <Route path="/announcements" element={<AnnouncementsPage />} />
           <Route path="/archie" element={<ArchiePage />} />
+          <Route path="/summit-27" element={<Summit27Page />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/profiles" element={<Navigate to="/account" replace />} />
           <Route path="/account" element={<SettingsPage />} />

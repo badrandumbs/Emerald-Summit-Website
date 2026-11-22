@@ -437,6 +437,14 @@
   .lp-roles__figure, .lp-roles__text { grid-column: 1 / -1; }
 }
 
+/* ───────────── Emerald Summit '27 page (/summit-27): the Summit, the sponsor terraces, donating, the team ───────────── */
+.lp-s27__intro { grid-column: 1 / span 8; display: grid; gap: var(--space-lg); justify-items: start; }
+.lp-s27__when { display: flex; flex-wrap: wrap; gap: var(--space-2xs) var(--space-lg); font-weight: 500; color: var(--color-ink-2); }
+.lp-s27__actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
+.lp-s27__soon { border-top: 1px solid var(--color-rule); }
+.lp-s27__tag { padding: var(--space-2xs) var(--space-sm); border-radius: var(--radius-pill); background: color-mix(in oklab, var(--color-accent) 14%, transparent); color: var(--color-accent); font-size: var(--text-sm); font-weight: 600; }
+@media (max-width: 60rem) { .lp-s27__intro { grid-column: 1 / -1; } }
+
 /* ───────────── Contact: Start the trek. A short closing band on the deep emerald of the night sky ───────────── */
 .lp-cta { background: linear-gradient(180deg, var(--color-emerald-night), var(--color-night)); border-top: 1px solid var(--color-night-rule); padding-block: var(--space-3xl) var(--space-2xl); text-align: center; }
 .lp-cta__inner { display: grid; justify-items: center; gap: var(--space-md); }
