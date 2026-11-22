@@ -1,12 +1,13 @@
-// The Summit '27 page (/summit-27/:tab), inside the signed-in portal: its own
-// sidebar group with three subtabs, Keynote, Team and Sponsors, plus the same
-// tabs across the top of the page for phones. Support EAF (Donate and
-// Volunteer with EAF) sits under every subtab. Sponsors stay off the public
-// site: the organizers don't want unpaid sponsors getting free advertising.
+// The Summit '27 page (/summit-27/:tab), inside the signed-in portal: one
+// sidebar tab, with Keynote, Team and Sponsors as tabs across the top of the
+// page. Opening it from the sidebar plays the intro (Summit27Intro.tsx, run
+// from above the routes), whose logo lands in Support EAF (Donate and
+// Volunteer with EAF), under every tab. Sponsors stay off the public site:
+// the organizers don't want unpaid sponsors getting free advertising.
 import { Navigate, NavLink, useParams } from 'react-router-dom';
 import { Handshake, Keynote, Team, type AppIcon } from '@/components/icons';
 import AppShell from '../components/AppShell';
-import PageHeader from '../components/PageHeader';
+import { ROLL_ATTR } from '../components/Summit27Intro';
 import { LinkButton, SupportEafCard, ZeffyFormButton } from '../components/home/AboutSections';
 import { useRequireProfile } from '../hooks/useRequireProfile';
 import { SUMMIT_DATE_LABEL, SUMMIT_HOURS, VENUE } from '../models/summitFacts';
@@ -21,11 +22,37 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
-export const SUMMIT27_TABS: { id: string; label: string; title: string; icon: AppIcon }[] = [
-  { id: 'keynote', label: 'Keynote', title: 'Keynote', icon: Keynote },
-  { id: 'team', label: 'Team', title: "Who's running the Summit?", icon: Team },
-  { id: 'sponsors', label: 'Sponsors', title: 'Who helps make the Summit happen?', icon: Handshake },
+export const SUMMIT27_TABS: { id: string; label: string; icon: AppIcon }[] = [
+  { id: 'keynote', label: 'Keynote', icon: Keynote },
+  { id: 'team', label: 'Team', icon: Team },
+  { id: 'sponsors', label: 'Sponsors', icon: Handshake },
 ];
+
+const HEADING = "Summit '27";
+
+/**
+ * The page's one heading, "Summit '27" (no per-tab title: the tabs under it
+ * say where you are). Each letter is its own box so the intro can roll them
+ * in (`ROLL_ATTR`, Summit27Intro.tsx); otherwise it's plain text.
+ */
+function Summit27Heading() {
+  return (
+    <header className="mb-6">
+      <h1 aria-label={HEADING} className="font-display text-4xl font-bold text-foreground md:text-5xl">
+        <span aria-hidden {...{ [ROLL_ATTR]: '' }} className="inline-block [perspective:700px]">
+          {[...HEADING].map((c, i) => (
+            <span key={i} className="inline-block origin-bottom whitespace-pre">
+              {c}
+            </span>
+          ))}
+        </span>
+      </h1>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-[15px]">
+        {SUMMIT_DATE_LABEL} · {SUMMIT_HOURS} · {VENUE}
+      </p>
+    </header>
+  );
+}
 
 function ComingSoon({ children }: { children: string }) {
   return (
@@ -108,7 +135,7 @@ export default function Summit27Page() {
 
   return (
     <AppShell>
-      <PageHeader label="Summit '27" title={current.title} sub={`${SUMMIT_DATE_LABEL} · ${SUMMIT_HOURS} · ${VENUE}`} />
+      <Summit27Heading />
 
       <nav aria-label="Summit '27" className="mb-6 flex gap-1 overflow-x-auto border-b border-border">
         {SUMMIT27_TABS.map(({ id, label, icon: Icon }) => (
@@ -138,7 +165,7 @@ export default function Summit27Page() {
 
       <hr className="my-8 border-t border-border/80" aria-hidden />
 
-      <SupportEafCard />
+      <SupportEafCard introTarget />
     </AppShell>
   );
 }

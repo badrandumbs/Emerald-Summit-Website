@@ -18,6 +18,7 @@ import {
   CornerDownLeft,
   Keynote,
   Team,
+  Mountains,
   Handshake,
   HeartHandshake,
   type LucideIcon,
@@ -38,8 +39,9 @@ import QrPassModal from './QrPassModal';
 import ChangeRoleDialog from './ChangeRoleDialog';
 import { cn } from '@/lib/utils';
 import BeamentorBanner from './BeamentorBanner';
+import { openSummit27 } from './Summit27Intro';
 
-type NavGroup = 'My Summit' | "Summit '27" | 'Account';
+type NavGroup = 'My Summit' | 'Account';
 
 interface NavItem {
   to: string;
@@ -48,6 +50,8 @@ interface NavItem {
   group: NavGroup;
   /** Roles that see this item; omit = everyone. */
   roles?: string[];
+  /** Where a click goes, when that differs from `to` (which sets the highlight). */
+  opens?: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -64,14 +68,14 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/disciplines', label: 'Explore', icon: Compass, group: 'My Summit' },
   { to: '/announcements', label: 'Announcements', icon: Megaphone, group: 'My Summit' },
   { to: '/archie', label: 'Ask Archie', icon: Sparkles, group: 'My Summit' },
-  // Summit '27 (meeting of Nov 20, 2026): signed-in only, one subtab each.
-  { to: '/summit-27/keynote', label: 'Keynote', icon: Keynote, group: "Summit '27" },
-  { to: '/summit-27/team', label: 'Team', icon: Team, group: "Summit '27" },
-  { to: '/summit-27/sponsors', label: 'Sponsors', icon: Handshake, group: "Summit '27" },
+  // Summit '27: signed-in only. One tab (Nov 22, 2026; it was three, Keynote,
+  // Team and Sponsors, which are now tabs on the page). Clicking it plays the
+  // Summit '27 intro (Summit27Intro.tsx).
+  { to: '/summit-27', opens: '/summit-27/keynote', label: "Summit '27", icon: Mountains, group: 'My Summit' },
   { to: '/account', label: 'Profile', icon: UserRound, group: 'Account' },
 ];
 
-const NAV_GROUPS: NavGroup[] = ['My Summit', "Summit '27", 'Account'];
+const NAV_GROUPS: NavGroup[] = ['My Summit', 'Account'];
 
 export function navItemsForRole(roleName: string): NavItem[] {
   return NAV_ITEMS.filter((n) => !n.roles || n.roles.includes(roleName));
@@ -98,28 +102,62 @@ function NavBadge({ to }: { to: string }) {
   return null;
 }
 
-function SidebarLink({ to, label, icon: Icon }: NavItem) {
+/**
+ * Where a nav item points, whether it's the current page (on `to` and
+ * everything under it, so all of /summit-27/…), and its click: Summit '27
+ * plays its intro when opened from another page. A modifier click still
+ * opens a new tab as usual. Shared by the sidebar and the phone tab bar.
+ */
+function useNavItem({ to, opens }: NavItem) {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const here = pathname === to || pathname.startsWith(`${to}/`);
+  const onClick = (e: React.MouseEvent) => {
+    if (!opens || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    if (!here) openSummit27(opens, navigate);
+  };
+  return { href: opens ?? to, here, onClick };
+}
+
+function SidebarLink(item: NavItem) {
+  const { to, label, icon: Icon } = item;
+  const { href, here, onClick } = useNavItem(item);
   return (
     <NavLink
-      to={to}
-      className={({ isActive }) =>
-        cn(
-          'group flex items-center gap-3 rounded-md px-3 py-2 text-[13.5px] font-medium text-white/65 transition-colors hover:bg-white/[0.06] hover:text-white',
-          isActive &&
-            'bg-white/[0.12] font-semibold text-white hover:bg-white/[0.12]',
-        )
-      }
-    >
-      {({ isActive }) => (
-        <>
-          <Icon
-            className={cn('h-[18px] w-[18px] shrink-0', isActive && 'text-sky-300')}
-            strokeWidth={1.9}
-          />
-          <span>{label}</span>
-          <NavBadge to={to} />
-        </>
+      to={href}
+      aria-current={here ? 'page' : undefined}
+      onClick={onClick}
+      className={cn(
+        'group flex items-center gap-3 rounded-md px-3 py-2 text-[13.5px] font-medium text-white/65 transition-colors hover:bg-white/[0.06] hover:text-white',
+        here && 'bg-white/[0.12] font-semibold text-white hover:bg-white/[0.12]',
       )}
+    >
+      <Icon
+        className={cn('h-[18px] w-[18px] shrink-0', here && 'text-sky-300')}
+        strokeWidth={1.9}
+      />
+      <span>{label}</span>
+      <NavBadge to={to} />
+    </NavLink>
+  );
+}
+
+function TabBarLink(item: NavItem) {
+  const { label, icon: Icon } = item;
+  const { href, here, onClick } = useNavItem(item);
+  return (
+    <NavLink
+      to={href}
+      aria-current={here ? 'page' : undefined}
+      onClick={onClick}
+      className={cn(
+        'flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-0.5 py-1.5 text-[10.5px] font-medium tracking-tight text-white/60',
+        here && 'bg-white/10 font-bold text-white',
+      )}
+    >
+      <Icon className="h-5 w-5" />
+      <span className="max-w-full truncate">{label}</span>
     </NavLink>
   );
 }
@@ -134,11 +172,36 @@ interface SearchHit {
 }
 
 /**
- * The Support EAF and sponsor links, so typing "donate" or "sponsor" finds
- * them without opening Home or Summit '27 first. Matched on the label and
+ * The Summit '27 tabs and the Support EAF and sponsor links, so typing
+ * "keynote", "donate" or "sponsor" finds them without opening Home or Summit '27 first. Matched on the label and
  * the extra words.
  */
 const LINK_HITS: (SearchHit & { words: string[] })[] = [
+  // The Summit '27 tabs, findable by name now the sidebar has one Summit '27 tab.
+  {
+    key: 'summit-27-keynote',
+    label: 'Keynote',
+    sub: "Summit '27",
+    to: '/summit-27/keynote',
+    icon: Keynote,
+    words: ['keynote', 'speaker'],
+  },
+  {
+    key: 'summit-27-team',
+    label: 'Team',
+    sub: "Summit '27",
+    to: '/summit-27/team',
+    icon: Team,
+    words: ['team', 'organizers', 'about me'],
+  },
+  {
+    key: 'summit-27-sponsors',
+    label: 'Sponsors',
+    sub: "Summit '27",
+    to: '/summit-27/sponsors',
+    icon: Handshake,
+    words: ['sponsors', 'sponsor tiers'],
+  },
   {
     key: 'donate',
     label: 'Donate to EAF',
@@ -329,9 +392,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const roleLabel = roleLabelFor(roleName, profile?.volunteer_subtype);
   const items = navItemsForRole(roleName);
   // On a phone, the bottom bar is the app's tab bar: Home · Schedule ·
-  // Discover · Announcements · Archie. Profile is the avatar in the top bar, as on the
-  // app's Home.
-  const MOBILE_TABS = ['/home', '/schedule', '/disciplines', '/announcements', '/archie'];
+  // Discover · Announcements · Archie, then Summit '27 (website only, since
+  // Nov 22, 2026). Profile is the avatar in the top bar, as on the app's Home.
+  const MOBILE_TABS = ['/home', '/schedule', '/disciplines', '/announcements', '/archie', '/summit-27'];
   const mobileItems = MOBILE_TABS
     .map((to) => items.find((n) => n.to === to))
     .filter((n): n is NavItem => n != null);
@@ -556,20 +619,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       <nav className="portal-tabbar fixed inset-x-0 bottom-0 z-30 flex justify-around bg-navy px-1 dark:border-t dark:border-white/10 pb-[max(0.375rem,env(safe-area-inset-bottom))] pt-1.5 lg:hidden">
-        {mobileItems.map(({ to, label, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              cn(
-                'flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1.5 py-1.5 text-[10.5px] font-medium text-white/60',
-                isActive && 'bg-white/10 font-bold text-white',
-              )
-            }
-          >
-            <Icon className="h-5 w-5" />
-            <span className="truncate">{label}</span>
-          </NavLink>
+        {mobileItems.map((item) => (
+          <TabBarLink key={item.to} {...item} />
         ))}
       </nav>
 

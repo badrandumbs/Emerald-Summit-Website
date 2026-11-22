@@ -259,12 +259,45 @@ export async function fetchAnnouncements(): Promise<FeedResult> {
   };
 }
 
+/** One live change the feed can apply without fetching the whole list again. */
+export type AnnouncementChange =
+  | { type: 'upsert'; announcement: Announcement }
+  | { type: 'delete'; id: string };
+
+interface LivePayload {
+  eventType?: string;
+  new?: Partial<AnnouncementRow> | null;
+  old?: Partial<AnnouncementRow> | null;
+  errors?: unknown;
+}
+
 /**
- * Live feed subscription. Calls `onChange` whenever any admin anywhere
- * inserts, edits, or deletes an announcement; the caller re-fetches rather
- * than patching, so ordering and server defaults stay authoritative.
+ * Turns a Realtime message into a change, or undefined when it can't be
+ * trusted whole. Realtime drops long values from rows too big to send and
+ * says so in `errors`; the caller reloads the feed then.
  */
-export function subscribeToAnnouncements(onChange: () => void): () => void {
+export function changeFromPayload(payload: LivePayload): AnnouncementChange | undefined {
+  if (Array.isArray(payload.errors) ? payload.errors.length > 0 : payload.errors != null) return undefined;
+  if (payload.eventType === 'DELETE') {
+    const id = payload.old?.id;
+    return id ? { type: 'delete', id } : undefined;
+  }
+  const row = payload.new;
+  if (!row?.id || typeof row.title !== 'string' || typeof row.body !== 'string' || !row.created_at) return undefined;
+  try {
+    return { type: 'upsert', announcement: rowToAnnouncement(row as AnnouncementRow) };
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Live feed subscription. Calls `onChange` whenever anyone inserts, edits or
+ * deletes an announcement. When the message carries the whole row it passes
+ * the change, so every open page doesn't fetch the full feed at once; with no
+ * change (sign-in, another tab, a cut-short message) the caller re-fetches.
+ */
+export function subscribeToAnnouncements(onChange: (change?: AnnouncementChange) => void): () => void {
   if (!supabase) {
     const channel = new BroadcastChannel(LOCAL_CHANNEL);
     channel.onmessage = () => onChange();
@@ -282,7 +315,8 @@ export function subscribeToAnnouncements(onChange: () => void): () => void {
       channel = undefined;
     } else if (signedIn && !channel) {
       channel = client.channel('public:announcements')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, onChange)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' },
+          (payload) => onChange(changeFromPayload(payload as LivePayload)))
         .subscribe();
     }
   };

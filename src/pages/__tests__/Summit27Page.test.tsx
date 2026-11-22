@@ -46,10 +46,10 @@ describe("Summit '27 page", () => {
     expect(within(screen.getByRole('navigation', { name: 'Main' })).queryByText("Summit '27")).not.toBeInTheDocument();
   });
 
-  test('the sidebar has a Summit \'27 group with Keynote, Team and Sponsors for every role', () => {
+  test('the sidebar has one Summit \'27 tab, opening Keynote, for every role', () => {
     for (const role of ['participant', 'attendee', 'expert', 'volunteer', 'admin']) {
-      const items = navItemsForRole(role).filter((n) => n.group === "Summit '27");
-      expect(items.map((n) => n.to)).toEqual(['/summit-27/keynote', '/summit-27/team', '/summit-27/sponsors']);
+      const items = navItemsForRole(role).filter((n) => n.to.startsWith('/summit-27'));
+      expect(items.map((n) => [n.label, n.to, n.opens])).toEqual([["Summit '27", '/summit-27', '/summit-27/keynote']]);
     }
   });
 
@@ -61,7 +61,7 @@ describe("Summit '27 page", () => {
 
     const tabs = screen.getByRole('navigation', { name: "Summit '27" });
     await userEvent.click(within(tabs).getByRole('link', { name: /Team/ }));
-    expect(screen.getByRole('heading', { level: 1, name: "Who's running the Summit?" })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: "Summit '27" })).toBeInTheDocument();
     expect(screen.getByText(/About Me pages/)).toBeInTheDocument();
 
     await userEvent.click(within(tabs).getByRole('link', { name: /Sponsors/ }));
@@ -73,7 +73,8 @@ describe("Summit '27 page", () => {
 
   test('an unknown subtab opens Keynote', () => {
     renderAt('/summit-27/nope');
-    expect(screen.getByRole('heading', { level: 1, name: 'Keynote' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: "Summit '27" })).toBeInTheDocument();
+    expect(screen.getByText(/keynote speaker will be announced soon/)).toBeInTheDocument();
   });
 
   test('sponsors show in their tier; an empty tier says Open', () => {

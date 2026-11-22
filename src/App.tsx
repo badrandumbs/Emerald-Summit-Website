@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import ScrollToTop from './components/ScrollToTop';
 import GetTheAppBanner from './components/GetTheAppBanner';
 import PageRouteBoundary from './components/PageRouteBoundary';
+import Summit27IntroHost from './components/Summit27Intro';
 import { lazyPage } from './lib/staleBuild';
 // Eager: the landing page is the most common entry point, so it ships in the
 // main bundle rather than costing a round-trip on first paint. Every other
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </PageRouteBoundary>
+      <Summit27IntroHost />
     </>
   );
 }

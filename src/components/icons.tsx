@@ -84,6 +84,7 @@ import {
   SignOut,
   Sparkle,
   MicrophoneStage,
+  Mountains as PhMountains,
   Star as PhStar,
   SquaresFour,
   Sun as PhSun,
@@ -234,6 +235,7 @@ export const UserX = duotone(UserMinus, 'UserX');
 export const Users = duotone(PhUsers, 'Users');
 export const Team = duotone(UsersThree, 'Team');
 export const Keynote = duotone(MicrophoneStage, 'Keynote');
+export const Mountains = duotone(PhMountains, 'Mountains');
 export const X = plain(PhX, 'X');
 export const XCircle = duotone(PhXCircle, 'XCircle');
 export const Globe = duotone(PhGlobe, 'Globe');

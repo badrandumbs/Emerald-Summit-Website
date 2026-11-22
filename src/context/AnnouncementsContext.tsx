@@ -32,6 +32,7 @@ import {
   isBackendConfigured,
   sortAnnouncements,
   subscribeToAnnouncements,
+  type AnnouncementChange,
   type AnnouncementDraft,
   type AnnouncementEdit,
 } from '../services/announcements';
@@ -223,6 +224,15 @@ export function AnnouncementsProvider({ children }: { children: ReactNode }) {
     [announcements, readIds, seenIds, sharedState],
   );
 
+  const showBanner = useCallback((added: Announcement[]) => {
+    const banner = bannerFor(added, bannerContext.current);
+    if (!banner) return;
+    toast(banner.title, {
+      description: banner.body.length > 140 ? `${banner.body.slice(0, 139).trimEnd()}…` : banner.body,
+      action: { label: 'Open', onClick: () => navigate(banner.to) },
+    });
+  }, [navigate]);
+
   const refresh = useCallback(async () => {
     try {
       const result = await fetchAnnouncements();
@@ -233,13 +243,7 @@ export function AnnouncementsProvider({ children }: { children: ReactNode }) {
         const before = known.current;
         known.current = { user: userId, ids: new Set(result.announcements.map((a) => a.id)) };
         if (before && before.user === userId) {
-          const banner = bannerFor(result.announcements.filter((a) => !before.ids.has(a.id)), bannerContext.current);
-          if (banner) {
-            toast(banner.title, {
-              description: banner.body.length > 140 ? `${banner.body.slice(0, 139).trimEnd()}…` : banner.body,
-              action: { label: 'Open', onClick: () => navigate(banner.to) },
-            });
-          }
+          showBanner(result.announcements.filter((a) => !before.ids.has(a.id)));
         }
       }
       setFeedUserId(userId);
@@ -255,19 +259,43 @@ export function AnnouncementsProvider({ children }: { children: ReactNode }) {
     } finally {
       if (activeUser.current === userId) setLoading(false);
     }
-  }, [userId]);
+  }, [userId, showBanner]);
+
+  // Applies one live change to the list already on screen. Fetching the whole
+  // feed on every post would make every open page hit the database at once.
+  // Before this account's first load finishes there is nothing to patch, so
+  // it loads instead.
+  const applyChange = useCallback((change: AnnouncementChange) => {
+    const seen = known.current;
+    if (!seen || seen.user !== userId) {
+      void refresh();
+      return;
+    }
+    if (change.type === 'delete') {
+      seen.ids.delete(change.id);
+      setAnnouncements((prev) => prev.filter((a) => a.id !== change.id));
+      return;
+    }
+    const item = change.announcement;
+    if (!seen.ids.has(item.id)) {
+      seen.ids.add(item.id);
+      showBanner([item]);
+    }
+    setAnnouncements((prev) => sortAnnouncements([item, ...prev.filter((a) => a.id !== item.id)]));
+  }, [userId, refresh, showBanner]);
 
   useEffect(() => {
     setFeedUserId(userId);
     setAnnouncements([]);
     setLoading(true);
     void refresh();
-    // Every admin write anywhere lands here, which is what keeps a new post
-    // visible on other people's screens without a reload.
-    return subscribeToAnnouncements(() => {
-      void refresh();
+    // Every write anywhere lands here, which is what keeps a new post visible
+    // on other people's screens without a reload.
+    return subscribeToAnnouncements((change) => {
+      if (change) applyChange(change);
+      else void refresh();
     });
-  }, [refresh, userId]);
+  }, [refresh, applyChange, userId]);
 
   const create = useCallback(
     async (draft: AnnouncementDraft) => {

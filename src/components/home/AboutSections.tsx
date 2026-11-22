@@ -8,6 +8,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { ArrowRight, HeartHandshake, Loader2, X, type AppIcon } from '@/components/icons';
 import { useIsPhoneScreen } from '@/lib/device';
 import SummitLogo from '../SummitLogo';
+import { EAF_LOGO_ATTR } from '../Summit27Intro';
 import { cn } from '@/lib/utils';
 
 const EAF_SITE = 'https://www.ehsacademics.org';
@@ -234,13 +235,20 @@ export function DonateButton() {
   );
 }
 
-export function SupportEafCard() {
+export function SupportEafCard({
+  introTarget = false,
+}: {
+  /** Summit '27's card: its intro's flying logo lands on this card's logo (Summit27Intro.tsx). */
+  introTarget?: boolean;
+} = {}) {
   return (
     <section aria-labelledby="support-eaf">
       <SectionTitle id="support-eaf">Support EAF</SectionTitle>
       <div className="rounded-3xl border border-emerald/20 bg-gradient-to-br from-emerald/10 to-emerald/[0.03] p-5 sm:p-6">
         <div className="flex flex-col items-start gap-4 sm:flex-row">
-          <SummitLogo size={64} className="shrink-0" />
+          <span className="shrink-0" {...(introTarget ? { [EAF_LOGO_ATTR]: '' } : {})}>
+            <SummitLogo size={64} />
+          </span>
           <div className="max-w-3xl space-y-3 text-[14.5px] leading-relaxed">
             <p>
               This Emerald Summit App is brought to you 100% built by students and free for all to use.

@@ -186,3 +186,13 @@
     bottom: calc(max(0.375rem, env(safe-area-inset-bottom)) + 4.25rem);
   }
 }
+
+/* Summit '27's intro (Summit27Intro.tsx): the Support EAF card's logo stays
+   hidden until the intro's flying copy lands on it, and the heading's letters
+   until they roll in. */
+body.summit-intro [data-summit-eaf-logo] {
+  visibility: hidden;
+}
+body.summit-intro [data-summit-roll] > * {
+  opacity: 0;
+}
