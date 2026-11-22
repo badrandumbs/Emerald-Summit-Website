@@ -107,6 +107,8 @@ describe('unified profile', () => {
     expect(screen.queryByRole('button', { name: /Front desk check-in/ })).toBeNull();
     expect(screen.getByText('Front desk check-in')).toBeInTheDocument();
     expect(screen.getByText('Mobile app only')).toBeInTheDocument();
+    // Reports are read in the team emails, not on the website.
+    expect(screen.queryByRole('button', { name: /Bug reports and feedback/ })).toBeNull();
     state.profile = { ...state.profile, role: 'volunteer' };
   });
 });

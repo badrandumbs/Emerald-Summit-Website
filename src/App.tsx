@@ -30,7 +30,6 @@ const MetricsPage = lazyPage(() => import('./pages/MetricsPage'));
 const SummitFollowupPage = lazyPage(() => import('./pages/SummitFollowupPage'));
 const ArchiePage = lazyPage(() => import('./pages/ArchiePage'));
 const NotificationsPage = lazyPage(() => import('./pages/NotificationsPage'));
-const BugReportsPage = lazyPage(() => import('./pages/BugReportsPage'));
 const PhotoPermissionPage = lazyPage(() => import('./pages/PhotoPermissionPage'));
 const Summit27Page = lazyPage(() => import('./pages/Summit27Page'));
 
@@ -76,7 +75,6 @@ export default function App() {
           <Route path="/expert/beamentor" element={<BeAMentorPage />} />
           <Route path="/admin/rooms" element={<RoomsPage />} />
           <Route path="/admin/metrics" element={<MetricsPage />} />
-          <Route path="/admin/reports" element={<BugReportsPage />} />
           <Route path="/admin/photo-permission" element={<PhotoPermissionPage />} />
           <Route path="/follow-up" element={<SummitFollowupPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -14,7 +14,6 @@ import { collectClientContext } from '../lib/diagnostics';
 const BUCKET = 'bug_report_screenshots';
 
 export type ReportKind = 'bug' | 'feedback';
-export type ReportStatus = 'open' | 'resolved';
 
 export const MAX_SCREENSHOTS = 5;
 export const MAX_SCREENSHOT_BYTES = 10 * 1024 * 1024;
@@ -34,24 +33,6 @@ export interface SubmitResult {
   ticketNo: number;
   /** null when no email was asked for and no team address is set. */
   emailed: boolean | null;
-}
-
-export interface BugReport {
-  id: string;
-  ticket_no: number;
-  user_id: string | null;
-  kind: ReportKind;
-  reporter_name: string;
-  description: string;
-  screenshots: string[];
-  email_copy: boolean;
-  client: Record<string, unknown>;
-  snapshot: Record<string, unknown>;
-  status: ReportStatus;
-  resolved_at: string | null;
-  emailed_at: string | null;
-  email_error: string | null;
-  created_at: string;
 }
 
 /** The server's refusals, in words. */
@@ -127,64 +108,4 @@ export async function submitReport(input: ReportInput): Promise<SubmitResult> {
     emailed = input.emailCopy ? false : null;
   }
   return { ticketNo, emailed };
-}
-
-// ── Admin ────────────────────────────────────────────────────────────────
-
-/** Every report, newest first. Admins only (RLS returns just your own otherwise). */
-export async function fetchReports(): Promise<BugReport[]> {
-  if (!supabase) return [];
-  const { data, error } = await supabase
-    .from('bug_reports')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(500);
-  if (error) throw error;
-  return (data ?? []) as BugReport[];
-}
-
-export async function setReportStatus(id: string, status: ReportStatus): Promise<void> {
-  if (!supabase) throw new Error('This needs the Summit database.');
-  const { error } = await supabase.rpc('set_bug_report_status', { p_id: id, p_status: status });
-  if (error) throw error;
-}
-
-/** Short-lived links to a report's screenshots. */
-export async function screenshotUrls(paths: string[]): Promise<string[]> {
-  if (!supabase || paths.length === 0) return [];
-  const { data, error } = await supabase.storage.from(BUCKET).createSignedUrls(paths, 60 * 60);
-  if (error || !data) return [];
-  return data.map((d) => d.signedUrl).filter((u): u is string => Boolean(u));
-}
-
-/**
- * The whole report as Markdown, for pasting into a chat with whoever fixes
- * it: what the person wrote, then everything attached, as JSON.
- */
-export function reportAsMarkdown(report: BugReport, links: string[] = []): string {
-  const label = report.kind === 'feedback' ? 'Feedback' : 'Bug report';
-  return [
-    `# ${label} #${report.ticket_no}`,
-    '',
-    `- From: ${report.reporter_name}`,
-    `- Sent: ${report.created_at}`,
-    `- Status: ${report.status}`,
-    '',
-    '## Description',
-    '',
-    report.description,
-    ...(links.length ? ['', '## Screenshots', '', ...links.map((l, i) => `- [Screenshot ${i + 1}](${l})`)] : []),
-    '',
-    '## Device, pages and errors (from the browser)',
-    '',
-    '```json',
-    JSON.stringify(report.client, null, 2),
-    '```',
-    '',
-    '## Account (from the server)',
-    '',
-    '```json',
-    JSON.stringify(report.snapshot, null, 2),
-    '```',
-  ].join('\n');
 }

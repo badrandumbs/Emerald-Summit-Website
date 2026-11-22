@@ -24,7 +24,7 @@ vi.mock('../../lib/supabase', () => ({
 }));
 
 import { noteRoute, redactUrl, resetDiagnostics } from '../../lib/diagnostics';
-import { reportAsMarkdown, reportErrorMessage, screenshotProblem, submitReport, type BugReport } from '../bugReports';
+import { reportErrorMessage, screenshotProblem, submitReport } from '../bugReports';
 
 const png = (name = 'shot.png', size = 10) => new File([new Uint8Array(size)], name, { type: 'image/png' });
 
@@ -100,21 +100,5 @@ describe('redactUrl', () => {
   test('hides secret query values and keeps the rest', () => {
     expect(redactUrl('/rest/v1/rpc/x?select=*&token=abc')).toBe('/rest/v1/rpc/x?select=*&token=[hidden]');
     expect(redactUrl('https://abc.supabase.co/storage/v1/object/sign/b/p.png?token=secret')).toBe('abc.supabase.co/storage/v1/object/sign/b/p.png?token=[hidden]');
-  });
-});
-
-describe('reportAsMarkdown', () => {
-  test('includes the description, screenshots and both data blocks', () => {
-    const report = {
-      id: 'r', ticket_no: 7, user_id: 'u', kind: 'bug', reporter_name: 'Ada', description: 'Schedule is empty',
-      screenshots: ['u/r/1.png'], email_copy: true, client: { page: '/schedule' }, snapshot: { profile: { role: 'participant' } },
-      status: 'open', resolved_at: null, emailed_at: null, email_error: null, created_at: '2026-11-14T00:00:00Z',
-    } satisfies BugReport;
-    const md = reportAsMarkdown(report, ['https://signed/1']);
-    expect(md).toContain('# Bug report #7');
-    expect(md).toContain('Schedule is empty');
-    expect(md).toContain('[Screenshot 1](https://signed/1)');
-    expect(md).toContain('"page": "/schedule"');
-    expect(md).toContain('"role": "participant"');
   });
 });

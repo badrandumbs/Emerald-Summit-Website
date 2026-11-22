@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeftRight, Award, Bug, CalendarDays, ChartLine, ChevronLeft, ChevronRight, Clock, HeartHandshake, LogOut, MapPin,
-  Palette, QrCode, ScanLine, ShieldCheck, Trash2, UserRound, Users, Inbox, CameraOff,
+  Palette, QrCode, ScanLine, ShieldCheck, Trash2, UserRound, Users, CameraOff,
 } from '@/components/icons';
 import { useSummitStatus } from '../services/summitStatus';
 import { toast } from 'sonner';
@@ -215,7 +215,6 @@ function ProfileHub({ profile }: { profile: Profile }) {
           {isAdmin && <SettingsRow icon={ChartLine} title="Metrics" subtitle="Who signed up, from which schools, for what" onClick={() => navigate('/admin/metrics')} />}
           {isAdmin && <SettingsRow icon={CameraOff} title="Photo permission" subtitle="Who did not allow photos" onClick={() => navigate('/admin/photo-permission')} />}
           {isAdmin && <SettingsRow icon={ShieldCheck} title="Expert verification" subtitle="Verify experts' BeAMentor clearance" onClick={() => navigate('/admin/experts')} />}
-          {isAdmin && <SettingsRow icon={Inbox} title="Bug reports and feedback" subtitle="What people reported, with their details" onClick={() => navigate('/admin/reports')} />}
           {isAdmin && <SettingsRow icon={MapPin} title="Manage rooms" subtitle="The rooms tracks can be held in" onClick={() => navigate('/admin/rooms')} />}
           <SettingsRow icon={ArrowLeftRight} title="Change role" subtitle={`Currently ${roleLabel}`} onClick={() => setChangeRoleOpen(true)} />
         </div>
