@@ -14,7 +14,7 @@ import {
   teamLookupFrom,
   teamLookupProblem,
 } from '../registration';
-import { missingGateField, formFields } from '../profileFields';
+import { isRealSchoolName, missingGateField, formFields } from '../profileFields';
 import { canonicalSchoolName } from '../schools';
 import { countBy, crossTab, expertSummary, gradeLabel, registeredPeople, type SummitMetrics } from '../metrics';
 import { safeAttachmentUrl } from '../../services/announcements';
@@ -84,7 +84,15 @@ describe('profile fields ported from the app', () => {
     expect(missingGateField({ ...base, details: {} })).toBe('phone');
     expect(missingGateField({ ...base, details: { phone: '555' } })).toBe('grade');
     expect(missingGateField({ ...base, details: { phone: '555', grade: '11' } })).toBeNull();
-    expect(missingGateField({ ...base, role: 'participant', details: {} })).toBeNull();
+    expect(missingGateField({ ...base, role: 'participant', details: {} })).toBe('school');
+    expect(missingGateField({ ...base, role: 'participant', details: { school: '.' } })).toBe('school');
+    expect(missingGateField({ ...base, role: 'participant', details: { school: 'dhs' } })).toBeNull();
+    expect(missingGateField({ ...base, role: 'attendee', details: {} })).toBeNull();
+  });
+
+  test('a school answer has to name a school', () => {
+    for (const bad of ['', '.', '-', 'na', 'N/A', 'none', 'x1', undefined, 3]) expect(isRealSchoolName(bad)).toBe(false);
+    for (const good of ['Dublin High School', 'dvhs', 'Harker School', 'BASIS']) expect(isRealSchoolName(good)).toBe(true);
   });
 });
 

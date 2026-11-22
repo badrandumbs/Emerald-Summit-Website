@@ -31,7 +31,7 @@ import {
 import AuthLayout, { AUTH_ENTER, authStagger } from '../components/AuthLayout';
 import ProfileFieldInput from '../components/ProfileFieldInput';
 import { roleByName, roleLabelFor, USER_ROLES } from '../models/roles';
-import { formFields, missingGateField, SPECTATOR_AGES_NOTE, VOLUNTEER_GRADE_FIELD, type ProfileField } from '../models/profileFields';
+import { formFields, isRealSchoolName, missingGateField, SPECTATOR_AGES_NOTE, VOLUNTEER_GRADE_FIELD, type ProfileField } from '../models/profileFields';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -86,16 +86,17 @@ export default function ProfileSetupPage() {
     return <Navigate to="/home" replace />;
   }
 
-  // The gate asks only for what's missing, like the app's phone and grade screens.
+  // The gate asks only for what's missing, like the app's phone and grade
+  // screens (the school step is website-only for now).
   const gateOnly = !onboarding && !roleChanged && gate != null;
   // A finished account with nothing else missing: just the Code of Conduct.
   const conductOnly = !onboarding && !roleChanged && gate == null && conductDue;
   // Sign-up asks for it under the questions, once the SQL has added the columns.
   const askConduct = conductOnly || (onboarding && tracksCodeOfConduct(profile));
   const fields: ProfileField[] = conductOnly ? [] : gateOnly
-    ? gate === 'phone'
-      ? formFields(roleName, subtype).filter((f) => f.key === 'phone')
-      : [VOLUNTEER_GRADE_FIELD]
+    ? gate === 'grade'
+      ? [VOLUNTEER_GRADE_FIELD]
+      : formFields(roleName, subtype).filter((f) => f.key === gate)
     : formFields(roleName, subtype);
   const email = (session?.user.email ?? profile?.email ?? '').trim();
   // Experts add a headshot once expert_beamentor.sql has made its bucket.
@@ -136,6 +137,9 @@ export default function ProfileSetupPage() {
     if (missing) {
       return setError(missing.key === 'phone' ? 'Mobile number is required.' : `Please answer "${missing.label}".`);
     }
+    // An optional school may stay blank, but anything typed must name a school.
+    const badSchool = fields.find((f) => f.schoolPicker && (answers[f.key] ?? '').trim() && !isRealSchoolName(answers[f.key]));
+    if (badSchool) return setError("Type your school's full name.");
     if (askConduct && media && photoConsent == null) return setError('Please choose whether you grant photo permission.');
     if (askConduct && !agreed) return setError(`Please tick the box to agree to the ${agreement.name}.`);
     setIsSaving(true);
@@ -156,13 +160,15 @@ export default function ProfileSetupPage() {
   const title = conductOnly
     ? 'One last step'
     : gateOnly
-    ? gate === 'phone' ? 'Add your number' : 'Add your grade'
+    ? gate === 'phone' ? 'Add your number' : gate === 'school' ? 'Add your school' : 'Add your grade'
     : roleChanged ? `Your details as ${/^[aeiou]/i.test(label) ? 'an' : 'a'} ${label}` : 'Tell us a bit about yourself';
   const intro = conductOnly
     ? `${agreement.whoAgrees} Read it below, or expand it to read it in full.`
     : gateOnly
     ? gate === 'phone'
       ? `${role.label}s need a mobile number on file so the Summit team can reach you.`
+      : gate === 'school'
+      ? "Participants tell us their school. Pick it from the list, or choose Other and type its full name."
       : 'Student volunteers and EAF ambassadors give a grade. It goes on your volunteer hours record.'
     : 'Add your name and the details the Summit team needs.';
 

@@ -2,6 +2,7 @@
 // SummitRoleX.onboardingFields (lib/models/user_profile.dart). Answers land in
 // profiles.details under each field's key, exactly like the app.
 // Website role names: 'attendee' is the app's parentSpectator.
+import { matchTriValleySchool } from './schools';
 
 export interface ProfileField {
   key: string;
@@ -112,15 +113,33 @@ const blank = (v: unknown) => v == null || String(v).trim() === '';
 
 /**
  * What the app's auth gate still asks a signed-in account for: a phone for
- * volunteers and admins, and a grade for student volunteers and EAF
- * ambassadors. Null when nothing is missing.
+ * volunteers and admins, a grade for student volunteers and EAF ambassadors,
+ * and a real school for participants (accounts from before school was
+ * required, or with "." typed in Other). Null when nothing is missing.
  */
-export function missingGateField(profile: DetailsProfile): 'phone' | 'grade' | null {
+export function missingGateField(profile: DetailsProfile): 'phone' | 'grade' | 'school' | null {
   if (!profile || profile.profile_setup_complete !== true) return null;
   const details = profile.details ?? {};
   if (requiresPhone(profile.role) && blank(details.phone)) return 'phone';
   if (roleNeedsGrade(profile.role, profile.volunteer_subtype) && blank(details.grade)) return 'grade';
+  if (profile.role === 'participant' && !isRealSchoolName(details.school)) return 'school';
   return null;
+}
+
+// Answers people type in the "Other" box to get past it.
+const NOT_A_SCHOOL = new Set(['none', 'na', 'n/a', 'no', 'nope', 'idk', 'null', 'nil', 'school', 'other', 'test', 'asdf']);
+
+/**
+ * Whether a school answer names a school: a listed one, or a typed name with
+ * at least 3 characters, 2 of them letters, that is not "none", "n/a" and the
+ * like. Rejects ".", "-" and blanks.
+ */
+export function isRealSchoolName(raw: unknown): boolean {
+  if (typeof raw !== 'string') return false;
+  const s = raw.trim();
+  if (matchTriValleySchool(s)) return true;
+  const letters = s.match(/\p{L}/gu)?.length ?? 0;
+  return s.length >= 3 && letters >= 2 && !NOT_A_SCHOOL.has(s.toLowerCase().replace(/[.\s]/g, ''));
 }
 
 /**

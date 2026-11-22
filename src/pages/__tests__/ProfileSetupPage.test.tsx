@@ -11,6 +11,7 @@ const state = vi.hoisted(() => ({
   onboarding: true,
   // Whether the profile row has the Code of Conduct columns, and its value.
   conduct: undefined as undefined | { code_of_conduct_version: string | null },
+  details: {} as Record<string, string>,
   save: vi.fn(),
   refresh: vi.fn(),
   agree: vi.fn(),
@@ -19,7 +20,7 @@ vi.mock('../../context/AuthContext', () => ({ useAuth: () => ({
   session: { user: { id: 'user-1', email: 'team@example.com', user_metadata: {} } },
   profile: {
     id: 'user-1', name: 'Summit Team', email: 'team@example.com', role: state.role,
-    profile_setup_complete: !state.onboarding, ...state.conduct,
+    profile_setup_complete: !state.onboarding, details: state.details, ...state.conduct,
   },
   loadingProfile: false,
   refreshProfile: state.refresh,
@@ -40,6 +41,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   state.onboarding = true;
   state.conduct = undefined;
+  state.details = {};
   state.agree.mockResolvedValue(undefined);
   state.save.mockResolvedValue(undefined);
   state.refresh.mockResolvedValue(undefined);
@@ -76,6 +78,36 @@ test('participants pick a school and give a grade; the phone is optional', async
   await user.selectOptions(screen.getByLabelText('Grade'), '11th grade');
   await user.click(screen.getByRole('button', { name: 'Continue' }));
   expect(state.save).toHaveBeenCalledWith('Summit Team', { school: 'Dublin High School', grade: '11', phone: '' }, true);
+});
+
+test('a school typed in Other must be a real name', async () => {
+  state.role = 'participant';
+  const user = userEvent.setup();
+  render(<MemoryRouter><ProfileSetupPage /></MemoryRouter>);
+  await user.selectOptions(screen.getByLabelText('School'), 'Other (not listed)');
+  await user.type(screen.getByLabelText('School name'), '.');
+  await user.selectOptions(screen.getByLabelText('Grade'), '11th grade');
+  await user.click(screen.getByRole('button', { name: 'Continue' }));
+  expect(screen.getByRole('alert')).toHaveTextContent("Type your school's full name.");
+  expect(state.save).not.toHaveBeenCalled();
+  await user.clear(screen.getByLabelText('School name'));
+  await user.type(screen.getByLabelText('School name'), 'Harker School');
+  await user.click(screen.getByRole('button', { name: 'Continue' }));
+  expect(state.save).toHaveBeenCalledWith('Summit Team', expect.objectContaining({ school: 'Harker School' }), true);
+});
+
+test('a finished participant with no real school is asked for just the school', async () => {
+  state.role = 'participant';
+  state.onboarding = false;
+  state.conduct = { code_of_conduct_version: CODE_OF_CONDUCT.version };
+  state.details = { school: '.', grade: '11' };
+  const user = userEvent.setup();
+  render(<MemoryRouter><ProfileSetupPage /></MemoryRouter>);
+  expect(screen.getByRole('heading', { name: 'Add your school' })).toBeInTheDocument();
+  expect(screen.queryByLabelText('Grade')).toBeNull();
+  await user.selectOptions(screen.getByLabelText('School'), 'Dublin High School');
+  await user.click(screen.getByRole('button', { name: 'Save and continue' }));
+  expect(state.save).toHaveBeenCalledWith('Summit Team', { school: 'Dublin High School' }, false);
 });
 
 test('experts give their title, company, area of expertise and a short bio', () => {
