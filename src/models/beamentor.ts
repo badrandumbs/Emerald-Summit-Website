@@ -9,7 +9,7 @@
 export const BEAMENTOR_URL = 'https://beamentor.org/linkpages/mentorasp/specialprojects/DUSD/';
 
 /** The organizers' slides with screenshots of each step. */
-export const BEAMENTOR_GUIDE_URL = 'https://docs.google.com/presentation/d/15z6kZVO4DfT88Pn80-CwfKd8Kzps_U0qdT3axbLmFhU/edit';
+export const BEAMENTOR_GUIDE_URL = 'https://docs.google.com/presentation/d/e/2PACX-1vS0p-Dqo0bWk4kFiCM-GU1aWB1LRQ1KKdniPMGiZ9LeZHtT_LJxnYJa_w9tGwdAHrP5f8Mok0L0DVMe/pub?start=true&loop=true&delayms=3000&slide=id.p';
 
 export const BEAMENTOR_CONTACT_EMAIL = 'contact@ehsacademics.org';
 
