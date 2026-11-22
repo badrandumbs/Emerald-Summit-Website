@@ -2,7 +2,7 @@
 // BeAMentor clearance (a Dublin Unified requirement), then tick that it was
 // submitted. Ticking gives full access; a banner then waits for an organizer
 // to verify it (models/beamentor.ts, app repo expert_beamentor.sql).
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ExternalLink, Info, Mail } from '@/components/icons';
@@ -10,7 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { markBeamentorSubmitted, needsProfileSetup, signOut } from '../services/auth';
 import { needsCodeOfConduct } from '../models/codeOfConduct';
 import {
-  BEAMENTOR_CHECKBOX, BEAMENTOR_CONTACT_EMAIL, BEAMENTOR_GUIDE_URL, BEAMENTOR_STEPS,
+  BEAMENTOR_CHECKBOX, BEAMENTOR_CONTACT_EMAIL, BEAMENTOR_PAST_EXPERT, BEAMENTOR_GUIDE_URL, BEAMENTOR_STEPS,
   BEAMENTOR_TIMING, BEAMENTOR_URL, needsBeamentor,
 } from '../models/beamentor';
 import AuthLayout, { AUTH_ENTER, authStagger } from '../components/AuthLayout';
@@ -26,6 +26,14 @@ export default function BeAMentorPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const doneRef = useRef<HTMLElement>(null);
+  const boxRef = useRef<HTMLButtonElement>(null);
+
+  // Past experts who already applied go straight to the box.
+  const skipToBox = () => {
+    doneRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    boxRef.current?.focus({ preventScroll: true });
+  };
 
   if (!loadingProfile && session == null) return <Navigate to="/home" replace />;
   if (loadingProfile || profile == null) {
@@ -78,6 +86,20 @@ export default function BeAMentorPage() {
           Dublin Unified School District requires every adult volunteer on campus to be cleared through BeAMentor,
           and that includes Summit experts. Apply now so you are cleared before the Summit.
         </p>
+        <div className="mt-5 flex max-w-2xl gap-3 rounded-xl border border-emerald/30 bg-emerald/5 px-4 py-3.5 text-sm">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-emerald" />
+          <div>
+            <p className="font-semibold">Been a Summit expert before?</p>
+            <p className="mt-1 leading-relaxed text-muted-foreground">{BEAMENTOR_PAST_EXPERT}</p>
+            <button
+              type="button"
+              onClick={skipToBox}
+              className="mt-2 font-semibold text-emerald underline-offset-4 hover:underline"
+            >
+              Skip to the box
+            </button>
+          </div>
+        </div>
       </div>
 
       <form
@@ -123,13 +145,15 @@ export default function BeAMentorPage() {
           </p>
         </section>
 
-        <section className="space-y-4 border-t border-border pt-8">
+        <section ref={doneRef} className="scroll-mt-24 space-y-4 border-t border-border pt-8">
           <h2 className="font-display text-2xl font-bold tracking-tight">When you are done</h2>
           <p className="pl-4 text-[15px] text-muted-foreground">
-            Come back here and tick the box. You can use the app straight away, and a Summit organizer will verify your clearance.
+            Come back here and tick the box. If you applied for a past Summit, tick it now. You can use the app straight away,
+            and a Summit organizer will verify your clearance.
           </p>
           <label className="flex cursor-pointer items-start gap-3 pl-4 text-base">
             <Checkbox
+              ref={boxRef}
               checked={submitted}
               onCheckedChange={(v) => setSubmitted(v === true)}
               className="mt-0.5"

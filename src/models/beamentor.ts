@@ -24,7 +24,12 @@ export const BEAMENTOR_STEPS: string[] = [
 
 export const BEAMENTOR_TIMING = 'Clearance usually takes 2-3 days. Once you are cleared, EHS shows in My Activities with your clearance level.';
 
-export const BEAMENTOR_CHECKBOX = 'I have submitted my BeAMentor application';
+export const BEAMENTOR_CHECKBOX = 'I have submitted my BeAMentor application, now or for a past Summit';
+
+/** For experts who already applied through BeAMentor for an earlier Summit. */
+export const BEAMENTOR_PAST_EXPERT =
+  'If you already applied through BeAMentor as an expert at a past Summit, you do not need to apply again. ' +
+  "Skip to the end and tick the box. Not sure? Sign in to BeAMentor and check that EHS shows in My Activities.";
 
 type BeamentorProfile = {
   role?: string;

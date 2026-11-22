@@ -6,7 +6,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import BeAMentorPage from '../BeAMentorPage';
 import ExpertApprovalsPage from '../ExpertApprovalsPage';
 import BeamentorBanner from '../../components/BeamentorBanner';
-import { BEAMENTOR_URL } from '../../models/beamentor';
+import { BEAMENTOR_CHECKBOX, BEAMENTOR_URL } from '../../models/beamentor';
 
 const state = vi.hoisted(() => ({
   profile: {} as Record<string, unknown>,
@@ -69,7 +69,11 @@ test('the BeAMentor step links to BeAMentor and continues only once the box is t
   expect(document.body.textContent).not.toMatch(/'2[56]|Summit 2[56]/);
   const go = screen.getByRole('button', { name: 'Continue to the app' });
   expect(go).toBeDisabled();
-  await user.click(screen.getByRole('checkbox', { name: 'I have submitted my BeAMentor application' }));
+  expect(screen.getByText('Been a Summit expert before?')).toBeInTheDocument();
+  expect(document.body.textContent).toContain('you do not need to apply again');
+  await user.click(screen.getByRole('button', { name: 'Skip to the box' }));
+  expect(screen.getByRole('checkbox', { name: BEAMENTOR_CHECKBOX })).toHaveFocus();
+  await user.click(screen.getByRole('checkbox', { name: BEAMENTOR_CHECKBOX }));
   await user.click(go);
   expect(state.mark).toHaveBeenCalled();
   expect(await screen.findByText('Home')).toBeInTheDocument();
