@@ -1,17 +1,12 @@
 import { expect, test } from 'vitest';
 import { landingTrackTitles, techVerseTrackColumns, techVerseTrackRows } from '../landingTracks';
 
-test('NovaSphere includes its confirmed Core Sciences title when only climate has a live row', () => {
+test('NovaSphere lists only its live tracks, with no added titles', () => {
   const live = [{ track: 'novasphere', title: 'Climate Change & Sustainability Presentations', time: '09:00' }];
-  expect(landingTrackTitles('novasphere', live)).toEqual([
-    'Core Sciences Presentations & Exhibits',
-    'Climate Change & Sustainability Presentations',
-  ]);
-  // A public title does not become an invented registration session.
-  expect(live).toHaveLength(1);
+  expect(landingTrackTitles('novasphere', live)).toEqual(['Climate Change & Sustainability Presentations']);
 });
 
-test('a live Core Sciences row replaces the public label without a duplicate', () => {
+test('repeated titles that differ only in spacing, case or "&" show once', () => {
   const live = [
     { track: 'novasphere', title: 'Climate Change & Sustainability Presentations', time: '09:00' },
     { track: 'novasphere', title: ' Core Sciences Presentations and Exhibits ', time: '10:00' },
