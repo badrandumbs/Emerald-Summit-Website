@@ -99,7 +99,7 @@ function VersesBody({ mine }: { mine: Set<string> }) {
     <AppShell>
       <PageHeader
         label="Emerald Summit 2027"
-        title={`The ${count} disciplines`}
+        title="Disciplines"
         sub={`Every track at the Summit lives in one of ${count} disciplines. Open one to see its tracks.`}
         actions={profile?.role === 'admin' ? (
           <Button onClick={() => setCreating(true)} className="bg-emerald-deep text-white hover:bg-emerald">

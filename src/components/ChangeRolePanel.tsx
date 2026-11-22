@@ -102,7 +102,7 @@ export default function ChangeRolePanel({
             {role.name === 'expert' && (
               <p className="mt-2">
                 Expert accounts need an organizer to approve them. Until then, you'll only see a screen
-                saying your account is awaiting approval.
+                saying your account is pending approval.
               </p>
             )}
             {changes.length > 0 && (

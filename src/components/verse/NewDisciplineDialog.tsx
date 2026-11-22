@@ -51,7 +51,7 @@ export default function NewDisciplineDialog({ open, onOpenChange }: { open: bool
         <form onSubmit={(e) => void submit(e)} className="space-y-4">
           <DialogHeader>
             <DialogTitle className="font-display">New discipline</DialogTitle>
-            <DialogDescription>It shows up on Discover for everyone, in the app too.</DialogDescription>
+            <DialogDescription>It appears in Explore &amp; Register for everyone, and in the app too.</DialogDescription>
           </DialogHeader>
           <div className="space-y-1.5">
             <Label htmlFor="nd-id">Id (slug)</Label>

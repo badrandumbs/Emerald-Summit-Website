@@ -71,14 +71,14 @@ export default function SchedulePage() {
             </p>
           )}
         </div>
-        <Link to="/disciplines" className="inline-flex items-center gap-2 text-sm font-semibold text-emerald hover:underline">Browse tracks <ArrowRight className="h-4 w-4" /></Link>
+        <Link to="/disciplines" className="inline-flex items-center gap-2 text-sm font-semibold text-emerald hover:underline">Explore &amp; Register <ArrowRight className="h-4 w-4" /></Link>
       </div>
       {added.length === 0 && !scheduleError ? (
         <div className="glass flex flex-col items-center gap-3 rounded-2xl px-6 py-16 text-center">
           <CalendarDays className="h-9 w-9 text-muted-foreground/60" />
           <h2 className="text-lg font-semibold">No tracks on your schedule yet.</h2>
           <p className="text-sm text-muted-foreground">{isVolunteer ? 'Your tracks will appear here when an organizer assigns them.' : 'Explore the disciplines to find tracks and add them to your day.'}</p>
-          <Link to="/disciplines" className="mt-2 rounded-xl bg-emerald px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-deep">Explore the disciplines</Link>
+          <Link to="/disciplines" className="mt-2 rounded-xl bg-emerald px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-deep">Explore &amp; Register</Link>
         </div>
       ) : (
         <div className="space-y-4">

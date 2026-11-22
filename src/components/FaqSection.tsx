@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 interface FaqItem {
   q: string;
-  a: string;
+  a: string | readonly string[];
 }
 
 const FAQ_ITEMS: FaqItem[] = [
@@ -49,8 +49,14 @@ const FAQ_ITEMS: FaqItem[] = [
     a: 'Participants book a seat in a track to share their work and get feedback. Spectators sit in and watch. Both book seats in the schedule builder.',
   },
   {
-    q: 'Can I help out in other ways?',
-    a: 'Yes. Sign in as a Volunteer to help run the day, or as an Expert to lead a track and give feedback. Check-in on the day is one tap at the front desk.',
+    q: 'How can I get involved with Emerald Summit?',
+    a: [
+      'There are several ways to contribute!',
+      'Emerald students: Sign up as a Volunteer to help organize and run the event.',
+      'EHS parents and community members: Sign up as a Volunteer to support event operations, or as an Expert to lead a track and share feedback with participating students.',
+      'Professionals and subject-matter experts: Sign up as an Expert to lead a track, share your knowledge, and provide feedback to students.',
+      'We welcome everyone who wants to help make Emerald Summit a meaningful learning experience!',
+    ],
   },
 ];
 
@@ -80,7 +86,9 @@ function FaqRow({
       </button>
       <div id={panelId} className={cn('lp-faq__a', open && 'is-open')}>
         <div>
-          <p>{item.a}</p>
+          {(typeof item.a === 'string' ? [item.a] : item.a).map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
         </div>
       </div>
     </div>

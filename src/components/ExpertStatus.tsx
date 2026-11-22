@@ -1,6 +1,4 @@
-// Ports of the app's ExpertPendingScreen and its one-time "expert request
-// wasn't approved" dialog (lib/screens/auth/expert_pending_screen.dart and
-// auth_gate.dart). Same words as the app.
+// Expert approval status and its one-time declined-request dialog.
 import { useEffect, useState } from 'react';
 import { Loader2, Mail, RefreshCw } from '@/components/icons';
 import { toast } from 'sonner';
@@ -17,7 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-export const EXPERT_CONTACT_EMAIL = 'nysha.singhal@ehsacademics.org';
+export const EXPERT_CONTACT_EMAIL = 'support@ehsacademics.org';
 
 /** The app's needsExpertApproval: an onboarded expert not yet approved. */
 export function needsExpertApproval(profile: { role?: string; profile_setup_complete?: boolean; expert_status?: string | null } | null): boolean {
@@ -46,10 +44,13 @@ export function ExpertPending() {
 
   return (
     <section className="glass mx-auto max-w-xl rounded-3xl p-8">
-      <h1 className="font-display text-2xl font-bold">Your expert account is awaiting approval</h1>
+      <h1 className="font-display text-2xl font-bold">Your expert account is pending approval</h1>
       <p className="mt-3 text-muted-foreground">
-        An organizer checks every expert sign-up to make sure the person is who they say they are.
-        You'll be able to use the app as soon as your account is approved.
+        To help ensure a trusted and safe experience for our students, every expert registration
+        is reviewed by the Emerald Summit organizing team.
+      </p>
+      <p className="mt-3 text-muted-foreground">
+        Once your account is approved, you'll be able to access the app and participate as an Expert.
       </p>
       {profile?.name && (
         <div className="mt-5 rounded-xl border border-border bg-card px-4 py-3">
@@ -65,7 +66,7 @@ export function ExpertPending() {
         <Button onClick={checkAgain} disabled={checking} className="gap-2">
           {checking ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} Check again
         </Button>
-        <Button variant="outline" disabled={checking} onClick={() => setChangeRoleOpen(true)}>Sign up as something else</Button>
+        <Button variant="outline" disabled={checking} onClick={() => setChangeRoleOpen(true)}>Sign up with a different role</Button>
         <Button variant="ghost" disabled={checking} onClick={() => void signOut()}>Sign out</Button>
       </div>
       <ChangeRoleDialog open={changeRoleOpen} onOpenChange={setChangeRoleOpen} />

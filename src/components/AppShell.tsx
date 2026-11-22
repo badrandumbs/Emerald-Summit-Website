@@ -53,7 +53,7 @@ const NAV_ITEMS: NavItem[] = [
     group: 'My Summit',
     roles: ['participant', 'attendee', 'expert', 'volunteer', 'ambassador', 'admin'],
   },
-  { to: '/disciplines', label: 'Discover', icon: Compass, group: 'My Summit' },
+  { to: '/disciplines', label: 'Explore & Register', icon: Compass, group: 'My Summit' },
   { to: '/announcements', label: 'Announcements', icon: Megaphone, group: 'My Summit' },
   { to: '/archie', label: 'Ask Archie', icon: Sparkles, group: 'My Summit' },
   { to: '/account', label: 'Profile', icon: UserRound, group: 'Account' },
@@ -486,7 +486,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <main className="min-w-0 px-4 pb-24 pt-[4.5rem] sm:px-6 lg:px-8 lg:pb-12 lg:pt-7">
+        <main className="min-w-0 px-4 pb-28 pt-[4.5rem] sm:px-6 lg:px-8 lg:pb-12 lg:pt-7">
           <div className="mx-auto max-w-[1400px]"><BeamentorBanner />{children}</div>
         </main>
       </div>
@@ -498,13 +498,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
             to={to}
             className={({ isActive }) =>
               cn(
-                'flex min-w-0 flex-col items-center gap-0.5 rounded-lg px-2.5 py-1.5 text-[10.5px] font-medium text-white/60',
+                'flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-lg px-1.5 py-1.5 text-[10.5px] font-medium text-white/60',
                 isActive && 'bg-white/10 font-bold text-white',
               )
             }
           >
             <Icon className="h-5 w-5" />
-            <span className="truncate">{label}</span>
+            <span className={to === '/disciplines' ? 'max-w-16 whitespace-normal text-center leading-tight' : 'truncate'}>{label}</span>
           </NavLink>
         ))}
       </nav>
