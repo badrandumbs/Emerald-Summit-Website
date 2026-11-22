@@ -168,7 +168,7 @@ export async function removeTeamMember(sessionId: string, userId: string): Promi
   switch ((data as Record<string, unknown> | null)?.outcome) {
     case 'removed': return;
     case 'not_member': throw new TeamCodeError("That person isn't on your team anymore.");
-    case 'cannot_remove_self': throw new TeamCodeError('To leave your own team, use "Leave team / go solo".');
+    case 'cannot_remove_self': throw new TeamCodeError('To leave your own team, use "Leave team and continue solo".');
     default: throw new TeamCodeError("Only the team's owner can remove members.");
   }
 }

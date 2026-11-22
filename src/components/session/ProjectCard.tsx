@@ -61,7 +61,7 @@ export default function ProjectCard({
           )}
           {p.isTeam && p.members.length > 0 && (
             <div>
-              <p className="text-sm font-semibold">Members</p>
+              <p className="text-sm font-semibold">Team members</p>
               <ul className="mt-1 space-y-1">
                 {p.members.map((m) => (
                   <li key={m.id || m.name} className="flex items-center gap-2 text-sm">
@@ -83,7 +83,7 @@ export default function ProjectCard({
               </ul>
               {teamsAllowed(p.maxTeamSize) && (
                 <p className="mt-1.5 text-xs text-muted-foreground">
-                  The max number of members your team can have is {p.maxTeamSize}.
+                  Your team can have up to {p.maxTeamSize} members.
                 </p>
               )}
             </div>
@@ -91,7 +91,7 @@ export default function ProjectCard({
           {p.isTeam && (
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="ghost" size="sm" onClick={onLeave}>
-                <LogOut className="h-4 w-4" /> Leave team / go solo
+                <LogOut className="h-4 w-4" /> Leave team and continue solo
               </Button>
               {mustHandOff(p) && (
                 <Button type="button" variant="ghost" size="sm" onClick={onTransfer}>
