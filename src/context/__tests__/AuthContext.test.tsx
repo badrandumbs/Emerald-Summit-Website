@@ -23,7 +23,7 @@ vi.mock('../../services/auth', async (importActual) => {
     ...actual,
     getCurrentProfile: vi.fn(async () => {
       throw new actual.SignInRefusedError(
-        "You are not eligible to sign up as a volunteer.",
+        "Your email is not on the list of people allowed to be a volunteer. Please email support@ehsacademics.org.",
         'volunteer',
       );
     }),
@@ -50,7 +50,7 @@ describe('AuthProvider', () => {
     );
 
     expect(
-      await screen.findByText("You are not eligible to sign up as a volunteer."),
+      await screen.findByText("Your email is not on the list of people allowed to be a volunteer. Please email support@ehsacademics.org."),
     ).toBeInTheDocument();
     expect(screen.getByTestId('state')).toHaveTextContent('signed out');
     await waitFor(() => expect(signOut).toHaveBeenCalled());

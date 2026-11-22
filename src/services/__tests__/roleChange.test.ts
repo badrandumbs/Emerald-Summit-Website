@@ -49,6 +49,6 @@ describe('role change', () => {
     expect((await rc.changeRole('expert')).role).toBe('expert');
     expect(db.updates[0]).toMatchObject({ role: 'expert' });
     db.keptRole = 'participant';
-    await expect(rc.changeRole('admin')).rejects.toThrow(/are not eligible/);
+    await expect(rc.changeRole('admin')).rejects.toThrow(/not on the list of people allowed to be an organizer. Please email support@ehsacademics.org/);
   });
 });

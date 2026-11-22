@@ -82,11 +82,13 @@ export function roleByName(name: string | undefined): RoleInfo | undefined {
   return USER_ROLES.find((r) => r.name === name);
 }
 
-/** The message for a role the sheets or the database refused. */
+export const SUPPORT_EMAIL = 'support@ehsacademics.org';
+
+/** The message for a role the sheets or the database refused: what to do next. */
 export function notEligibleMessage(roleName: string): string {
   const label = (roleByName(roleName)?.label ?? roleName).toLowerCase();
   const article = /^[aeiou]/.test(label) ? 'an' : 'a';
-  return `You are not eligible to sign up as ${article} ${label}.`;
+  return `Your email is not on the list of people allowed to be ${article} ${label}. Please email ${SUPPORT_EMAIL}.`;
 }
 
 /** Labels for the Allowed Volunteers sheet's subtype column. */
