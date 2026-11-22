@@ -34,7 +34,7 @@ export interface SessionPageBlock {
 }
 
 export const DEFAULT_QUESTIONS = {
-  soloOrTeam: 'Are you participating in a team, or solo?',
+  soloOrTeam: 'Are you participating solo, or in a team?',
   projectName: 'What is your project name?',
   teamCode: "What's your team code?",
   unsureNote:
