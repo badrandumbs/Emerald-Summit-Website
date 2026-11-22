@@ -8,9 +8,10 @@ import {
   useTransform,
 } from 'framer-motion';
 import SummitLogo from './SummitLogo';
+import TechVerseTracks from './TechVerseTracks';
 import { useIsPhoneScreen } from '../lib/device';
 import { useSummitContent } from '../services/summitContent';
-import { landingTrackTitles } from '../models/landingTracks';
+import { landingTrackTitles, techVerseTrackColumns } from '../models/landingTracks';
 import { VERSE_DISCIPLINES as USER_DISCIPLINES } from '../models/verseVibes';
 import { MOCK_SESSIONS } from '../models/sessions';
 
@@ -156,11 +157,15 @@ function UniverseOrbit() {
             >
               <h3 className="lp-orbit__name">{d.label}</h3>
               <p className="lp-orbit__desc">{d.description}</p>
-              <ul className="lp-orbit__tracks" aria-label={`${d.label} tracks`}>
-                {tracks.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
+              {d.name === 'techverse' ? (
+                <TechVerseTracks columns={techVerseTrackColumns(MOCK_SESSIONS)} className="lp-orbit__tech-tracks" />
+              ) : (
+                <ul className="lp-orbit__tracks" aria-label={`${d.label} tracks`}>
+                  {tracks.map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+              )}
             </motion.div>
           </div>
         </div>
@@ -186,11 +191,15 @@ function UniverseIndex() {
             >
               <h3 className="lp-uni__name">{d.label}</h3>
               <p className="lp-uni__desc">{d.description}</p>
-              <ul className="lp-uni__tracks" aria-label={`${d.label} tracks`}>
-                {sessionTitles(d.name).map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
+              {d.name === 'techverse' ? (
+                <TechVerseTracks columns={techVerseTrackColumns(MOCK_SESSIONS)} className="lp-uni__tech-tracks" />
+              ) : (
+                <ul className="lp-uni__tracks" aria-label={`${d.label} tracks`}>
+                  {sessionTitles(d.name).map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+              )}
             </li>
           ))}
         </ul>
