@@ -1,6 +1,6 @@
-// "Report a bug" and "Send feedback", opened from their own rows on Profile.
-// They're two categories of ticket (bug_reports.kind); the switch at the top
-// moves a ticket between them before it's sent. The profile name and description are
+// "Report a bug/send feedback", opened from one row on Profile. It opens as a
+// bug report; bugs and feedback are two categories of ticket (bug_reports.kind),
+// and the switch at the top moves a ticket between them before it's sent. The profile name and description are
 // required; screenshots (picked, dropped or pasted) and an emailed copy
 // are optional. Everything else in the report is attached automatically
 // (src/services/bugReports.ts), and the form says what.

@@ -66,6 +66,15 @@ describe('unified profile', () => {
     expect(screen.getByRole('dialog')).toHaveTextContent('Digital pass');
   });
 
+  test('bugs and feedback share one row, which opens the form as a bug report', async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter initialEntries={['/account']}><Routes><Route path="/account" element={<SettingsPage />} /></Routes></MemoryRouter>);
+    expect(screen.queryByRole('button', { name: /^Send feedback/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Report a bug\/send feedback/ }));
+    expect(screen.getByRole('heading', { name: 'Report a bug' })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /Feedback/ })).toBeInTheDocument();
+  });
+
   test('editing saves the name and the role\'s sign-up answers, like the app', async () => {
     const user = userEvent.setup();
     render(<MemoryRouter initialEntries={['/account/edit']}><Routes><Route path="/account/:section" element={<SettingsPage />} /></Routes></MemoryRouter>);

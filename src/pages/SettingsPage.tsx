@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeftRight, Award, Bug, CalendarDays, ChartLine, ChevronLeft, ChevronRight, Clock, HeartHandshake, LogOut, MapPin,
-  MessageSquare, Palette, QrCode, ScanLine, ShieldCheck, Trash2, UserRound, Users, Inbox, CameraOff,
+  Palette, QrCode, ScanLine, ShieldCheck, Trash2, UserRound, Users, Inbox, CameraOff,
 } from '@/components/icons';
 import { useSummitStatus } from '../services/summitStatus';
 import { toast } from 'sonner';
@@ -12,7 +12,6 @@ import QrPassModal from '../components/QrPassModal';
 import ReportDialog from '../components/ReportDialog';
 import ChangeRoleDialog from '../components/ChangeRoleDialog';
 import DeleteAccountDialog from '../components/DeleteAccountDialog';
-import type { ReportKind } from '../services/bugReports';
 import ThemeToggle from '../components/ThemeToggle';
 import { useRequireProfile } from '../hooks/useRequireProfile';
 import { useAuth } from '../context/AuthContext';
@@ -161,9 +160,7 @@ function ProfileHub({ profile }: { profile: Profile }) {
   const [changeRoleOpen, setChangeRoleOpen] = useState(false);
   const [qrPassOpen, setQrPassOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [reportKind, setReportKind] = useState<ReportKind | null>(null);
-  const lastReportKind = useRef<ReportKind>('bug');
-  if (reportKind) lastReportKind.current = reportKind;
+  const [reportOpen, setReportOpen] = useState(false);
   const canOpenVolunteerHub = ['volunteer', 'ambassador', 'admin'].includes(roleName);
   const isAdmin = roleName === 'admin';
   const isVolunteer = roleName === 'volunteer' || roleName === 'ambassador';
@@ -198,10 +195,7 @@ function ProfileHub({ profile }: { profile: Profile }) {
         <SettingsRow icon={QrCode} title="My QR Pass" subtitle="Show your pass at the front desk" onClick={() => setQrPassOpen(true)} />
       </section>
       <section className="overflow-hidden rounded-2xl border border-border/70 bg-card/70">
-        <div className="divide-y divide-border/60">
-          <SettingsRow icon={Bug} title="Report a bug" subtitle="Something broken? Tell us, with screenshots" onClick={() => setReportKind('bug')} />
-          <SettingsRow icon={MessageSquare} title="Send feedback" subtitle="Ideas, likes, or something confusing" onClick={() => setReportKind('feedback')} />
-        </div>
+        <SettingsRow icon={Bug} title="Report a bug/send feedback" subtitle="Something broken, an idea, or something confusing? Tell us, with screenshots" onClick={() => setReportOpen(true)} />
       </section>
       <section className="overflow-hidden rounded-2xl border border-border/70 bg-card/70">
         <div className="border-b border-border/60 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Settings</div>
@@ -244,7 +238,7 @@ function ProfileHub({ profile }: { profile: Profile }) {
           navigate('/home', { replace: true });
         }}
       />
-      <ReportDialog open={reportKind !== null} onOpenChange={(o) => { if (!o) setReportKind(null); }} kind={reportKind ?? lastReportKind.current} defaultName={profile.name ?? ''} email={profile.email} />
+      <ReportDialog open={reportOpen} onOpenChange={setReportOpen} defaultName={profile.name ?? ''} email={profile.email} />
     </div>
   );
 }

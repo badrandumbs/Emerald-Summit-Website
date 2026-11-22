@@ -33,7 +33,7 @@ describe('ReportDialog', () => {
     expect(submit).not.toHaveBeenCalled();
   });
 
-  test('opens as Report a bug or Send feedback, depending on the Profile row', () => {
+  test('opens as Report a bug by default, or as Send feedback when asked', () => {
     const { unmount } = open();
     expect(screen.getByRole('heading', { name: 'Report a bug' })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: /Bug report/ })).toHaveAttribute('aria-checked', 'true');
