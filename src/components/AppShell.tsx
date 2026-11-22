@@ -19,8 +19,14 @@ import {
   Keynote,
   Team,
   Handshake,
+  HeartHandshake,
+  Mail,
   type LucideIcon,
 } from '@/components/icons';
+import { EAF_DONATE_URL } from './home/AboutSections';
+import { SPONSOR_EMAIL, SPONSOR_TIERS, SPONSORSHIP_DETAILS_URL } from '../models/sponsors';
+import { USER_DISCIPLINES } from '../models/disciplines';
+import { useSummitContent } from '../services/summitContent';
 import { useAuth } from '../context/AuthContext';
 import { useSchedule } from '../context/ScheduleContext';
 import { useNotifications } from '../context/NotificationsContext';
@@ -123,13 +129,47 @@ interface SearchHit {
   key: string;
   label: string;
   sub: string;
+  /** A portal route, or an outside link (http… opens a new tab, mailto: opens email). */
   to: string;
   icon: LucideIcon;
 }
 
 /**
- * Portal-wide jump bar: matches pages the viewer can open plus session
- * titles, speakers, and rooms. ⌘K / Ctrl+K focuses it from anywhere.
+ * The Support EAF and sponsor links, so typing "donate" or "sponsor" finds
+ * them without opening Home or Summit '27 first. Matched on the label and
+ * the extra words.
+ */
+const LINK_HITS: (SearchHit & { words: string[] })[] = [
+  {
+    key: 'donate',
+    label: 'Donate to EAF',
+    sub: 'Zeffy donation form · opens in a new tab',
+    to: EAF_DONATE_URL,
+    icon: HeartHandshake,
+    words: ['donate', 'donation', 'give', 'support eaf', 'zeffy', 'tax-deductible'],
+  },
+  {
+    key: 'become-sponsor',
+    label: 'Become a sponsor',
+    sub: `Email ${SPONSOR_EMAIL}`,
+    to: `mailto:${SPONSOR_EMAIL}?subject=${encodeURIComponent("Sponsoring Emerald Summit '27")}`,
+    icon: Mail,
+    words: ['sponsor', 'sponsorship', 'support eaf'],
+  },
+  {
+    key: 'sponsorship-details',
+    label: 'Sponsorship details',
+    sub: 'Tiers and perks on ehsacademics.org · opens in a new tab',
+    to: SPONSORSHIP_DETAILS_URL,
+    icon: Handshake,
+    words: ['sponsor', 'sponsorship', 'tiers', ...SPONSOR_TIERS.map((t) => t.name.toLowerCase())],
+  },
+];
+
+/**
+ * Portal-wide jump bar: matches pages the viewer can open, the donate and
+ * sponsor links, disciplines, and session titles, tracks and rooms.
+ * ⌘K / Ctrl+K focuses it from anywhere.
  */
 function GlobalSearch({ items }: { items: NavItem[] }) {
   const navigate = useNavigate();
@@ -138,6 +178,8 @@ function GlobalSearch({ items }: { items: NavItem[] }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const { showTimes } = useSiteSwitches();
+  // Re-run the search once the disciplines and sessions load from the database.
+  const content = useSummitContent();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -162,6 +204,19 @@ function GlobalSearch({ items }: { items: NavItem[] }) {
         to: n.to,
         icon: n.icon,
       }));
+    const links = LINK_HITS.filter((l) =>
+      [l.label.toLowerCase(), ...l.words].some((w) => w.includes(q)),
+    ).map(({ words: _words, ...hit }) => hit);
+    // Opens the discipline's page on Explore (/disciplines?verse=…).
+    const disciplines = USER_DISCIPLINES.filter((d) =>
+      [d.label, d.description, d.name].some((f) => f.toLowerCase().includes(q)),
+    ).map((d) => ({
+      key: `discipline-${d.name}`,
+      label: d.label,
+      sub: d.description ? `Discipline · ${d.description}` : 'Discipline',
+      to: `/disciplines?verse=${encodeURIComponent(d.name)}`,
+      icon: Compass,
+    }));
     // The same fields as the search on the app's Discover tab: title, track,
     // room and discipline.
     const sessions = MOCK_SESSIONS.filter((s) =>
@@ -173,11 +228,14 @@ function GlobalSearch({ items }: { items: NavItem[] }) {
       to: `/sessions/${s.id}`,
       icon: CalendarDays,
     }));
-    return [...pages, ...sessions].slice(0, 7);
-  }, [items, query, showTimes]);
+    return [...pages, ...links, ...disciplines, ...sessions].slice(0, 7);
+    // content: the disciplines and sessions arrays change in place when they load.
+  },[items, query, showTimes, content]);
 
   const go = (hit: SearchHit) => {
-    navigate(hit.to);
+    if (hit.to.startsWith('mailto:')) window.location.href = hit.to;
+    else if (/^https?:/.test(hit.to)) window.open(hit.to, '_blank', 'noopener,noreferrer');
+    else navigate(hit.to);
     setQuery('');
     setOpen(false);
     inputRef.current?.blur();
@@ -211,7 +269,7 @@ function GlobalSearch({ items }: { items: NavItem[] }) {
               inputRef.current?.blur();
             }
           }}
-          placeholder="Search tracks, pages, rooms…"
+          placeholder="Search disciplines, tracks, donate…"
           aria-label="Search the portal"
           className="min-w-0 flex-1 bg-transparent text-[13.5px] outline-none placeholder:text-muted-foreground"
         />
