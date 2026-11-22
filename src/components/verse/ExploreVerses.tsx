@@ -38,7 +38,7 @@ export function VerseBadge({ vibe, size }: { vibe: VerseVibe; size: number }) {
       style={{
         width: size,
         height: size,
-        borderRadius: size * 0.28,
+        borderRadius: 6,
         background: mixHex(vibe.background, vibe.accent, 0.18),
         border: `1px solid ${rgba(vibe.accent, 0.45)}`,
         color: vibe.accent,
@@ -167,7 +167,7 @@ function EditChip({
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition-transform hover:translate-x-0.5"
+      className="inline-flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-[13px] font-semibold transition-transform hover:translate-x-0.5"
       style={{
         background: rgba(vibe.surface, 0.6),
         color: vibe.accent,
@@ -310,7 +310,7 @@ function VersePage({
               ref={backButton}
               type="button"
               onClick={back}
-              className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors"
+              className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-semibold transition-colors"
               style={{ background: rgba(vibe.surface, 0.7), color: vibe.text }}
             >
               <ChevronLeft className="h-4 w-4" /> Back
@@ -406,7 +406,7 @@ function ScheduleButton({ vibe, onClick }: { vibe: VerseVibe; onClick: () => voi
     <button
       type="button"
       onClick={onClick}
-      className="mt-5 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition-transform hover:translate-x-0.5"
+      className="mt-5 inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-bold transition-transform hover:translate-x-0.5"
       style={{ background: vibe.accent, color: vibe.background }}
     >
       Build your schedule <ChevronRight className="h-4 w-4" />

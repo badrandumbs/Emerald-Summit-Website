@@ -159,7 +159,7 @@ function StatTile({
         <span className="flex-1 font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
           {label}
         </span>
-        <span className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-accent text-emerald">
+        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-emerald">
           <Icon className="h-4 w-4" />
         </span>
       </div>
@@ -353,7 +353,7 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => navigate(primaryAction.to)}
-                  className="inline-flex items-center gap-2 rounded-[10px] bg-white px-4 py-2.5 text-sm font-semibold text-emerald-deep transition-colors hover:bg-emerald-50"
+                  className="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2.5 text-sm font-semibold text-emerald-deep transition-colors hover:bg-emerald-50"
                 >
                   <primaryAction.icon className="h-4 w-4" />
                   {primaryAction.label}
@@ -362,7 +362,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => navigate('/announcements')}
-                className="inline-flex items-center gap-2 rounded-[10px] border border-white/30 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+                className="inline-flex items-center gap-2 rounded-md border border-white/30 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/20"
               >
                 Latest announcements <ArrowRight className="h-4 w-4" />
               </button>
@@ -370,7 +370,7 @@ export default function HomePage() {
           </div>
 
           {canSchedule && (
-            <div className="w-full rounded-[18px] border border-white/20 bg-white/10 p-5 backdrop-blur-sm lg:w-[360px] lg:shrink-0">
+            <div className="w-full rounded-lg border border-white/20 bg-white/10 p-5 backdrop-blur-sm lg:w-[360px] lg:shrink-0">
               {next ? (
                 <>
                   <div className="flex items-center justify-between gap-2">
@@ -440,7 +440,7 @@ export default function HomePage() {
                   <button
                     type="button"
                     onClick={() => navigate('/schedule')}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-[10px] border border-border bg-card px-3 py-2 text-[13px] font-semibold transition-colors hover:border-emerald/40"
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-border bg-card px-3 py-2 text-[13px] font-semibold transition-colors hover:border-emerald/40"
                   >
                     View schedule <ArrowRight className="h-3.5 w-3.5" />
                   </button>
@@ -457,7 +457,7 @@ export default function HomePage() {
                   <button
                     type="button"
                     onClick={() => navigate(ownKind === 'volunteering' ? '/schedule' : '/disciplines')}
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-[10px] bg-emerald px-4 py-2 text-[13px] font-semibold text-white hover:bg-emerald-deep"
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-emerald px-4 py-2 text-[13px] font-semibold text-white hover:bg-emerald-deep"
                   >
                     {scheduleLabel} <ArrowRight className="h-3.5 w-3.5" />
                   </button>
@@ -481,7 +481,7 @@ export default function HomePage() {
                     <button
                       type="button"
                       onClick={() => navigate('/account')}
-                      className="flex w-full items-center justify-center gap-1.5 rounded-full bg-sky-200 px-3 py-2 text-[12.5px] font-semibold text-navy transition-colors hover:bg-sky-100"
+                      className="flex w-full items-center justify-center gap-1.5 rounded-md bg-sky-200 px-3 py-2 text-[12.5px] font-semibold text-navy transition-colors hover:bg-sky-100"
                     >
                       <QrCode className="h-4 w-4 shrink-0" />
                       <span>My QR Pass</span>

@@ -104,7 +104,7 @@ export default function GetTheAppBanner() {
               alt=""
               width={48}
               height={48}
-              className="h-12 w-12 shrink-0 rounded-[12px] ring-1 ring-black/5"
+              className="h-12 w-12 shrink-0 rounded-lg ring-1 ring-black/5"
             />
             <div className="min-w-0 flex-1 pr-1">
               <p className="text-[14px] font-semibold leading-snug">Better in the app</p>
@@ -126,7 +126,7 @@ export default function GetTheAppBanner() {
                 setVisible(false);
               }}
               aria-label={`Get the app on ${store}`}
-              className="shrink-0 rounded-full bg-emerald px-5 py-2 text-[13.5px] font-semibold text-white transition-colors hover:bg-emerald/90"
+              className="shrink-0 rounded-md bg-emerald px-5 py-2 text-[13.5px] font-semibold text-white transition-colors hover:bg-emerald/90"
             >
               Get
             </a>

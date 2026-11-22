@@ -92,7 +92,7 @@ function SidebarLink({ to, label, icon: Icon }: NavItem) {
       to={to}
       className={({ isActive }) =>
         cn(
-          'group flex items-center gap-3 rounded-[10px] px-3 py-2 text-[13.5px] font-medium text-white/65 transition-colors hover:bg-white/[0.06] hover:text-white',
+          'group flex items-center gap-3 rounded-md px-3 py-2 text-[13.5px] font-medium text-white/65 transition-colors hover:bg-white/[0.06] hover:text-white',
           isActive &&
             'bg-white/[0.12] font-semibold text-white hover:bg-white/[0.12]',
         )
@@ -178,7 +178,7 @@ function GlobalSearch({ items }: { items: NavItem[] }) {
 
   return (
     <div className="relative w-full max-w-[440px]">
-      <label className="flex items-center gap-2.5 rounded-[10px] border border-border bg-secondary/70 px-3 py-2 transition-colors focus-within:border-emerald/40 focus-within:bg-card">
+      <label className="flex items-center gap-2.5 rounded-md border border-border bg-secondary/70 px-3 py-2 transition-colors focus-within:border-emerald/40 focus-within:bg-card">
         <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
         <input
           ref={inputRef}
@@ -356,7 +356,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={() => setQrPassOpen(true)}
-              className="relative mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-sky-200 px-3.5 py-2 text-[13px] font-semibold text-navy transition-colors hover:bg-sky-100"
+              className="relative mt-3 flex w-full items-center justify-center gap-2 rounded-md bg-sky-200 px-3.5 py-2 text-[13px] font-semibold text-navy transition-colors hover:bg-sky-100"
             >
               <QrCode className="h-4 w-4 shrink-0" />
               <span>My QR Pass</span>
@@ -427,7 +427,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <NavLink
               to="/notifications"
               aria-label={hasUnread ? `Notifications, ${unreadCount} unread` : 'Notifications'}
-              className="relative rounded-[10px] border border-border bg-card p-2 text-muted-foreground transition-colors hover:text-foreground"
+              className="relative rounded-md border border-border bg-card p-2 text-muted-foreground transition-colors hover:text-foreground"
             >
               <Bell className="h-[18px] w-[18px]" />
               {hasUnread && (
@@ -452,7 +452,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 onClick={() => setQrPassOpen(true)}
-                className="flex items-center gap-1.5 rounded-full bg-sky-200 px-3 py-1.5 text-xs font-semibold text-navy transition-colors hover:bg-sky-100"
+                className="flex items-center gap-1.5 rounded-md bg-sky-200 px-3 py-1.5 text-xs font-semibold text-navy transition-colors hover:bg-sky-100"
               >
                 <QrCode className="h-3.5 w-3.5" />
                 <span>My QR Pass</span>

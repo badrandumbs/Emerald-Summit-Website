@@ -176,7 +176,7 @@ function VersePanel({
         else if (e.target === e.currentTarget) openVerse(discipline.name, originOf(e));
       }}
       className={cn(
-        'group relative overflow-hidden rounded-[22px] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        'group relative overflow-hidden rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         stacked
           ? 'min-h-[300px]'
           : 'min-w-0 cursor-pointer transition-[flex-grow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
@@ -313,7 +313,7 @@ function EnterButton({
       type="button"
       tabIndex={tabIndex}
       onClick={onClick}
-      className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition-transform hover:translate-x-0.5"
+      className="inline-flex items-center gap-2 rounded-md px-5 py-2.5 text-sm font-bold transition-transform hover:translate-x-0.5"
       style={{ background: vibe.accent, color: vibe.background }}
     >
       {label} <ArrowRight className="h-4 w-4" />

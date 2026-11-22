@@ -27,7 +27,7 @@ function SectionTitle({ id, children }: { id: string; children: string }) {
 
 function buttonClass(primary?: boolean) {
   return cn(
-    'inline-flex items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-[13px] font-semibold transition-colors',
+    'inline-flex items-center gap-1.5 rounded-md px-3.5 py-2 text-[13px] font-semibold transition-colors',
     primary ? 'bg-emerald text-white hover:bg-emerald-deep' : 'border border-border bg-card hover:border-emerald/40',
   );
 }
