@@ -1,92 +1,137 @@
-// The public Emerald Summit '27 page (/summit-27), linked from the landing
-// page's navbar: more about the Summit, the guest speaker (coming soon), the
-// sponsor terraces, donation links, and the team's About Me pages (coming soon). It's a landing page (LandingNav,
-// LandingFooter, the .lp styles), open without signing in. Every fact comes from
-// code the landing page and Home already use; nothing is filled in by hand.
-import { useEffect } from 'react';
-import { ArrowRight, HeartHandshake } from '@/components/icons';
-import LandingNav from '../components/LandingNav';
-import LandingFooter from '../components/LandingFooter';
-import SponsorTerraces from '../landing/SponsorTerraces';
-import { EAF_DONATE_URL, EAF_VOLUNTEER_URL } from '../components/home/AboutSections';
-import { SUMMIT_LINKS } from '../components/home/LinksCard';
-import { SUMMIT_ABOUT, SUMMIT_DATE, SUMMIT_HOURS, VENUE } from './WelcomePage';
-import '../landing/landing.css';
+// The Summit '27 page (/summit-27/:tab), inside the signed-in portal: its own
+// sidebar group with three subtabs, Keynote, Team and Sponsors, plus the same
+// tabs across the top of the page for phones. Support EAF (Donate and
+// Volunteer with EAF) sits under every subtab. Sponsors stay off the public
+// site: the organizers don't want unpaid sponsors getting free advertising.
+import { Navigate, NavLink, useParams } from 'react-router-dom';
+import { Handshake, Keynote, Mail, Team, type AppIcon } from '@/components/icons';
+import AppShell from '../components/AppShell';
+import PageHeader from '../components/PageHeader';
+import { LinkButton, SupportEafCard } from '../components/home/AboutSections';
+import { useRequireProfile } from '../hooks/useRequireProfile';
+import { SUMMIT_DATE_LABEL, SUMMIT_HOURS, VENUE } from '../models/summitFacts';
+import { SPONSORS, SPONSOR_EMAIL, SPONSOR_TIERS, SPONSORSHIP_DETAILS_URL, type Sponsor } from '../models/sponsors';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
-const SUMMIT_WEBSITE = SUMMIT_LINKS.find((l) => l.label === 'Summit website')!.url;
+export const SUMMIT27_TABS: { id: string; label: string; title: string; icon: AppIcon }[] = [
+  { id: 'keynote', label: 'Keynote', title: 'Keynote', icon: Keynote },
+  { id: 'team', label: 'Team', title: "Who's running the Summit?", icon: Team },
+  { id: 'sponsors', label: 'Sponsors', title: 'Who helps make the Summit happen?', icon: Handshake },
+];
+
+function ComingSoon({ children }: { children: string }) {
+  return (
+    <div className="rounded-3xl border border-border bg-card p-6 sm:p-8">
+      <p className="inline-block rounded-full bg-emerald/10 px-3 py-1 text-[12.5px] font-semibold text-emerald">
+        Coming soon
+      </p>
+      <p className="mt-3 max-w-2xl text-[15px] leading-relaxed">{children}</p>
+    </div>
+  );
+}
+
+export function SponsorTiers({ sponsors = SPONSORS }: { sponsors?: Sponsor[] }) {
+  return (
+    <div className="space-y-5">
+      <ol className="grid gap-3 md:grid-cols-2" aria-label="Sponsor tiers, highest first">
+        {SPONSOR_TIERS.map((tier) => {
+          const here = sponsors.filter((s) => s.tier === tier.name);
+          return (
+            <li key={tier.name} className="flex flex-col rounded-2xl border border-border bg-card p-5">
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="font-display text-lg font-bold">{tier.name}</h3>
+                <span className="font-semibold tabular-nums text-emerald">{tier.amount}</span>
+              </div>
+              <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted-foreground">{tier.perks}</p>
+              <div className="mt-auto pt-4">
+                {here.length > 0 ? (
+                  <ul className="flex flex-wrap gap-2" aria-label={`${tier.name} sponsors`}>
+                    {here.map((s) => (
+                      <li key={s.name}>
+                        <a
+                          href={s.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          title={s.name}
+                          className="flex h-12 items-center rounded-lg bg-white px-3 ring-1 ring-border"
+                        >
+                          <img src={s.logo} alt={s.name} loading="lazy" className="max-h-8 w-auto" />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-[13px] font-medium text-muted-foreground">Open</p>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+      <div className="flex flex-wrap gap-2.5">
+        <LinkButton
+          href={`mailto:${SPONSOR_EMAIL}?subject=${encodeURIComponent("Sponsoring Emerald Summit '27")}`}
+          primary
+          icon={Mail}
+        >
+          Become a sponsor
+        </LinkButton>
+        <LinkButton href={SPONSORSHIP_DETAILS_URL}>Sponsorship details</LinkButton>
+      </div>
+    </div>
+  );
+}
 
 export default function Summit27Page() {
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  const { tab } = useParams();
+  const { ready, redirect } = useRequireProfile();
+  const current = SUMMIT27_TABS.find((t) => t.id === tab);
+
+  if (redirect) return <Navigate to={redirect} replace />;
+  if (!current) return <Navigate to="/summit-27/keynote" replace />;
+  if (!ready) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-4 px-6 py-16">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-64 w-full rounded-2xl" />
+      </div>
+    );
+  }
 
   return (
-    <div className="lp lp-page">
-      <LandingNav />
-      <main id="main">
-        <section className="lp-section" aria-labelledby="s27-title">
-          <div className="container lp-grid">
-            <div className="lp-s27__intro">
-              <h1 id="s27-title">Emerald Summit '27</h1>
-              <p className="lead">{SUMMIT_ABOUT}</p>
-              <p className="lp-s27__when">
-                <span>{SUMMIT_DATE}</span>
-                <span>{SUMMIT_HOURS}</span>
-                <span>{VENUE}</span>
-              </p>
-              <a href={SUMMIT_WEBSITE} target="_blank" rel="noreferrer" className="lp-btn lp-btn--quiet">
-                Summit website <ArrowRight aria-hidden className="-rotate-45" />
-              </a>
-            </div>
-          </div>
-        </section>
+    <AppShell>
+      <PageHeader label="Summit '27" title={current.title} sub={`${SUMMIT_DATE_LABEL} · ${SUMMIT_HOURS} · ${VENUE}`} />
 
-        <section id="speaker" className="lp-section lp-s27__soon" aria-labelledby="speaker-title">
-          <div className="container lp-grid">
-            <div className="lp-s27__intro">
-              <p className="lp-s27__tag">Coming soon</p>
-              <h2 id="speaker-title">Who's the guest speaker?</h2>
-              <p className="lead">This year's guest speaker will be announced soon.</p>
-            </div>
-          </div>
-        </section>
+      <nav aria-label="Summit '27" className="mb-6 flex gap-1 overflow-x-auto border-b border-border">
+        {SUMMIT27_TABS.map(({ id, label, icon: Icon }) => (
+          <NavLink
+            key={id}
+            to={`/summit-27/${id}`}
+            className={({ isActive }) =>
+              cn(
+                '-mb-px flex shrink-0 items-center gap-1.5 border-b-2 px-3.5 py-2.5 text-[14px] font-semibold transition-colors',
+                isActive
+                  ? 'border-emerald text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground',
+              )
+            }
+          >
+            <Icon className="h-4 w-4" aria-hidden />
+            {label}
+          </NavLink>
+        ))}
+      </nav>
 
-        <SponsorTerraces />
+      {current.id === 'keynote' && <ComingSoon>This year's keynote speaker will be announced soon.</ComingSoon>}
+      {current.id === 'team' && (
+        <ComingSoon>About Me pages for the students and organizers working on Emerald Summit '27 are coming soon.</ComingSoon>
+      )}
+      {current.id === 'sponsors' && <SponsorTiers />}
 
-        <section id="donate" className="lp-section" aria-labelledby="donate-title">
-          <div className="container lp-grid">
-            <div className="lp-s27__intro">
-              <h2 id="donate-title">How can I support the Summit?</h2>
-              <p className="lead">
-                Emerald Summit is organized by the EHS Academic Foundation (EAF), which supports student-initiated
-                projects that bring opportunities to students across many areas. Please consider supporting EAF and
-                its mission.
-              </p>
-              <div className="lp-s27__actions">
-                <a href={EAF_DONATE_URL} target="_blank" rel="noreferrer" className="lp-btn">
-                  <HeartHandshake aria-hidden /> Donate to EAF
-                </a>
-                <a href={EAF_VOLUNTEER_URL} target="_blank" rel="noreferrer" className="lp-btn lp-btn--quiet">
-                  Volunteer with EAF <ArrowRight aria-hidden className="-rotate-45" />
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
+      <hr className="my-8 border-t border-border/80" aria-hidden />
 
-        <section id="team" className="lp-section lp-s27__soon" aria-labelledby="team-title">
-          <div className="container lp-grid">
-            <div className="lp-s27__intro">
-              <p className="lp-s27__tag">Coming soon</p>
-              <h2 id="team-title">Who's running the Summit?</h2>
-              <p className="lead">
-                About Me pages for the students and organizers working on Emerald Summit '27 are coming soon.
-              </p>
-            </div>
-          </div>
-        </section>
-      </main>
-      <LandingFooter />
-    </div>
+      <SupportEafCard />
+    </AppShell>
   );
 }

@@ -1,11 +1,12 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   BookUser,
   CalendarDays,
   Clock,
   Gavel,
+  Keynote,
   Megaphone,
   QrCode,
   type LucideIcon,
@@ -503,6 +504,19 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {/* Phones have no sidebar, so Summit '27 (keynote, team, sponsors) is reached from here. */}
+      <Link
+        to="/summit-27/keynote"
+        className="mt-8 flex items-center gap-3 rounded-2xl border border-border bg-card p-4 transition-colors hover:border-emerald/40 lg:hidden"
+      >
+        <Keynote className="h-6 w-6 shrink-0 text-emerald" aria-hidden />
+        <span className="min-w-0 flex-1">
+          <span className="block font-display text-[17px] font-bold">Summit '27</span>
+          <span className="block text-[13px] text-muted-foreground">Keynote, team and sponsors</span>
+        </span>
+        <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+      </Link>
 
       <hr className="my-8 border-t border-border/80" aria-hidden />
 

@@ -1,43 +1,85 @@
-import { describe, expect, test } from 'vitest';
+import type { ReactNode } from 'react';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import Summit27Page from '../Summit27Page';
+import Summit27Page, { SponsorTiers } from '../Summit27Page';
 import LandingNav from '../../components/LandingNav';
-import { EAF_DONATE_URL, EAF_VOLUNTEER_URL } from '../../components/home/AboutSections';
+import { navItemsForRole } from '../../components/AppShell';
+import { EAF_VOLUNTEER_URL } from '../../components/home/AboutSections';
 import { SPONSOR_TIERS } from '../../models/sponsors';
 
-describe("Emerald Summit '27 page", () => {
-  test("the landing navbar's Summit '27 link opens the page", async () => {
-    render(
-      <MemoryRouter initialEntries={['/']}>
-        <Routes>
-          <Route path="/" element={<LandingNav />} />
-          <Route path="/summit-27" element={<p>Summit 27 page</p>} />
-        </Routes>
-      </MemoryRouter>,
-    );
-    const nav = screen.getByRole('navigation', { name: 'Main' });
-    await userEvent.click(within(nav).getByRole('button', { name: "Summit '27" }));
-    expect(screen.getByText('Summit 27 page')).toBeInTheDocument();
+const state = vi.hoisted(() => ({
+  guard: { ready: true, redirect: null as string | null },
+}));
+vi.mock('../../components/AppShell', async (importActual) => ({
+  ...(await importActual<typeof import('../../components/AppShell')>()),
+  default: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
+vi.mock('../../hooks/useRequireProfile', () => ({ useRequireProfile: () => state.guard }));
+
+beforeEach(() => {
+  state.guard = { ready: true, redirect: null };
+});
+
+function renderAt(path: string) {
+  return render(
+    <MemoryRouter initialEntries={[path]}>
+      <Routes>
+        <Route path="/summit-27/:tab" element={<Summit27Page />} />
+        <Route path="/roles" element={<p>Roles page</p>} />
+      </Routes>
+    </MemoryRouter>,
+  );
+}
+
+describe("Summit '27 page", () => {
+  test('is signed-in only: a visitor is sent to sign in', () => {
+    state.guard = { ready: false, redirect: '/roles' };
+    renderAt('/summit-27/sponsors');
+    expect(screen.getByText('Roles page')).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Sponsor tiers, highest first' })).not.toBeInTheDocument();
   });
 
-  test('opens without signing in, with the Summit facts, sponsor terraces, donation links and a Coming soon team section', () => {
-    render(<MemoryRouter initialEntries={['/summit-27']}><Summit27Page /></MemoryRouter>);
-    expect(screen.getByRole('heading', { level: 1, name: "Emerald Summit '27" })).toBeInTheDocument();
-    expect(screen.getByText('Saturday, January 23, 2027')).toBeInTheDocument();
-    expect(screen.getByText('Emerald High School, Dublin, CA')).toBeInTheDocument();
+  test('the landing navbar has no Summit \'27 link', () => {
+    render(<MemoryRouter><LandingNav /></MemoryRouter>);
+    expect(within(screen.getByRole('navigation', { name: 'Main' })).queryByText("Summit '27")).not.toBeInTheDocument();
+  });
 
+  test('the sidebar has a Summit \'27 group with Keynote, Team and Sponsors for every role', () => {
+    for (const role of ['participant', 'attendee', 'expert', 'volunteer', 'admin']) {
+      const items = navItemsForRole(role).filter((n) => n.group === "Summit '27");
+      expect(items.map((n) => n.to)).toEqual(['/summit-27/keynote', '/summit-27/team', '/summit-27/sponsors']);
+    }
+  });
+
+  test('subtabs switch between keynote, team and sponsors, with Donate on each', async () => {
+    renderAt('/summit-27/keynote');
+    expect(screen.getByText(/keynote speaker will be announced soon/)).toBeInTheDocument();
+    expect(screen.getByText('Saturday, January 23, 2027 · 9 AM to 5 PM · Emerald High School, Dublin, CA')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Donate/ })).toBeInTheDocument();
+
+    const tabs = screen.getByRole('navigation', { name: "Summit '27" });
+    await userEvent.click(within(tabs).getByRole('link', { name: /Team/ }));
+    expect(screen.getByRole('heading', { level: 1, name: "Who's running the Summit?" })).toBeInTheDocument();
+    expect(screen.getByText(/About Me pages/)).toBeInTheDocument();
+
+    await userEvent.click(within(tabs).getByRole('link', { name: /Sponsors/ }));
     const tiers = screen.getByRole('list', { name: 'Sponsor tiers, highest first' });
-    expect(within(tiers).getAllByRole('button')).toHaveLength(SPONSOR_TIERS.length);
-
-    expect(screen.getByRole('link', { name: /Donate to EAF/ })).toHaveAttribute('href', EAF_DONATE_URL);
+    expect(within(tiers).getAllByRole('listitem').filter((li) => li.parentElement === tiers)).toHaveLength(SPONSOR_TIERS.length);
+    expect(screen.getByRole('button', { name: /Donate/ })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Volunteer with EAF/ })).toHaveAttribute('href', EAF_VOLUNTEER_URL);
+  });
 
-    const speaker = screen.getByRole('heading', { name: "Who's the guest speaker?" }).closest('section')!;
-    expect(within(speaker).getByText('Coming soon')).toBeInTheDocument();
+  test('an unknown subtab opens Keynote', () => {
+    renderAt('/summit-27/nope');
+    expect(screen.getByRole('heading', { level: 1, name: 'Keynote' })).toBeInTheDocument();
+  });
 
-    const team = screen.getByRole('heading', { name: "Who's running the Summit?" }).closest('section')!;
-    expect(within(team).getByText('Coming soon')).toBeInTheDocument();
+  test('sponsors show in their tier; an empty tier says Open', () => {
+    render(<SponsorTiers sponsors={[{ name: 'Acme', tier: 'Pillar', url: 'https://acme.test', logo: '/acme.png' }]} />);
+    const pillar = screen.getByRole('list', { name: 'Pillar sponsors' });
+    expect(within(pillar).getByRole('img', { name: 'Acme' })).toBeInTheDocument();
+    expect(screen.getAllByText('Open')).toHaveLength(SPONSOR_TIERS.length - 1);
   });
 });

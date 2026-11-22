@@ -6,9 +6,6 @@ import { Menu, X } from '@/components/icons';
 import BrandMark from './BrandMark';
 import { cn } from '@/lib/utils';
 
-/** Pages of their own, after the section anchors. */
-const PAGE_LINKS = [{ to: '/summit-27', label: "Summit '27" }];
-
 const SECTION_LINKS = [
   { id: 'about', label: 'About' },
   { id: 'disciplines', label: 'Disciplines' },
@@ -75,22 +72,6 @@ export default function LandingNav({
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const goToPage = (to: string) => {
-    setOpen(false);
-    navigate(to);
-  };
-  const pageLinks = PAGE_LINKS.map((p) => (
-    <button
-      key={p.to}
-      type="button"
-      onClick={() => goToPage(p.to)}
-      className="lp-nav__link"
-      aria-current={location.pathname === p.to ? 'page' : undefined}
-    >
-      {p.label}
-    </button>
-  ));
-
   const goToSection = (id: string) => {
     setOpen(false);
     if (location.pathname === '/') {
@@ -138,7 +119,6 @@ export default function LandingNav({
                   {s.label}
                 </button>
               ))}
-              {pageLinks}
             </nav>
 
             <div className="lp-nav__actions">
@@ -189,7 +169,6 @@ export default function LandingNav({
                   {s.label}
                 </button>
               ))}
-              {pageLinks}
               <button
                 type="button"
                 className="lp-btn"

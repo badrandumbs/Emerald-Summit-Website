@@ -16,6 +16,9 @@ import {
   Bell,
   ChevronRight,
   CornerDownLeft,
+  Keynote,
+  Team,
+  Handshake,
   type LucideIcon,
 } from '@/components/icons';
 import { useAuth } from '../context/AuthContext';
@@ -31,7 +34,7 @@ import ChangeRoleDialog from './ChangeRoleDialog';
 import { cn } from '@/lib/utils';
 import BeamentorBanner from './BeamentorBanner';
 
-type NavGroup = 'My Summit' | 'Account';
+type NavGroup = 'My Summit' | "Summit '27" | 'Account';
 
 interface NavItem {
   to: string;
@@ -56,10 +59,14 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/disciplines', label: 'Explore', icon: Compass, group: 'My Summit' },
   { to: '/announcements', label: 'Announcements', icon: Megaphone, group: 'My Summit' },
   { to: '/archie', label: 'Ask Archie', icon: Sparkles, group: 'My Summit' },
+  // Summit '27 (meeting of Nov 20, 2026): signed-in only, one subtab each.
+  { to: '/summit-27/keynote', label: 'Keynote', icon: Keynote, group: "Summit '27" },
+  { to: '/summit-27/team', label: 'Team', icon: Team, group: "Summit '27" },
+  { to: '/summit-27/sponsors', label: 'Sponsors', icon: Handshake, group: "Summit '27" },
   { to: '/account', label: 'Profile', icon: UserRound, group: 'Account' },
 ];
 
-const NAV_GROUPS: NavGroup[] = ['My Summit', 'Account'];
+const NAV_GROUPS: NavGroup[] = ['My Summit', "Summit '27", 'Account'];
 
 export function navItemsForRole(roleName: string): NavItem[] {
   return NAV_ITEMS.filter((n) => !n.roles || n.roles.includes(roleName));

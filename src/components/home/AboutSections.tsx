@@ -1,6 +1,6 @@
-// Home's Support EAF and About the app sections (website only for now). The
-// sponsors moved to the landing page (src/landing/SponsorTerraces.tsx, data in
-// src/models/sponsors.ts). EAF links come from EAF's real site,
+// Home's Support EAF and About the app sections (website only for now). Support
+// EAF is also on the Summit '27 page, where the sponsors are
+// (src/pages/Summit27Page.tsx, data in src/models/sponsors.ts). EAF links come from EAF's real site,
 // ehsacademics.org (Initiatives → Emerald Summit '27 → Sponsor; checked
 // Nov 14, 2026). The old Google Sites page (sites.google.com/view/
 // ehs-academic-foundation) is out of date: don't use it.

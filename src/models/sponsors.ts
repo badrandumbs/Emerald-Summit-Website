@@ -1,5 +1,6 @@
-// The Summit's sponsor tiers and sponsors, shown on the landing page's
-// sponsor terraces (src/landing/SponsorTerraces.tsx). Tiers and the contact
+// The Summit's sponsor tiers and sponsors, shown signed-in only on the Summit
+// '27 page's Sponsors subtab (src/pages/Summit27Page.tsx); the landing page's
+// terraces (src/landing/SponsorTerraces.tsx) are not rendered. Tiers and the contact
 // come from EAF's real site, ehsacademics.org (Initiatives → Emerald Summit
 // '27 → Sponsor; checked Nov 14, 2026).
 

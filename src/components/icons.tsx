@@ -48,6 +48,7 @@ import {
   Gear,
   GraduationCap as PhGraduationCap,
   HandHeart,
+  Handshake as PhHandshake,
   House as PhHouse,
   Image as PhImage,
   Info as PhInfo,
@@ -82,6 +83,7 @@ import {
   ShieldCheck as PhShieldCheck,
   SignOut,
   Sparkle,
+  MicrophoneStage,
   Star as PhStar,
   SquaresFour,
   Sun as PhSun,
@@ -92,6 +94,7 @@ import {
   UserCircle,
   UserMinus,
   Users as PhUsers,
+  UsersThree,
   Warning,
   WarningCircle,
   X as PhX,
@@ -180,6 +183,7 @@ export const Footprints = duotone(PhFootprints, 'Footprints');
 export const Gavel = duotone(PhGavel, 'Gavel');
 export const GraduationCap = duotone(PhGraduationCap, 'GraduationCap');
 export const HeartHandshake = duotone(HandHeart, 'HeartHandshake');
+export const Handshake = duotone(PhHandshake, 'Handshake');
 export const ImageIcon = duotone(PhImage, 'ImageIcon');
 export const Inbox = duotone(Tray, 'Inbox');
 export const Info = duotone(PhInfo, 'Info');
@@ -228,6 +232,8 @@ export const UserCheck = duotone(PhUserCheck, 'UserCheck');
 export const UserRound = duotone(UserCircle, 'UserRound');
 export const UserX = duotone(UserMinus, 'UserX');
 export const Users = duotone(PhUsers, 'Users');
+export const Team = duotone(UsersThree, 'Team');
+export const Keynote = duotone(MicrophoneStage, 'Keynote');
 export const X = plain(PhX, 'X');
 export const XCircle = duotone(PhXCircle, 'XCircle');
 export const Globe = duotone(PhGlobe, 'Globe');

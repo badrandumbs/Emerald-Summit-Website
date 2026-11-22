@@ -16,13 +16,8 @@ import SunArc from '../landing/SunArc';
 import { Mail } from '@/components/icons';
 import { useIsTouchScreen } from '../lib/device';
 import '../landing/landing.css';
+import { SUMMIT_ABOUT, SUMMIT_DATE_LABEL, SUMMIT_HOURS, VENUE } from '../models/summitFacts';
 
-// Shared with the dashboard's Emerald Summit '27 page (src/pages/Summit27Page.tsx).
-export const VENUE = 'Emerald High School, Dublin, CA';
-export const SUMMIT_DATE = 'Saturday, January 23, 2027';
-export const SUMMIT_HOURS = '9 AM to 5 PM';
-export const SUMMIT_ABOUT =
-  'A day at Emerald High where students share project ideas, work on them together, and get feedback from visiting experts across six disciplines.';
 const CONTACT_EMAIL = 'contact@ehsacademics.org';
 
 const ABOUT_STATS = [
@@ -306,7 +301,7 @@ export default function WelcomePage() {
 
             <motion.div className="lp-hero__aside" variants={rise}>
               <p className="lp-hero__when">
-                <span>{SUMMIT_DATE}</span>
+                <span>{SUMMIT_DATE_LABEL}</span>
                 <span>{SUMMIT_HOURS}</span>
                 <span>{VENUE}</span>
               </p>
