@@ -40,6 +40,7 @@ import ChangeRoleDialog from './ChangeRoleDialog';
 import { cn } from '@/lib/utils';
 import BeamentorBanner from './BeamentorBanner';
 import { openSummit27 } from './Summit27Intro';
+import { useFadeInAfterSkeleton } from './ui/skeleton';
 
 type NavGroup = 'My Summit' | 'Account';
 
@@ -386,6 +387,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const { unreadCount } = useNotifications();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const mainRef = useRef<HTMLElement>(null);
+  useFadeInAfterSkeleton(mainRef);
   const name = (profile?.name as string | undefined) ?? 'Signed in';
   const roleName = (profile?.role as string | undefined) ?? 'participant';
   const role = roleByName(roleName) ?? USER_ROLES[0];
@@ -513,7 +516,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <ArrowLeftRight className="h-4 w-4" />
               <span
                 aria-hidden
-                className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md bg-white px-2 py-1 text-[11.5px] font-semibold text-navy opacity-0 shadow-lg transition-all duration-150 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100"
+                className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md bg-white px-2 py-1 text-[11.5px] font-semibold text-navy opacity-0 shadow-lg transition-[opacity,transform] duration-150 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100"
               >
                 Switch role
               </span>
@@ -524,10 +527,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
             onClick={handleSignOut}
             title="Sign out"
             aria-label="Sign out"
-            className="group/signout absolute inset-y-1.5 right-1.5 z-10 flex items-center justify-center gap-0 rounded-lg border border-rose-500/40 bg-rose-500/15 px-3 text-rose-300 transition-all hover:gap-1.5 hover:border-rose-500 hover:bg-rose-600 hover:text-white focus-visible:gap-1.5 focus-visible:bg-rose-600 focus-visible:text-white"
+            className="group/signout absolute inset-y-1.5 right-1.5 z-10 flex items-center justify-center gap-0 rounded-lg border border-rose-500/40 bg-rose-500/15 px-3 text-rose-300 transition-[gap,color,background-color,border-color] hover:gap-1.5 hover:border-rose-500 hover:bg-rose-600 hover:text-white focus-visible:gap-1.5 focus-visible:bg-rose-600 focus-visible:text-white"
           >
             <LogOut className="h-4 w-4 shrink-0" />
-            <span className="max-w-0 overflow-hidden whitespace-nowrap text-[12px] font-semibold transition-all duration-200 group-hover/signout:max-w-[64px] group-focus-visible/signout:max-w-[64px]">
+            <span className="max-w-0 overflow-hidden whitespace-nowrap text-[12px] font-semibold transition-[max-width] duration-200 group-hover/signout:max-w-[64px] group-focus-visible/signout:max-w-[64px]">
               Sign out
             </span>
           </button>
@@ -613,7 +616,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <main className="min-w-0 px-4 pb-28 pt-[4.5rem] sm:px-6 lg:px-8 lg:pb-12 lg:pt-7">
+        <main ref={mainRef} className="min-w-0 px-4 pb-28 pt-[4.5rem] sm:px-6 lg:px-8 lg:pb-12 lg:pt-7">
           <div className="mx-auto max-w-[1400px]"><BeamentorBanner />{children}</div>
         </main>
       </div>

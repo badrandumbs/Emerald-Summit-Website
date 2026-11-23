@@ -62,7 +62,7 @@ export default function PhotoSlideshow({ className }: { className?: string }) {
               aria-label={`Photo ${i + 1} of ${photos.length}`}
               aria-current={i === active}
               onClick={() => setActive(i)}
-              className={cn('h-1.5 rounded-full transition-all', i === active ? 'w-4 bg-white' : 'w-1.5 bg-white/60 hover:bg-white/80')}
+              className={cn('h-1.5 rounded-full transition-[width,background-color]', i === active ? 'w-4 bg-white' : 'w-1.5 bg-white/60 hover:bg-white/80')}
             />
           ))}
         </div>

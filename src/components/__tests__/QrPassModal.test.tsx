@@ -65,11 +65,6 @@ describe('QrPassModal Component Suite (Requirement R1 & R4)', () => {
     expect(screen.getByText('jordan.lee@example.com')).toBeInTheDocument();
     expect(screen.getByText('Participant')).toBeInTheDocument();
 
-    // Monospace ID display
-    expect(
-      screen.getByText('c8d9e234-5b6a-4f11-9a2c-7b8901234567'),
-    ).toBeInTheDocument();
-
     // Pending check-in status
     expect(screen.getByText('Pending Check-in')).toBeInTheDocument();
 
@@ -99,34 +94,6 @@ describe('QrPassModal Component Suite (Requirement R1 & R4)', () => {
 
     expect(screen.getByText('Checked In')).toBeInTheDocument();
     expect(screen.queryByText('Pending Check-in')).not.toBeInTheDocument();
-  });
-
-  test('copies user ID to clipboard when copy button is clicked', async () => {
-    const user = userEvent.setup();
-    const writeTextMock = vi.fn().mockResolvedValue(undefined);
-
-    Object.defineProperty(navigator, 'clipboard', {
-      value: {
-        writeText: writeTextMock,
-      },
-      configurable: true,
-      writable: true,
-    });
-
-    render(
-      <QrPassModal
-        open={true}
-        onOpenChange={vi.fn()}
-        profile={mockParticipantProfile}
-      />,
-    );
-
-    const copyBtn = screen.getByRole('button', { name: /Copy User ID/i });
-    expect(copyBtn).toBeInTheDocument();
-
-    await user.click(copyBtn);
-    expect(writeTextMock).toHaveBeenCalledWith('c8d9e234-5b6a-4f11-9a2c-7b8901234567');
-    expect(await screen.findByText('Copied')).toBeInTheDocument();
   });
 
   test('role gating: AppShell displays "My QR Pass" for participant role', () => {

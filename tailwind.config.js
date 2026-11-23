@@ -1,5 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  // hover: styles only apply where a real pointer can hover, so a tap on a
+  // phone doesn't leave a button stuck in its hover state.
+  future: { hoverOnlyWhenSupported: true },
   darkMode: ['class'],
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
@@ -96,9 +99,10 @@ module.exports = {
         // Light catching a cut stone: the highlight rests off the letters for
         // most of the cycle, then sweeps across once, left to right.
         // Slow drift of the dashboard hero's emerald gradient.
+        // Moved with transform (not background-position) so it never repaints.
         'gradient-pan': {
-          '0%, 100%': { backgroundPosition: '0% 50%' },
-          '50%': { backgroundPosition: '100% 50%' },
+          '0%, 100%': { transform: 'translateX(0)' },
+          '50%': { transform: 'translateX(-66.667%)' },
         },
         'glint': {
           '0%, 80%': { backgroundPosition: '100%' },

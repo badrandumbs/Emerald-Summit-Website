@@ -124,6 +124,14 @@
   }
 }
 
+/* Radix overlays (dialogs, dropdowns, selects): tailwindcss-animate leaves
+   them on the browser's default `ease`, which is weak for an entrance. The
+   site's strong ease-out makes them open (and close) at once. */
+[data-state].animate-in,
+[data-state].animate-out {
+  animation-timing-function: var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
 /* Hands the hero sky from the encoded arrival over to the live canvas. The
    canvas seeds its stars randomly, so it never lines up with the video's
    final frame — this dissolve is what keeps that reshuffle from reading as

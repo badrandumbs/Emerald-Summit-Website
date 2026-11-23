@@ -1,6 +1,5 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import QrPassModal from '../QrPassModal';
 
 describe('Adversarial Test: QrPassModal Stress-Testing', () => {
@@ -59,38 +58,6 @@ describe('Adversarial Test: QrPassModal Stress-Testing', () => {
     // Displays 'No user ID available' when ID is missing
     expect(screen.getByText('No user ID available')).toBeInTheDocument();
     expect(screen.getByText('Pending Check-in')).toBeInTheDocument();
-  });
-
-  test('handles clipboard failure gracefully without uncaught rejection', async () => {
-    const user = userEvent.setup();
-
-    // Mock navigator.clipboard.writeText throwing an error (e.g. permission denied)
-    Object.defineProperty(navigator, 'clipboard', {
-      value: {
-        writeText: vi.fn().mockRejectedValue(new Error('Clipboard permission denied')),
-      },
-      configurable: true,
-      writable: true,
-    });
-
-    render(
-      <QrPassModal
-        open={true}
-        onOpenChange={vi.fn()}
-        profile={{
-          id: 'c8d9e234-5b6a-4f11-9a2c-7b8901234567',
-          name: 'Test User',
-          role: 'participant',
-        }}
-      />,
-    );
-
-    const copyBtn = screen.getByRole('button', { name: /Copy User ID/i });
-    expect(copyBtn).toBeInTheDocument();
-
-    // Should catch the error and not crash
-    await user.click(copyBtn);
-    expect(await screen.findByText('Copied')).toBeInTheDocument();
   });
 
   test('handles extremely long names and IDs without breaking SVG rendering', () => {

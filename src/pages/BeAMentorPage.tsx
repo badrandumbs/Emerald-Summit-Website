@@ -103,7 +103,7 @@ export default function BeAMentorPage() {
       </div>
 
       <form
-        className="animate-fade-up mt-10 space-y-8"
+        className="animate-fade-up mt-10 space-y-8 motion-reduce:animate-none"
         style={{ animationDelay: '90ms' }}
         onSubmit={(e) => {
           e.preventDefault();

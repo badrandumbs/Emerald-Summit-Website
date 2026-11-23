@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { EASE_OUT_ARRAY } from '@/lib/motion';
 import { toast } from 'sonner';
 import { X } from '@/components/icons';
 import { currentPlatform, type DevicePlatform } from '@/lib/device';
@@ -93,10 +94,10 @@ export default function GetTheAppBanner() {
           role="complementary"
           aria-label="Get the Emerald Summit app"
           className="app-banner fixed inset-x-3 z-[60] mx-auto max-w-md"
-          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 24 }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, transform: 'translateY(24px)' }}
+          animate={{ opacity: 1, transform: 'translateY(0px)' }}
+          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, transform: 'translateY(24px)' }}
+          transition={{ duration: 0.35, ease: EASE_OUT_ARRAY }}
         >
           <div className="relative flex items-center gap-3 rounded-2xl border border-border bg-card p-3 pr-3 text-card-foreground shadow-xl shadow-black/15">
             <img

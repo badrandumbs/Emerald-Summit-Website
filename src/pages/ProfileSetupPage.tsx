@@ -203,7 +203,7 @@ export default function ProfileSetupPage() {
       </div>
 
       <form
-        className="animate-fade-up mt-12 space-y-6"
+        className="animate-fade-up mt-12 space-y-6 motion-reduce:animate-none"
         style={{ animationDelay: '90ms' }}
         onSubmit={(e) => {
           e.preventDefault();

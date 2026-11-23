@@ -2,6 +2,7 @@ import ThemeToggle from './ThemeToggle';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { EASE_OUT_ARRAY } from '@/lib/motion';
 import { Menu, X } from '@/components/icons';
 import BrandMark from './BrandMark';
 import { cn } from '@/lib/utils';
@@ -90,12 +91,12 @@ export default function LandingNav({
         overlay && 'lp-nav--overlay',
         (scrolled || open) && 'is-scrolled',
       )}
-      initial={entered === undefined ? false : { y: '-105%' }}
-      animate={{ y: entered === false ? '-105%' : 0 }}
+      initial={entered === undefined ? false : { transform: 'translateY(-105%)' }}
+      animate={{ transform: entered === false ? 'translateY(-105%)' : 'translateY(0%)' }}
       transition={{
         duration: 0.5,
         delay: entered ? entranceDelay : 0,
-        ease: [0.16, 1, 0.3, 1],
+        ease: EASE_OUT_ARRAY,
       }}
     >
       <div className="lp-nav__track">
@@ -152,10 +153,10 @@ export default function LandingNav({
             id="lp-nav-sheet"
             ref={sheetRef}
             className="lp-nav__sheet"
-            initial={reduceMotion ? false : { opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={reduceMotion ? { opacity: 0, transition: { duration: 0 } } : { opacity: 0, y: -8, transition: { duration: 0.15 } }}
-            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            initial={reduceMotion ? false : { opacity: 0, transform: 'translateY(-8px)' }}
+            animate={{ opacity: 1, transform: 'translateY(0px)' }}
+            exit={reduceMotion ? { opacity: 0, transition: { duration: 0 } } : { opacity: 0, transform: 'translateY(-8px)', transition: { duration: 0.15 } }}
+            transition={{ duration: 0.22, ease: EASE_OUT_ARRAY }}
           >
             <div className="container lp-nav__sheet-list">
               <ThemeToggle tone="onDark" labels className="mb-2 self-start" />

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import SummitLogo from './SummitLogo';
 import { reducedMotion } from './verse/useCircleReveal';
+import { EASE_IN_OUT, EASE_OUT } from '@/lib/motion';
 
 /* Timeline, in ms (about 1.8 s in all). */
 const BLUR_MS = 340; // the page you're on blurs out
@@ -14,9 +15,6 @@ const FLY_MS = 720; // ...then glides into the Support EAF card as the blur clea
 const ROLL_MS = 480; // each letter of the "Summit '27" heading rolling in
 const ROLL_STAGGER = 32;
 const WAIT_MAX_MS = 4000; // longest to wait for Summit '27 to load before clearing anyway
-
-const EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)';
-const EASE_IN_OUT = 'cubic-bezier(0.65, 0, 0.35, 1)'; // the discipline portal's curve
 
 /** The Support EAF card's logo on Summit '27, where the flying logo lands. */
 export const EAF_LOGO_ATTR = 'data-summit-eaf-logo';

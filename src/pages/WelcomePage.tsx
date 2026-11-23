@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
+import { EASE_OUT_ARRAY } from '@/lib/motion';
 import { markIntroPlayed, shouldPlayIntro } from '../components/introSession';
 import LandingNav from '../components/LandingNav';
 import SkyVideo from '../components/SkyVideo';
@@ -70,11 +71,11 @@ const stagger: Variants = {
 
 /** One settle: a fade with an 8px rise. */
 const rise: Variants = {
-  hidden: { opacity: 0, y: 8 },
+  hidden: { opacity: 0, transform: 'translateY(8px)' },
   show: {
     opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+    transform: 'translateY(0px)',
+    transition: { duration: 0.6, ease: EASE_OUT_ARRAY },
   },
 };
 

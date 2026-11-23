@@ -231,7 +231,7 @@
 .lp-sponsors__label { font-size: var(--text-sm); font-weight: 600; color: var(--color-muted); }
 .lp-sponsors__logos { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin: 0; padding: 0; list-style: none; }
 .lp-sponsors__logo { display: flex; align-items: center; justify-content: center; width: 116px; height: 56px; padding: 8px 12px; border-radius: 10px; background: #fff; outline: 1px solid color-mix(in oklab, var(--color-ink) 10%, transparent); transition: transform var(--dur-micro) var(--ease-out); }
-.lp-sponsors__logo:hover { transform: translateY(-2px); }
+@media (hover: hover) and (pointer: fine) { .lp-sponsors__logo:hover { transform: translateY(-2px); } }
 .lp-sponsors__logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .lp-sponsors__empty { color: var(--color-muted); }
 .lp-sponsors__actions { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
@@ -483,6 +483,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lp-nav__bar, .lp-btn, .lp-icon-btn, .lp-faq__a, .lp-faq__icon { transition: none; }
+  .lp-nav__bar, .lp-btn, .lp-icon-btn, .lp-faq__a, .lp-faq__icon, .lp-hero .lp-sky { transition: none; }
   .lp-viewer__overlay[data-state="open"], .lp-viewer[data-state="open"] { animation: none; }
 }

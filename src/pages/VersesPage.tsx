@@ -169,7 +169,7 @@ function VersePanel({
         'group relative overflow-hidden rounded-[22px] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         stacked
           ? 'min-h-[300px]'
-          : 'min-w-0 cursor-pointer transition-[flex-grow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+          : 'min-w-0 cursor-pointer transition-[flex-grow] duration-300 ease-[var(--ease-out)] motion-reduce:transition-none',
         !stacked && (expanded ? 'flex-[4.2]' : 'flex-[1]'),
       )}
       style={{

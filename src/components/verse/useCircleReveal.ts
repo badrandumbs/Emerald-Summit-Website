@@ -1,4 +1,5 @@
 import { useCallback, useLayoutEffect, useRef } from 'react';
+import { EASE_IN_OUT, EASE_OUT } from '@/lib/motion';
 
 export type Origin = { x: number; y: number };
 
@@ -12,8 +13,9 @@ export const screenCenter = (): Origin => ({ x: window.innerWidth / 2, y: window
 /**
  * A discipline's world opening like the app's portal: a circle of its color
  * grows from `origin` to the farthest corner, then the content fades in over
- * the last two thirds (mobile timings: 620ms in, 420ms out). `close(done)`
- * shrinks it back to the origin, then calls `done`.
+ * the last two thirds (620ms in, as on mobile). `close(done)` shrinks it back
+ * to the origin in 300ms, then calls `done`. The close starts fast (ease-out)
+ * so Back answers at once; mobile still uses 420ms with an ease-in.
  */
 export function useCircleReveal(origin: Origin) {
   const shell = useRef<HTMLDivElement>(null);
@@ -42,7 +44,7 @@ export function useCircleReveal(origin: Origin) {
     const at = `at ${origin.x}px ${origin.y}px`;
     el.animate([{ clipPath: `circle(0px ${at})` }, { clipPath: `circle(${farthest()}px ${at})` }], {
       duration: 620,
-      easing: 'cubic-bezier(0.65, 0, 0.35, 1)',
+      easing: EASE_IN_OUT,
       fill: 'forwards',
     });
     inner.animate([{ opacity: 0 }, { opacity: 1 }], {
@@ -65,7 +67,7 @@ export function useCircleReveal(origin: Origin) {
       const at = `at ${origin.x}px ${origin.y}px`;
       const anim = el.animate(
         [{ clipPath: `circle(${farthest()}px ${at})` }, { clipPath: `circle(0px ${at})` }],
-        { duration: 420, easing: 'cubic-bezier(0.32, 0, 0.67, 0)', fill: 'forwards' },
+        { duration: 300, easing: EASE_OUT, fill: 'forwards' },
       );
       anim.onfinish = done;
     },
@@ -97,6 +99,6 @@ export function growIn(el: HTMLElement | null, origin: Origin | null) {
       { clipPath: `circle(0px ${at})`, opacity: 0.3 },
       { clipPath: `circle(${far}px ${at})`, opacity: 1 },
     ],
-    { duration: 520, easing: 'cubic-bezier(0.65, 0, 0.35, 1)' },
+    { duration: 520, easing: EASE_IN_OUT },
   );
 }

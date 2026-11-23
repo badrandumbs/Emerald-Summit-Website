@@ -7,6 +7,7 @@ import {
   useSpring,
   useTransform,
 } from 'framer-motion';
+import { EASE_OUT_ARRAY } from '@/lib/motion';
 import SummitLogo from './SummitLogo';
 import TechVerseTracks from './TechVerseTracks';
 import { useIsPhoneScreen } from '../lib/device';
@@ -151,9 +152,9 @@ function UniverseOrbit() {
               key={d.name}
               className="lp-orbit__detail"
               style={{ '--uni': d.color } as CSSProperties}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, transform: 'translateY(8px)' }}
+              animate={{ opacity: 1, transform: 'translateY(0px)' }}
+              transition={{ duration: 0.35, ease: EASE_OUT_ARRAY }}
             >
               <h3 className="lp-orbit__name">{d.label}</h3>
               <p className="lp-orbit__desc">{d.description}</p>

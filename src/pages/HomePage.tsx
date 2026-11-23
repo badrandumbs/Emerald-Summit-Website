@@ -329,7 +329,13 @@ export default function HomePage() {
     <AppShell>
       <ExpertDeclinedDialog />
       {/* hero */}
-      <section className="relative mb-5 animate-gradient-pan overflow-hidden rounded-3xl bg-[linear-gradient(115deg,#0B2E22_0%,#0A5F43_25%,#0F8C62_50%,#0A5F43_75%,#0B2E22_100%)] bg-[length:300%_300%] p-6 text-white motion-reduce:animate-none sm:p-8">
+      <section className="relative mb-5 overflow-hidden rounded-3xl bg-[#0A5F43] p-6 text-white sm:p-8">
+        {/* The emerald gradient, three cards wide, slides under the card on
+            transform alone so the browser never repaints it. */}
+        <div
+          className="pointer-events-none absolute inset-y-0 left-0 w-[300%] animate-gradient-pan bg-[linear-gradient(115deg,#0B2E22_0%,#0A5F43_25%,#0F8C62_50%,#0A5F43_75%,#0B2E22_100%)] will-change-transform motion-reduce:animate-none"
+          aria-hidden
+        />
         <div
           className="pointer-events-none absolute -right-16 -top-40 h-[420px] w-[420px] rounded-full bg-emerald-300/30 blur-[110px]"
           aria-hidden

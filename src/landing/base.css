@@ -26,4 +26,6 @@ html:has(.lp-page) { scrollbar-color: var(--color-muted) var(--color-paper); }
 :where(.lp) [data-slot]:has(> img) > :not(img):not([data-keep]) { display: none !important; }
 @media (max-width: 60rem) { :root { --gutter: 24px; --section-gap-s: 80px; --section-gap: 96px; --section-gap-l: 120px; } }
 @media (max-width: 40rem) { :root { --gutter: 16px; --section-gap-s: 56px; --section-gap: 72px; --section-gap-l: 96px; --gap-columns: 16px; } }
-@media (prefers-reduced-motion: reduce) { :where(.lp) *:not(.keep-motion), :where(.lp) *:not(.keep-motion)::before, :where(.lp) *:not(.keep-motion)::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+/* Reduced motion stops keyframe loops here; transitions that move things are switched off one by one
+   in landing.css, so color and opacity feedback stays. */
+@media (prefers-reduced-motion: reduce) { :where(.lp) *:not(.keep-motion), :where(.lp) *:not(.keep-motion)::before, :where(.lp) *:not(.keep-motion)::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; } }

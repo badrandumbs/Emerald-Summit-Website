@@ -10,8 +10,6 @@ import { QRCodeSVG } from 'qrcode.react';
 import {
   CheckCircle2,
   Clock,
-  Copy,
-  Check,
   Sparkles,
   Phone,
   QrCode,
@@ -48,7 +46,6 @@ export default function QrPassModal({
   profile: propProfile,
 }: QrPassModalProps) {
   const { profile: authProfile, session, refreshProfile } = useSafeAuth();
-  const [copied, setCopied] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const effectiveProfile = propProfile !== undefined ? propProfile : authProfile;
@@ -67,21 +64,6 @@ export default function QrPassModal({
     .slice(0, 2)
     .join('')
     .toUpperCase() || 'P';
-
-  const handleCopyId = async () => {
-    if (!userId) return;
-    try {
-      if (typeof navigator !== 'undefined' && navigator.clipboard) {
-        await navigator.clipboard.writeText(userId);
-      }
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard fallback
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -204,29 +186,6 @@ export default function QrPassModal({
                 No user ID available
               </div>
             )}
-          </div>
-
-          {/* User ID Monospace Footer with Copy */}
-          <div className="flex items-center justify-between gap-2 rounded-xl bg-muted/40 px-3 py-2 border border-border/50 text-[11px]">
-            <div className="flex items-center gap-1.5 min-w-0 font-mono text-muted-foreground">
-              <span className="text-xs font-semibold text-foreground">ID:</span>
-              <span className="truncate select-all font-medium">{userId}</span>
-            </div>
-            <button
-              onClick={handleCopyId}
-              className="inline-flex shrink-0 items-center gap-1 rounded-md bg-background px-2 py-1 text-[10px] font-semibold text-foreground shadow-sm hover:bg-accent transition-colors"
-              aria-label="Copy User ID"
-            >
-              {copied ? (
-                <>
-                  <Check className="h-3 w-3 text-emerald" /> Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="h-3 w-3" /> Copy
-                </>
-              )}
-            </button>
           </div>
         </div>
 

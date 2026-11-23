@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { EASE_IN_OUT_ARRAY } from '@/lib/motion';
 
 /** The downloaded event photos, grouped sequentially into sets of
  * [large tile, top-right tile, bottom-right tile] so the rotation works
@@ -33,7 +34,7 @@ function Tile({ src, className }: { src: string; className: string }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: [0.65, 0, 0.35, 1] }}
+          transition={{ duration: 0.8, ease: EASE_IN_OUT_ARRAY }}
         />
       </AnimatePresence>
     </div>

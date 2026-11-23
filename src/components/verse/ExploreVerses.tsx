@@ -446,7 +446,7 @@ function AddToScheduleButton({
         className={
           closed
             ? 'flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-full bg-neutral-400 text-white opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2'
-            : 'flex h-8 w-8 items-center justify-center rounded-full bg-emerald-deep text-white shadow-sm transition-all hover:scale-110 hover:bg-emerald focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100 disabled:hover:bg-emerald-deep'
+            : 'flex h-8 w-8 items-center justify-center rounded-full bg-emerald-deep text-white shadow-sm transition-[transform,background-color] hover:scale-110 hover:bg-emerald focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100 disabled:hover:bg-emerald-deep'
         }
       >
         <Plus className="h-4 w-4" strokeWidth={2.6} />
