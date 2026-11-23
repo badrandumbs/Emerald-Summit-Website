@@ -148,7 +148,7 @@
 /* Depth (WelcomePage sets --px/--py from the pointer, -1 to 1, and --sy from the scroll, in px).
    Near layers follow the pointer most. Uses the
    separate translate property so it adds to the sky's zoom instead of replacing it. */
-.lp-hero [data-ridge], .lp-hero .lp-sun { translate: calc(var(--px, 0) * var(--d) * -1px) calc(var(--py, 0) * var(--d) * -0.4px + var(--sy, 0) * var(--lag) * 1px); transition: translate 200ms var(--ease-out); }
+.lp-hero [data-ridge], .lp-hero .lp-sun { translate: calc(var(--px, 0) * var(--d) * -1px) calc(var(--py, 0) * var(--d) * -0.4px + var(--sy, 0) * var(--lag) * 1px); will-change: translate; }
 /* On scroll the sun rises out the top while the ranges sink out the bottom (a --lag above 1 moves
    a layer down the screen, below 0 moves it up faster than the page); scrolling back returns them. */
 .lp-hero .lp-sun { --d: 4; --lag: -0.6; }
@@ -159,7 +159,7 @@
    panel behind the date (a backdrop blur) showed as a dark band across the screen, with the text
    missing, when a fast scroll back up outran the browser's repaint of the moving block. The
    split on scroll comes from the ridges and sun lagging instead. */
-.lp-hero:not(.lp-hero--intro) .lp-hero__title-in { transform: perspective(900px) rotateX(calc(var(--py, 0) * -6deg)) rotateY(calc(var(--px, 0) * 8deg)); transition: transform 600ms var(--ease-out); }
+.lp-hero:not(.lp-hero--intro) .lp-hero__title-in { transform: perspective(900px) rotateX(calc(var(--py, 0) * -6deg)) rotateY(calc(var(--px, 0) * 8deg)); }
 .lp-hero .lp-sky { transform-origin: 50% 20%; transition: transform 1500ms var(--ease-in-out); }
 /* The settled hero keeps the pushed-in framing (since Nov 20, 2026), so the sun at rest sits well inside the sky and the range stays low in frame. */
 .lp-hero:not(.lp-hero--intro) .lp-sky { transform: scale(1.18); }

@@ -240,18 +240,43 @@ export default function WelcomePage() {
   useEffect(() => {
     const hero = heroRef.current;
     if (!hero || reduceMotion) return;
+    // Each value glides toward its target every frame (an exponential ease), so a
+    // wheel's steps or a fast flick come out as one smooth motion instead of jumps.
+    const target = { px: 0, py: 0, sy: Math.min(window.scrollY, window.innerHeight) };
+    const now = { ...target };
     let frame = 0;
-    const set = (k: string, v: number) => hero.style.setProperty(k, v.toFixed(3));
+    let last = 0;
+    const step = (t: number) => {
+      const dt = last ? Math.min((t - last) / 1000, 0.05) : 1 / 60;
+      last = t;
+      const k = 1 - Math.exp(-dt * 9); // about 0.14 of the gap per 60 fps frame
+      let moving = false;
+      for (const key of ['px', 'py', 'sy'] as const) {
+        const gap = target[key] - now[key];
+        // Close enough: land exactly on the target and let this one rest.
+        if (Math.abs(gap) > (key === 'sy' ? 0.3 : 0.001)) {
+          now[key] += gap * k;
+          moving = true;
+        } else now[key] = target[key];
+        hero.style.setProperty(`--${key}`, now[key].toFixed(3));
+      }
+      frame = moving ? requestAnimationFrame(step) : 0;
+      if (!moving) last = 0;
+    };
+    const kick = () => {
+      if (!frame) frame = requestAnimationFrame(step);
+    };
     const onMove = (e: PointerEvent) => {
       if (e.pointerType !== 'mouse') return;
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        set('--px', (e.clientX / window.innerWidth) * 2 - 1);
-        set('--py', (e.clientY / window.innerHeight) * 2 - 1);
-      });
+      target.px = (e.clientX / window.innerWidth) * 2 - 1;
+      target.py = (e.clientY / window.innerHeight) * 2 - 1;
+      kick();
     };
-    const onScroll = () => set('--sy', Math.min(window.scrollY, window.innerHeight));
-    onScroll();
+    const onScroll = () => {
+      target.sy = Math.min(window.scrollY, window.innerHeight);
+      kick();
+    };
+    for (const key of ['px', 'py', 'sy'] as const) hero.style.setProperty(`--${key}`, now[key].toFixed(3));
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
