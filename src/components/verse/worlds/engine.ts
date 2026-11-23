@@ -36,6 +36,25 @@ export interface ViewConfig {
   reduced: boolean;
 }
 
+/** A modest machine (few cores or little memory): start lighter and skip antialiasing. */
+const LOW_END =
+  typeof navigator !== 'undefined' &&
+  ((navigator.hardwareConcurrency || 8) <= 4 || ((navigator as { deviceMemory?: number }).deviceMemory ?? 8) <= 4);
+/** Render scale bounds: worlds draw at this fraction of their pixel size and CSS scales them up. */
+const Q_MIN = 0.5;
+const Q_MAX = 1;
+
+/**
+ * One judgment of the adaptive quality, from the average frame time in seconds:
+ * under ~45 fps drop the render scale a step (at the floor, throttle the
+ * panels); over ~56 fps undo the throttle first, then creep the scale back up.
+ */
+export function nextQuality(quality: number, throttle: boolean, avg: number): { quality: number; throttle: boolean } {
+  if (avg > 1 / 45) return quality > Q_MIN ? { quality: Math.max(Q_MIN, quality - 0.125), throttle } : { quality, throttle: true };
+  if (avg < 1 / 56) return throttle ? { quality, throttle: false } : { quality: Math.min(Q_MAX, quality + 0.0625), throttle };
+  return { quality, throttle };
+}
+
 /** Settled clock for reduced motion: a representative still. */
 const STILL = 2.5;
 const FOV = 30;
@@ -50,9 +69,19 @@ class Engine {
   pointer = { x: 0, y: 0, seen: false };
   private frame = 0;
   private last = 0;
+  /**
+   * Adaptive quality, so slower computers keep the motion smooth: the render
+   * scale drops while frames run long and creeps back once they are quick, and
+   * at the floor the panels draw every other frame (an open world never does).
+   */
+  quality = LOW_END ? 0.75 : Q_MAX;
+  throttle = false;
+  private avg = 1 / 60;
+  private judged = 0;
+  private count = 0;
 
   constructor() {
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance' });
+    this.renderer = new THREE.WebGLRenderer({ antialias: !LOW_END, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(1);
     this.renderer.setScissorTest(true);
     const pmrem = new THREE.PMREMGenerator(this.renderer);
@@ -97,19 +126,40 @@ class Engine {
   private tick = (now: number) => {
     this.frame = 0;
     if (document.hidden) return;
-    const dt = this.last ? Math.min((now - this.last) / 1000, 0.05) : 1 / 60;
+    const raw = this.last ? (now - this.last) / 1000 : 1 / 60;
+    const dt = Math.min(raw, 0.05);
     this.last = now;
+    this.adapt(raw);
+    this.count++;
     const covered = this.covered;
     let busy = false;
     for (const v of this.views) {
       if (!v.onScreen || (covered && !v.cfg.full)) continue;
-      if (v.step(dt)) {
+      // Throttled panels bank the skipped time, so they move at the same speed, just in fewer frames.
+      if (this.throttle && !v.cfg.full && this.count & 1) {
+        v.carry += dt;
+        busy = true;
+        continue;
+      }
+      const step = Math.min(dt + v.carry, 0.1);
+      v.carry = 0;
+      if (v.step(step)) {
         v.render();
         busy = true;
       }
     }
     if (busy) this.frame = requestAnimationFrame(this.tick);
   };
+
+  /** Judge the frame rate about twice a second and nudge the render scale. */
+  private adapt(raw: number) {
+    if (raw > 0.25) return; // A tab switch or a stall, not the steady rate.
+    this.avg += (raw - this.avg) * 0.1;
+    this.judged += raw;
+    if (this.judged < 0.5) return;
+    this.judged = 0;
+    Object.assign(this, nextQuality(this.quality, this.throttle, this.avg));
+  }
 }
 
 function makeGlowTexture(): THREE.Texture {
@@ -146,6 +196,10 @@ export class WorldView {
   readonly camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 100);
   readonly world: World;
   onScreen = true;
+  /** Time banked while the engine skipped this panel's frame (see Engine.throttle). */
+  carry = 0;
+  /** False until its shaders are compiled off the main thread, so opening a world doesn't freeze the page. */
+  private ready = false;
   private ctx: CanvasRenderingContext2D;
   private bg: THREE.Color;
   private t = 0;
@@ -211,7 +265,12 @@ export class WorldView {
         : null;
     this.io?.observe(canvas);
     engine.views.add(this);
-    engine.kick();
+    const go = () => {
+      this.ready = true;
+      this.dirty = true;
+      engine.kick();
+    };
+    engine.renderer.compileAsync(this.scene, this.camera).then(go, go);
   }
 
   setTargets(t: Partial<ViewTargets>, instant = false) {
@@ -251,6 +310,7 @@ export class WorldView {
   }
 
   step(dt: number): boolean {
+    if (!this.ready) return false; // Its clock and entrance wait too, so nothing is skipped.
     let busy = this.dirty;
     this.dirty = false;
     if (this.intro) {
@@ -293,7 +353,7 @@ export class WorldView {
   render() {
     const { w, h } = this;
     if (w < 2 || h < 2) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, this.cfg.full ? 1.5 : 2);
+    const dpr = Math.max(0.5, Math.min(window.devicePixelRatio || 1, this.cfg.full ? 1.5 : 2) * this.engine.quality);
     const pw = Math.round(w * dpr);
     const ph = Math.round(h * dpr);
     if (this.canvas.width !== pw || this.canvas.height !== ph) {
