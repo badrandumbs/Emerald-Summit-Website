@@ -223,7 +223,7 @@ const LINK_HITS: (SearchHit & { words: string[] })[] = [
   {
     key: 'become-sponsor',
     label: 'Become a sponsor',
-    sub: 'Sponsorship sign-up form · opens in a new tab',
+    sub: 'Zeffy sponsorship form · opens in a new tab',
     to: SPONSOR_FORM_URL,
     icon: Handshake,
     words: ['sponsor', 'sponsorship', 'support eaf'],

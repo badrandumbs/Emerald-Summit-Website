@@ -2,9 +2,10 @@
 // page (Sponsors tab) and the landing page's Sponsors section.
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { Handshake, Plus } from '@/components/icons';
-import { LinkButton } from './home/AboutSections';
+import { LinkButton, ZeffyFormButton } from './home/AboutSections';
 import {
   SPONSORS,
+  SPONSOR_FORM_EMBED_URL,
   SPONSOR_FORM_URL,
   SPONSOR_TIERS,
   SPONSORSHIP_DETAILS_URL,
@@ -125,7 +126,8 @@ function OpenSpot({ tier, solid, first, onOpen }: { tier: string; solid: boolean
  * spots that open the sponsor form.
  */
 export default function SponsorTiers({ sponsors = SPONSORS }: { sponsors?: Sponsor[] }) {
-  const onOpen = () => window.open(SPONSOR_FORM_URL, '_blank', 'noopener,noreferrer');
+  const openForm = useRef<(() => void) | null>(null);
+  const onOpen = () => openForm.current?.();
   return (
     <div className="space-y-5">
       <ol className="flex flex-col items-center gap-2" aria-label="Sponsor tiers, highest first">
@@ -159,7 +161,14 @@ export default function SponsorTiers({ sponsors = SPONSORS }: { sponsors?: Spons
         })}
       </ol>
       <div className="sponsor-actions flex flex-wrap gap-2.5">
-        <LinkButton href={SPONSOR_FORM_URL} primary icon={Handshake}>Become a sponsor</LinkButton>
+        <ZeffyFormButton
+          label="Become a sponsor"
+          dialogTitle="Become a sponsor"
+          pageUrl={SPONSOR_FORM_URL}
+          embedUrl={SPONSOR_FORM_EMBED_URL}
+          icon={Handshake}
+          opener={openForm}
+        />
         <LinkButton href={SPONSORSHIP_DETAILS_URL}>Sponsorship details</LinkButton>
       </div>
     </div>
