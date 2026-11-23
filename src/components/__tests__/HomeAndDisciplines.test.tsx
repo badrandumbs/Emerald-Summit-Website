@@ -23,7 +23,7 @@ import {
   EAF_VOLUNTEER_URL,
   SupportEafCard,
 } from '../home/AboutSections';
-import { SponsorTiers } from '../../pages/Summit27Page';
+import SponsorTiers from '../SponsorTiers';
 import { SPONSOR_FORM_URL } from '../../models/sponsors';
 
 beforeEach(() => vi.clearAllMocks());

@@ -9,6 +9,7 @@ import FaqSection from '../components/FaqSection';
 import OrbitalUniverses from '../components/OrbitalUniverses';
 import PhotoMosaic from '../components/PhotoMosaic';
 import LandingFooter from '../components/LandingFooter';
+import SponsorTiers from '../components/SponsorTiers';
 import PhotoRail from '../landing/PhotoRail';
 import HairlineFigure from '../landing/HairlineFigure';
 import { SIGN_IN_ROLES } from '../models/roles';
@@ -365,6 +366,16 @@ export default function WelcomePage() {
 
         {/* The lineup: a scroll-driven orbit of the six disciplines and their tracks. */}
         <OrbitalUniverses />
+
+        {/* The sponsors, as the same tier pyramid the portal's Summit '27 page has. */}
+        <section id="sponsors" className="lp-section" aria-labelledby="sponsors-title">
+          <div className="container">
+            <div className="lp-head">
+              <h2 id="sponsors-title">Who helps make the Summit happen?</h2>
+            </div>
+            <SponsorTiers />
+          </div>
+        </section>
 
         {/* The day, in the owner's photographs. */}
         <section className="lp-section lp-section--tight" aria-labelledby="rail-title">

@@ -488,3 +488,9 @@
   .lp-nav__bar, .lp-btn, .lp-icon-btn, .lp-faq__a, .lp-faq__icon, .lp-hero .lp-sky { transition: none; }
   .lp-viewer__overlay[data-state="open"], .lp-viewer[data-state="open"] { animation: none; }
 }
+
+/* ───────────── Keynote & Team page: coming-soon cards ───────────── */
+.lp-lineup { padding-top: var(--space-3xl); }
+.lp-soon { display: grid; gap: var(--space-sm); max-width: 46rem; padding: var(--space-xl); border: 1px solid var(--color-rule); border-radius: var(--radius-card); background: var(--color-paper-2); }
+.lp-soon p { color: var(--color-ink-2); font-size: var(--text-lead); line-height: 1.5; }
+.lp-soon .lp-soon__tag { justify-self: start; padding: 4px 12px; border-radius: var(--radius-pill); background: color-mix(in oklab, var(--color-accent) 14%, transparent); color: var(--color-accent-hover); font-size: var(--text-sm); font-weight: 600; }

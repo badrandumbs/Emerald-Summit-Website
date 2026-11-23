@@ -7,9 +7,14 @@ import { Menu, X } from '@/components/icons';
 import BrandMark from './BrandMark';
 import { cn } from '@/lib/utils';
 
-const SECTION_LINKS = [
+/** Keynote and Team live on their own page (KeynoteTeamPage); the rest are sections of "/". */
+const KEYNOTE_TEAM_PATH = '/keynote-and-team';
+const SECTION_LINKS: { id: string; label: string; path?: string }[] = [
   { id: 'about', label: 'About' },
   { id: 'disciplines', label: 'Disciplines' },
+  { id: 'sponsors', label: 'Sponsors' },
+  { id: 'keynote', label: 'Keynote', path: KEYNOTE_TEAM_PATH },
+  { id: 'team', label: 'Team', path: KEYNOTE_TEAM_PATH },
   { id: 'faq', label: 'FAQ' },
   { id: 'contact', label: 'Contact' },
 ];
@@ -73,14 +78,14 @@ export default function LandingNav({
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const goToSection = (id: string) => {
+  const goToSection = (id: string, path = '/') => {
     setOpen(false);
-    if (location.pathname === '/') {
+    if (location.pathname === path) {
       document
         .getElementById(id)
         ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
-      navigate('/', { state: { scrollTo: id } });
+      navigate(path, { state: { scrollTo: id } });
     }
   };
 
@@ -114,7 +119,7 @@ export default function LandingNav({
                 <button
                   key={s.id}
                   type="button"
-                  onClick={() => goToSection(s.id)}
+                  onClick={() => goToSection(s.id, s.path)}
                   className="lp-nav__link"
                 >
                   {s.label}
@@ -164,7 +169,7 @@ export default function LandingNav({
                 <button
                   key={s.id}
                   type="button"
-                  onClick={() => goToSection(s.id)}
+                  onClick={() => goToSection(s.id, s.path)}
                   className="lp-nav__link"
                 >
                   {s.label}

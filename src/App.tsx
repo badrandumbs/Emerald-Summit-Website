@@ -33,6 +33,7 @@ const ArchiePage = lazyPage(() => import('./pages/ArchiePage'));
 const NotificationsPage = lazyPage(() => import('./pages/NotificationsPage'));
 const PhotoPermissionPage = lazyPage(() => import('./pages/PhotoPermissionPage'));
 const Summit27Page = lazyPage(() => import('./pages/Summit27Page'));
+const KeynoteTeamPage = lazyPage(() => import('./pages/KeynoteTeamPage'));
 
 function LegacyApplicationRedirect() {
   const { role } = useParams();
@@ -47,6 +48,7 @@ export default function App() {
       <PageRouteBoundary>
         <Routes>
           <Route path="/" element={<WelcomePage />} />
+          <Route path="/keynote-and-team" element={<KeynoteTeamPage />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/roles" element={<RolesPage />} />
           <Route path="/login/:role" element={<LoginPage />} />

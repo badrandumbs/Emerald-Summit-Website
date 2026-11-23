@@ -3,7 +3,9 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import Summit27Page, { SponsorTiers } from '../Summit27Page';
+import Summit27Page from '../Summit27Page';
+import KeynoteTeamPage from '../KeynoteTeamPage';
+import SponsorTiers from '../../components/SponsorTiers';
 import LandingNav from '../../components/LandingNav';
 import { navItemsForRole } from '../../components/AppShell';
 import { EAF_VOLUNTEER_URL } from '../../components/home/AboutSections';
@@ -44,6 +46,26 @@ describe("Summit '27 page", () => {
   test('the landing navbar has no Summit \'27 link', () => {
     render(<MemoryRouter><LandingNav /></MemoryRouter>);
     expect(within(screen.getByRole('navigation', { name: 'Main' })).queryByText("Summit '27")).not.toBeInTheDocument();
+  });
+
+  test('the landing navbar has Sponsors, Keynote and Team after Disciplines; Team opens the Keynote & Team page', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="/" element={<LandingNav />} />
+          <Route path="/keynote-and-team" element={<KeynoteTeamPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    const nav = screen.getByRole('navigation', { name: 'Main' });
+    expect(within(nav).getAllByRole('button').map((b) => b.textContent)).toEqual(
+      ['About', 'Disciplines', 'Sponsors', 'Keynote', 'Team', 'FAQ', 'Contact'],
+    );
+    await user.click(within(nav).getByRole('button', { name: 'Team' }));
+    expect(screen.getByRole('heading', { name: 'Keynote' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Team' })).toBeInTheDocument();
+    expect(screen.getAllByText('Coming soon')).toHaveLength(2);
   });
 
   test('the sidebar has one Summit \'27 tab, opening Keynote, for every role', () => {
