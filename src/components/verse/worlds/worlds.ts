@@ -365,13 +365,57 @@ function ticker(c: BuildCtx): World {
     return { mesh, side, h, d: Math.hypot(x, z) };
   });
 
-  // The tallest tower's spire and beacon.
+  // Emerald High's flag on the tallest tower, like the one on the landing
+  // page's Summit terraces: an emerald cloth reading EHS, in the landing
+  // page's accent for the theme. It flies to the left, away from the
+  // "Emerald Summit '27" button in the page's top right corner.
+  const POLE = 0.95;
+  const FLAG_W = 0.74;
+  const FLAG_H = 0.48;
   const spire = new THREE.Group();
-  const mast = new THREE.Mesh(bag.add(new THREE.CylinderGeometry(0.015, 0.04, 0.7, 8)), roofMat);
-  mast.position.y = 0.35;
-  const beacon = glowSprite(c, bag, col('#FF4D4D'), 0.5, 1);
-  beacon.position.y = 0.72;
-  spire.add(mast, beacon);
+  const pole = new THREE.Mesh(
+    bag.add(new THREE.CylinderGeometry(0.016, 0.022, POLE, 10)),
+    bag.add(new THREE.MeshStandardMaterial({ color: col('#C9CED6'), roughness: 0.3, metalness: 0.9 })),
+  );
+  pole.position.y = POLE / 2;
+  const finial = new THREE.Mesh(
+    bag.add(new THREE.SphereGeometry(0.035, 16, 12)),
+    bag.add(new THREE.MeshStandardMaterial({ color: col('#D4AF5A'), roughness: 0.25, metalness: 0.95 })),
+  );
+  finial.position.y = POLE + 0.02;
+  const flagCanvas = document.createElement('canvas');
+  flagCanvas.width = 256;
+  flagCanvas.height = 166;
+  {
+    const fc = flagCanvas.getContext('2d')!;
+    const [cloth, edge, ink] = c.light ? ['#0C7A55', '#0B5F43', '#F4FAF7'] : ['#5FCB9D', '#7FDEB3', '#00140C'];
+    fc.fillStyle = cloth;
+    fc.strokeStyle = edge;
+    fc.lineWidth = 8;
+    fc.beginPath();
+    fc.roundRect(6, 6, 244, 154, 18);
+    fc.fill();
+    fc.stroke();
+    fc.fillStyle = ink;
+    fc.font = 'bold 84px "Satoshi", "Plus Jakarta Sans", "Helvetica Neue", Arial, sans-serif';
+    fc.textAlign = 'center';
+    fc.textBaseline = 'middle';
+    fc.fillText('EHS', 128, 88);
+  }
+  const flagTex = bag.add(new THREE.CanvasTexture(flagCanvas));
+  flagTex.colorSpace = THREE.SRGBColorSpace;
+  flagTex.anisotropy = 4;
+  const flagGeo = bag.add(new THREE.PlaneGeometry(FLAG_W, FLAG_H, 24, 12));
+  flagGeo.translate(-FLAG_W / 2, -FLAG_H / 2, 0); // the right edge rides the pole
+  const flagRest = Float32Array.from(flagGeo.attributes.position.array as Float32Array);
+  const flag = new THREE.Mesh(
+    flagGeo,
+    bag.add(new THREE.MeshStandardMaterial({ map: flagTex, side: THREE.DoubleSide, transparent: true, alphaTest: 0.5, roughness: 0.75 })),
+  );
+  flag.position.y = POLE - 0.03;
+  const beacon = glowSprite(c, bag, col('#FF4D4D'), 0.3, 1);
+  beacon.position.y = POLE + 0.06;
+  spire.add(pole, finial, flag, beacon);
   root.add(spire);
 
   // A billboard on the third tower's roof, facing the street.
@@ -445,8 +489,10 @@ function ticker(c: BuildCtx): World {
 
   return {
     root,
-    radius: 2.8,
-    centerY: 1.3,
+    // Tall enough to take in the flag on the tallest tower, with room above
+    // it so it stays clear of the page's "Emerald Summit '27" button.
+    radius: 3.4,
+    centerY: 1.9,
     elevation: 0.42,
     azimuth: 0.5,
     points: [cars.mat],
@@ -461,6 +507,16 @@ function ticker(c: BuildCtx): World {
       spire.position.set(top.mesh.position.x, top.mesh.scale.y, top.mesh.position.z);
       spire.visible = k > 0.5;
       (beacon.material as THREE.SpriteMaterial).opacity = (Math.sin(t * 3) > 0.2 ? 1 : 0.15) * (c.light ? 0.6 : 1);
+      // The cloth waves: a ripple running out from the pole, growing toward the free edge.
+      const fp = flagGeo.attributes.position;
+      for (let i = 0; i < fp.count; i++) {
+        const x = flagRest[i * 3];
+        const y = flagRest[i * 3 + 1];
+        const d = -x / FLAG_W; // 0 at the pole, 1 at the free edge
+        fp.setXYZ(i, x, y - d * d * 0.03, Math.sin(d * 7 - t * 5 + y * 2) * 0.06 * d + Math.sin(t * 1.3) * 0.02 * d);
+      }
+      fp.needsUpdate = true;
+      flagGeo.computeVertexNormals();
       const host = towers[2];
       board.position.set(host.mesh.position.x, host.mesh.scale.y, host.mesh.position.z);
       board.visible = k > 0.6;
@@ -1211,7 +1267,8 @@ function paint(c: BuildCtx): World {
   const lid = new THREE.Group();
   lid.position.y = LEG + CASE + 0.012;
   lid.add(new THREE.Mesh(lidGeo, lacquer));
-  const LID_OPEN = 0.55;
+  // Open far enough that the music desk sits well under it.
+  const LID_OPEN = 0.7;
   const stick = new THREE.Mesh(bag.add(new THREE.CylinderGeometry(0.012, 0.012, 1, 8)), lacquer);
 
   // Legs, pedals, keybed, keys, fallboard, music desk, bench.
@@ -1263,14 +1320,14 @@ function paint(c: BuildCtx): World {
   const fall = new THREE.Mesh(bag.add(new THREE.BoxGeometry(1.5, 0.14, 0.03)), lacquer);
   fall.position.set(0.775, LEG + 0.17, 0.02);
   const desk = new THREE.Group();
-  desk.add(new THREE.Mesh(bag.add(new THREE.BoxGeometry(0.85, 0.3, 0.02)), lacquer));
+  desk.add(new THREE.Mesh(bag.add(new THREE.BoxGeometry(0.7, 0.24, 0.02)), lacquer));
   const sheet = new THREE.Mesh(
-    bag.add(new THREE.PlaneGeometry(0.62, 0.26)),
+    bag.add(new THREE.PlaneGeometry(0.52, 0.2)),
     bag.add(new THREE.MeshStandardMaterial({ color: col('#F4EFE3'), roughness: 0.9 })),
   );
   sheet.position.z = 0.012;
   desk.add(sheet);
-  desk.position.set(0.775, LEG + CASE + 0.16, -0.12);
+  desk.position.set(0.775, LEG + CASE + 0.12, -0.12);
   desk.rotation.x = -0.32;
 
   const bench = new THREE.Group();

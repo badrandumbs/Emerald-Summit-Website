@@ -8,8 +8,8 @@ import { reducedMotion } from './useCircleReveal';
 const PLAYED_KEY = 'discipline-intro-played';
 /** Matches INTRO_MS in worlds/intros.ts (kept here so the page needn't load three.js to know it). */
 const INTRO_MS = 2000;
-/** NovaSphere's campfire is a little shorter. */
-const SHORTER: Record<string, number> = { stars: 1600 };
+/** NovaSphere's campfire is a little shorter; ImagineX's painting longer, with a moment to look at it. */
+const DURATION: Record<string, number> = { stars: 1600, paint: 3200 };
 const BLUR_IN_MS = 250;
 /** The scene's slow fade into the page. */
 const CLEAR_MS = 1300;
@@ -127,7 +127,7 @@ export default function DisciplineIntro({
         if (!v) return clear();
         dispose = () => v.dispose();
         v.setTargets({ fx: 0.5, fy: 0.5, fill: 0.66 }, true);
-        v.animateIntro(1, SHORTER[worldKindFor(discipline)] ?? INTRO_MS, 80, clear);
+        v.animateIntro(1, DURATION[worldKindFor(discipline)] ?? INTRO_MS, 80, clear);
       })
       .catch(clear);
 

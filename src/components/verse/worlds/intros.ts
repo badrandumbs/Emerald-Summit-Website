@@ -11,6 +11,7 @@ import {
   _m,
   _v,
   brainModel,
+  clamp01,
   col,
   easeInOutCubic,
   easeOutBack,
@@ -673,44 +674,117 @@ function gavel(c: BuildCtx): World {
   return w;
 }
 
-// ── ImagineX: a painting ────────────────────────────────────────────────────
-// A canvas on an easel paints itself into a landscape, a brush following
-// each stroke and taking up each stroke's color.
+// ── ImagineX: a sketch of Emerald High ──────────────────────────────────────
+// A canvas on an easel draws Emerald High School's entrance, as it looks from
+// the front walk: first in pencil (the cantilevered roof, the window strip,
+// the angled entrance canopy on its round columns, the glass doors, the lime
+// Administration block), then watercolor washes laid in under the lines, and
+// last the lettering on the canopy and the green wall. A brush follows
+// whatever is being drawn.
 
-/** A landscape in loose strokes: points in 0..1 canvas space, a width and a color. */
-function paintingStrokes(vibe: BuildCtx['vibe']) {
-  const r = rng(83);
-  const strokes: { pts: [number, number][]; width: number; color: string }[] = [];
-  const sky = [vibe.flowColors[0], vibe.flowColors[1]];
-  for (let row = 0; row < 7; row++) {
-    const y = 0.06 + row * 0.07;
-    const pts: [number, number][] = [];
-    for (let x = -0.05; x <= 1.05; x += 0.08) pts.push([x, y + Math.sin(x * 6 + row) * 0.015]);
-    strokes.push({ pts, width: 0.09, color: sky[row % 2] });
+/** Points in the reference photo's pixels (1096 × 806), mapped onto the canvas. */
+type Pt = [number, number];
+const PHOTO_W = 1096;
+const PHOTO_H = 806;
+
+/** The pencil lines, in drawing order. */
+function schoolLines(): Pt[][] {
+  const lines: Pt[][] = [
+    // Roof: a thin light fascia, its far edge, and the dark underside where
+    // it overhangs on the right.
+    [[345, 350], [855, 35], [1050, 290]],
+    [[345, 350], [356, 372], [866, 62], [855, 35]],
+    [[866, 62], [1050, 305], [1050, 290]],
+    [[860, 185], [955, 300]],
+    // The plain white band under the roof (no windows), the grey siding and
+    // its darker return.
+    [[430, 392], [870, 215]],
+    [[860, 185], [870, 215]],
+    [[430, 392], [440, 470], [900, 412], [870, 215]],
+    [[870, 215], [955, 300], [968, 450], [900, 412]],
+  ];
+  // Siding courses.
+  for (let i = 1; i < 6; i++) {
+    const y0 = 440 + i * 6;
+    lines.push([[445, y0 - 0], [895, y0 - 52 - i * 2]]);
   }
-  const sun: [number, number][] = [];
-  for (let a = 0; a <= TAU * 1.6; a += 0.25) sun.push([0.72 + Math.cos(a) * (0.08 - a * 0.006), 0.24 + Math.sin(a) * (0.08 - a * 0.006)]);
-  strokes.push({ pts: sun, width: 0.05, color: '#F6C76B' });
-  [vibe.flowColors[3] ?? vibe.accent2, vibe.flowColors[2] ?? vibe.accent, vibe.accent2].forEach((color, h) => {
-    for (let pass = 0; pass < 3; pass++) {
-      const pts: [number, number][] = [];
-      const base = 0.55 + h * 0.13 + pass * 0.035;
-      for (let x = -0.05; x <= 1.05; x += 0.06) pts.push([x, base - Math.sin(x * (3 + h) + h * 2) * 0.08 + r() * 0.01]);
-      strokes.push({ pts, width: 0.07, color });
-    }
-  });
-  for (let i = 0; i < 4; i++) {
-    const pts: [number, number][] = [];
-    const cx = 0.15 + r() * 0.7;
-    const cy = 0.75 + r() * 0.15;
-    for (let a = 0; a < TAU; a += 0.35) pts.push([cx + Math.cos(a) * 0.05 + a * 0.02, cy + Math.sin(a) * 0.03]);
-    strokes.push({ pts, width: 0.018, color: vibe.flowColors[i % vibe.flowColors.length] });
-  }
-  return strokes;
+  lines.push(
+    // Glass doors: outline only.
+    [[436, 640], [598, 640], [598, 806]],
+    // The Administration block and its window.
+    [[598, 562], [980, 460], [1030, 806]],
+    [[598, 562], [600, 806]],
+    [[668, 692], [830, 692], [830, 776], [668, 776], [668, 692]],
+    [[750, 692], [750, 776]],
+    // The wing on the right and the building beyond on the left.
+    [[968, 450], [1096, 470]],
+    [[955, 300], [1040, 330], [1096, 318]],
+    [[0, 600], [30, 585], [95, 575], [95, 806]],
+    [[30, 585], [30, 806]],
+    // Ground.
+    [[0, 800], [1096, 800]],
+  );
+  return lines;
 }
 
-function studio(c: BuildCtx): World {
-  const { vibe } = c;
+/**
+ * The canopy and its columns, drawn over everything behind them (washes and
+ * pencil both), so nothing behind shows through. The columns rise to where
+ * the canopy's underside meets the wall.
+ */
+function schoolFrontLines(): Pt[][] {
+  return [
+    [[0, 450], [228, 318], [680, 462], [680, 530], [228, 408], [0, 540]],
+    [[228, 318], [228, 408]],
+    [[0, 600], [200, 505], [610, 560], [680, 530]],
+    [[185, 512], [185, 806]],
+    [[222, 508], [222, 806]],
+    [[305, 519], [305, 806]],
+    [[340, 524], [340, 806]],
+    [[402, 532], [402, 806]],
+    [[436, 537], [436, 806]],
+  ];
+}
+
+/** Watercolor washes, painted in this order under the pencil; `front` ones go over the back pencil. */
+const SCHOOL_WASHES: { color: string; poly: Pt[]; front?: boolean }[] = [
+  { color: '#8FC3EE', poly: [[0, 0], [1096, 0], [1096, 806], [0, 806]] },
+  // Roof: the light fascia and far edge, then the dark underside.
+  { color: '#E4E5E8', poly: [[345, 350], [855, 35], [866, 62], [356, 372]] },
+  { color: '#D2D3D7', poly: [[855, 35], [1050, 290], [1050, 305], [866, 62]] },
+  { color: '#55575E', poly: [[866, 62], [1050, 305], [1040, 330], [955, 300], [860, 185]] },
+  // The plain white band under the roof.
+  { color: '#F2F2F4', poly: [[356, 372], [866, 62], [860, 185], [870, 215], [430, 392]] },
+  // Grey siding and its darker return.
+  { color: '#A9A9AE', poly: [[430, 392], [870, 215], [900, 412], [440, 470]] },
+  { color: '#84848C', poly: [[860, 185], [955, 300], [968, 450], [900, 412], [870, 215]] },
+  { color: '#ECEBE7', poly: [[0, 600], [200, 505], [610, 560], [598, 562], [600, 806], [0, 806]] },
+  // The white wall between the grey siding and the green block (no sky shows there).
+  { color: '#F1F1F3', poly: [[440, 470], [900, 412], [968, 450], [980, 460], [598, 562], [610, 560], [680, 530], [680, 462]] },
+  // The grey wing on the right, up to the roof's far end.
+  { color: '#D9D9DC', poly: [[955, 300], [1040, 330], [1050, 305], [1050, 290], [1096, 296], [1096, 806], [1030, 806], [980, 460], [968, 450]] },
+  { color: '#3F9C4D', poly: [[30, 585], [62, 580], [62, 806], [30, 806]] },
+
+  { color: '#3E4A57', poly: [[436, 640], [598, 640], [598, 806], [436, 806]] },
+  { color: '#A6D75A', poly: [[598, 562], [980, 460], [1030, 806], [600, 806]] },
+  { color: '#3E4A57', poly: [[668, 692], [830, 692], [830, 776], [668, 776]] },
+  // In front: the canopy (left end, underside, sign face) and the columns.
+  { color: '#C9CACD', poly: [[0, 450], [228, 318], [228, 408], [0, 540]], front: true },
+  { color: '#7C7E84', poly: [[0, 540], [228, 408], [680, 530], [610, 560], [200, 505], [0, 600]], front: true },
+  { color: '#5C5E64', poly: [[228, 318], [680, 462], [680, 530], [228, 408]], front: true },
+  { color: '#D7D2C9', poly: [[185, 512], [222, 508], [222, 806], [185, 806]], front: true },
+  { color: '#D7D2C9', poly: [[305, 519], [340, 524], [340, 806], [305, 806]], front: true },
+  { color: '#D7D2C9', poly: [[402, 532], [436, 537], [436, 806], [402, 806]], front: true },
+];
+
+/** Signage: text along a line from `from` to `to`, at a size in photo pixels. */
+const SCHOOL_SIGNS: { text: string; from: Pt; to: Pt; size: number; color: string }[] = [
+  { text: 'EMERALD HIGH SCHOOL', from: [282, 362], to: [655, 486], size: 40, color: '#E8EEF4' },
+  // Level, not following the wall's slant.
+  { text: 'ADMINISTRATION', from: [650, 612], to: [930, 612], size: 40, color: '#FFFFFF' },
+];
+
+function studio(_c: BuildCtx): World {
   const bag = new Bag();
   const root = new THREE.Group();
   const wood = bag.add(new THREE.MeshStandardMaterial({ color: col('#7A5532'), roughness: 0.7 }));
@@ -727,13 +801,11 @@ function studio(c: BuildCtx): World {
   const ledge = new THREE.Mesh(bag.add(new THREE.BoxGeometry(1.5, 0.06, 0.18)), wood);
   ledge.position.set(0, 0.95, 0.18);
   easel.add(ledge);
-  const CW = 512;
-  const CH = 384;
-  const art = canvasTexture(CW, CH, (ctx) => {
-    ctx.fillStyle = '#F7F3EA';
-    ctx.fillRect(0, 0, CW, CH);
-  });
+  const CW = 1024;
+  const CH = 768;
+  const art = canvasTexture(CW, CH, () => {});
   bag.add(art.tex);
+  art.tex.anisotropy = 4;
   const frameBox = new THREE.Mesh(
     bag.add(new THREE.BoxGeometry(1.6, 1.2, 0.05)),
     bag.add(new THREE.MeshStandardMaterial({ color: col('#E9E2D3'), roughness: 0.9 })),
@@ -755,7 +827,7 @@ function studio(c: BuildCtx): World {
   handle.position.y = 0.3;
   const ferrule = new THREE.Mesh(bag.add(new THREE.CylinderGeometry(0.02, 0.018, 0.07, 12)), steel);
   ferrule.position.y = 0.04;
-  const tipMat = bag.add(new THREE.MeshStandardMaterial({ color: col(vibe.accent), roughness: 0.6 }));
+  const tipMat = bag.add(new THREE.MeshStandardMaterial({ color: col('#3A3A44'), roughness: 0.6 }));
   const tip = new THREE.Mesh(bag.add(new THREE.ConeGeometry(0.022, 0.08, 12)), tipMat);
   tip.rotation.x = Math.PI;
   tip.position.y = -0.03;
@@ -764,44 +836,154 @@ function studio(c: BuildCtx): World {
   frameBox.add(brush);
   root.add(easel);
 
-  const strokes = paintingStrokes(vibe);
-  const segs: { a: [number, number]; b: [number, number]; width: number; color: string }[] = [];
-  for (const s of strokes) for (let i = 1; i < s.pts.length; i++) segs.push({ a: s.pts[i - 1], b: s.pts[i], width: s.width, color: s.color });
-  let drawn = 0;
-  const paintTo = (n: number) => {
-    const ctx = art.ctx;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    for (; drawn < n; drawn++) {
-      const s = segs[drawn];
-      ctx.strokeStyle = s.color;
-      ctx.globalAlpha = 0.9;
-      ctx.lineWidth = s.width * CH;
-      ctx.beginPath();
-      ctx.moveTo(s.a[0] * CW, s.a[1] * CH);
-      ctx.lineTo(s.b[0] * CW, s.b[1] * CH);
-      ctx.stroke();
-    }
+  // The drawing, redrawn whole each frame while it's being made, in two
+  // layers so the canopy hides what's behind it: back washes, back pencil,
+  // front washes, front pencil, then the lettering.
+  const sx = CW / PHOTO_W;
+  const sy = CH / PHOTO_H;
+  const X = (p: Pt) => p[0] * sx;
+  const Y = (p: Pt) => p[1] * sy;
+  type Seg = { a: Pt; b: Pt; front: boolean };
+  const segs: Seg[] = [];
+  const addLines = (lines: Pt[][], front: boolean) => {
+    for (const line of lines)
+      for (let i = 1; i < line.length; i++) segs.push({ a: line[i - 1], b: line[i], front });
+  };
+  addLines(schoolLines(), false);
+  addLines(schoolFrontLines(), true);
+  const GRAPHITE = '#34343C';
+
+  /** A straight pencil stroke from a toward b, fraction f of the way. */
+  const pencil = (ctx: CanvasRenderingContext2D, sg: Seg, f: number) => {
+    ctx.lineWidth = 2.4;
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    ctx.moveTo(X(sg.a), Y(sg.a));
+    ctx.lineTo(X(sg.a) + (X(sg.b) - X(sg.a)) * f, Y(sg.a) + (Y(sg.b) - Y(sg.a)) * f);
+    ctx.stroke();
     ctx.globalAlpha = 1;
+  };
+
+  let lastKey = '';
+  /** Draws the state at sketch s, wash w and lettering l (each 0..1); returns where the brush is, in photo pixels, and its color. */
+  const draw = (s: number, w: number, l: number): { at: Pt; color: string } => {
+    const ctx = art.ctx;
+    let at: Pt = [548, 400];
+    let color = GRAPHITE;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#F7F3EA';
+    ctx.fillRect(0, 0, CW, CH);
+
+    const nW = SCHOOL_WASHES.length;
+    const washLayer = (front: boolean) => {
+      SCHOOL_WASHES.forEach((wash, i) => {
+        if (!!wash.front !== front) return;
+        const a = clamp01(w * nW - i);
+        if (a <= 0) return;
+        ctx.beginPath();
+        wash.poly.forEach((p, j) => (j ? ctx.lineTo(X(p), Y(p)) : ctx.moveTo(X(p), Y(p))));
+        ctx.closePath();
+        ctx.globalAlpha = (front ? 1 : 0.88) * a;
+        ctx.fillStyle = wash.color;
+        ctx.fill();
+        if (a < 1) {
+          const cx = wash.poly.reduce((n, p) => n + p[0], 0) / wash.poly.length;
+          const cy = wash.poly.reduce((n, p) => n + p[1], 0) / wash.poly.length;
+          at = [cx + Math.sin(a * 20) * 30, cy + Math.cos(a * 17) * 20];
+          color = wash.color;
+        }
+      });
+      ctx.globalAlpha = 1;
+    };
+
+    // Pencil: whole segments up to the head, then part of the one being drawn.
+    const head = s * segs.length;
+    const full = Math.floor(head);
+    const pencilLayer = (front: boolean) => {
+      ctx.strokeStyle = GRAPHITE;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      for (let i = 0; i < Math.min(full + 1, segs.length); i++) {
+        const sg = segs[i];
+        if (sg.front !== front) continue;
+        const f = i < full ? 1 : head - full;
+        if (f <= 0) continue;
+        pencil(ctx, sg, f);
+        if (i === full && w <= 0) {
+          at = [sg.a[0] + (sg.b[0] - sg.a[0]) * f, sg.a[1] + (sg.b[1] - sg.a[1]) * f];
+          color = GRAPHITE;
+        }
+      }
+    };
+
+    washLayer(false);
+    pencilLayer(false);
+    washLayer(true);
+    pencilLayer(true);
+
+    // Lettering, one character at a time along each sign.
+    const total = SCHOOL_SIGNS.reduce((n, sg) => n + sg.text.length, 0);
+    let left = Math.floor(l * total);
+    for (const sign of SCHOOL_SIGNS) {
+      if (left <= 0) break;
+      const shown = sign.text.slice(0, left);
+      left -= sign.text.length;
+      const ang = Math.atan2(sign.to[1] - sign.from[1], sign.to[0] - sign.from[0]);
+      const len = Math.hypot((sign.to[0] - sign.from[0]) * sx, (sign.to[1] - sign.from[1]) * sy);
+      ctx.save();
+      ctx.translate(X(sign.from), Y(sign.from));
+      ctx.rotate(ang);
+      // Size the letters so the whole sign fills 94% of its length, no larger
+      // than its size in the photo, then spread them to fill it exactly.
+      ctx.font = `bold 100px "Helvetica Neue", Arial, sans-serif`;
+      const px = Math.min(sign.size * sy, (100 * len * 0.94) / ctx.measureText(sign.text).width);
+      ctx.font = `bold ${px}px "Helvetica Neue", Arial, sans-serif`;
+      const fullW = ctx.measureText(sign.text).width;
+      const spacing = (len - fullW) / Math.max(1, sign.text.length - 1);
+      ctx.fillStyle = sign.color;
+      ctx.textBaseline = 'middle';
+      // A soft shadow so light letters read on the pale green wall.
+      ctx.shadowColor = 'rgba(0,0,0,0.35)';
+      ctx.shadowBlur = 3;
+      ctx.shadowOffsetY = 1.5;
+      let x = 0;
+      for (const ch of shown) {
+        ctx.fillText(ch, x, 0);
+        x += ctx.measureText(ch).width + spacing;
+      }
+      ctx.restore();
+      if (l < 1) {
+        at = [sign.from[0] + (x / sx) * Math.cos(ang), sign.from[1] + (x / sy) * Math.sin(ang)];
+        color = sign.color;
+      }
+    }
     art.tex.needsUpdate = true;
+    return { at, color };
   };
 
   return {
     root,
-    radius: 1.55,
-    centerY: 1.55,
-    elevation: 0.12,
+    radius: 1.15,
+    centerY: 1.62,
+    elevation: 0.08,
     azimuth: 0,
     points: [],
     swoop: false,
     update(t, k) {
-      easel.position.y = (1 - easeOutBack(phase(k, 0, 0.22))) * -2.5;
-      const pk = phase(k, 0.12, 0.92);
-      paintTo(Math.floor(easeInOutCubic(pk) * segs.length));
-      const cur = segs[Math.min(segs.length - 1, Math.max(0, drawn - 1))];
-      brush.visible = pk > 0 && pk < 1;
-      brush.position.set((cur.b[0] - 0.5) * 1.56, (0.5 - cur.b[1]) * 1.17, 0.07);
-      tipMat.color.set(cur.color);
+      easel.position.y = (1 - easeOutBack(phase(k, 0, 0.2))) * -2.5;
+      // Finished by k = 0.78, then it rests on the easel to be enjoyed.
+      const s = easeInOutCubic(phase(k, 0.08, 0.45));
+      const w = phase(k, 0.42, 0.68);
+      const l = phase(k, 0.66, 0.78);
+      const key = `${s.toFixed(4)}|${w.toFixed(4)}|${l.toFixed(4)}`;
+      if (key !== lastKey) {
+        lastKey = key;
+        const { at, color } = draw(s, w, l);
+        brush.position.set((at[0] / PHOTO_W - 0.5) * 1.56, (0.5 - at[1] / PHOTO_H) * 1.17, 0.07);
+        tipMat.color.set(color);
+      }
+      brush.visible = k > 0.08 && k < 0.8;
       root.rotation.y = Math.sin(t * 0.4) * 0.1;
     },
     dispose: () => bag.dispose(),
