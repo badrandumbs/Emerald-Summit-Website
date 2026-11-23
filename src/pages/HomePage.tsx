@@ -385,21 +385,21 @@ export default function HomePage() {
           </div>
 
           {/* Up next, inside the greeting card, for every role. */}
-          <section aria-label="Up next" className="w-full rounded-xl border border-white/30 bg-white/[0.14] p-6 shadow-[0_10px_40px_-12px_rgba(0,0,0,0.45)] backdrop-blur-sm lg:flex-1 sm:p-7">
+          <section aria-label="Up next" className="w-full rounded-xl border border-white/30 bg-white/[0.14] p-5 shadow-[0_10px_40px_-12px_rgba(0,0,0,0.45)] backdrop-blur-sm sm:p-6 lg:max-w-[440px] lg:flex-1">
               {next ? (
                 <>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-emerald-300">
+                    <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-300">
                       Up next · {next.kind}
                     </span>
                     <span className="rounded-full bg-emerald-300 px-3 py-1 text-[13px] font-bold text-[#0B2E22]">
                       {showTimes ? next.session.time : `Time ${TBD}`}
                     </span>
                   </div>
-                  <div className="mt-3 font-display text-[26px] font-bold leading-snug sm:text-[30px]">
+                  <div className="mt-2.5 font-display text-[22px] font-bold leading-snug sm:text-[24px]">
                     {next.session.title}
                   </div>
-                  <div className="mt-1.5 text-[14.5px] text-white/80">
+                  <div className="mt-1 text-[13.5px] text-white/80">
                     {joinParts(sessionPlace(next.session), showTimes ? next.session.duration : undefined)}
                   </div>
                   <div className="mt-4 flex gap-1" aria-hidden>
@@ -419,13 +419,13 @@ export default function HomePage() {
                 </>
               ) : (
                 <>
-                  <div className="font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-emerald-300">
+                  <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-300">
                     Up next
                   </div>
-                  <div className="mt-3 font-display text-[26px] font-bold leading-snug sm:text-[30px]">
+                  <div className="mt-2.5 font-display text-[22px] font-bold leading-snug sm:text-[24px]">
                     {ownKind === 'volunteering' ? 'No shifts yet' : 'Nothing on your day yet'}
                   </div>
-                  <div className="mt-1.5 text-[14.5px] text-white/80">
+                  <div className="mt-1 text-[13.5px] text-white/80">
                     {ownKind === 'volunteering' ? 'An organizer will assign your tracks.' : 'Browse the disciplines to add a track.'}
                   </div>
                 </>
