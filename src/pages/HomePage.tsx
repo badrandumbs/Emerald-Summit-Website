@@ -283,13 +283,21 @@ export default function HomePage() {
     ownKind === 'volunteering' ? 'View assigned tracks' : 'Explore';
   const ownLabel: AgendaKind =
     ownKind === 'judging' ? 'Expert' : ownKind === 'volunteering' ? 'Volunteering' : 'Participating';
-  const agenda: AgendaItem[] = MOCK_SESSIONS.filter(
-    (s) => ownIds.includes(s.id) || spectating.includes(s.id),
-  )
-    .map((s) => ({
-      session: s,
-      kind: (ownIds.includes(s.id) ? ownLabel : 'Spectating') as AgendaKind,
-    }))
+  // Every way a session can be on someone's day, whatever their role (an admin
+  // can spectate or manage, a volunteer can also spectate), like My Day.
+  const managing = listFor('volunteering');
+  const serving = listFor('judging');
+  const competing = listFor('competing');
+  const kindOf = (id: string): AgendaKind | null =>
+    ownIds.includes(id) ? ownLabel
+      : managing.includes(id) ? 'Volunteering'
+        : serving.includes(id) ? 'Expert'
+          : competing.includes(id) ? 'Participating'
+            : spectating.includes(id) ? 'Spectating' : null;
+  const agenda: AgendaItem[] = MOCK_SESSIONS.flatMap((s) => {
+    const kind = kindOf(s.id);
+    return kind ? [{ session: s, kind }] : [];
+  })
     .sort(
       (a, b) =>
         toMinutes(a.session.time) - toMinutes(b.session.time),
@@ -385,6 +393,57 @@ export default function HomePage() {
         <QuoteCard className="lg:flex-1" />
       </div>
 
+      {/* Up next: its own full-width card between the slideshow and Your day / announcements. */}
+      <section aria-label="Up next" className="relative mb-6 overflow-hidden rounded-2xl bg-[#0A5F43] p-5 text-white sm:p-6">
+        <div className="pointer-events-none absolute -right-12 -top-24 h-56 w-56 rounded-full bg-emerald-300/25 blur-[80px]" aria-hidden />
+        <div className="relative">
+              {next ? (
+                <>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-[10.5px] font-medium uppercase tracking-[0.1em] text-emerald-300">
+                      Up next · {next.kind}
+                    </span>
+                    <span className="rounded-full bg-emerald-300 px-2.5 py-0.5 text-[11.5px] font-bold text-[#0B2E22]">
+                      {showTimes ? next.session.time : `Time ${TBD}`}
+                    </span>
+                  </div>
+                  <div className="mt-2.5 font-display text-[21px] font-bold leading-snug">
+                    {next.session.title}
+                  </div>
+                  <div className="mt-1 text-[13px] text-white/75">
+                    {joinParts(sessionPlace(next.session), showTimes ? next.session.duration : undefined)}
+                  </div>
+                  <div className="mt-4 flex gap-1" aria-hidden>
+                    {daySlots.map((t, i) => (
+                      <span
+                        key={t}
+                        className={cn(
+                          'h-[5px] flex-1 rounded-full',
+                          i <= slotIndex ? 'bg-emerald-300' : 'bg-white/20',
+                        )}
+                      />
+                    ))}
+                  </div>
+                  <div className="mt-2 text-[11.5px] text-white/60">
+                    Time slot {slotIndex + 1} of {daySlots.length}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="font-mono text-[10.5px] font-medium uppercase tracking-[0.1em] text-emerald-300">
+                    Up next
+                  </div>
+                  <div className="mt-2.5 font-display text-[21px] font-bold leading-snug">
+                    {ownKind === 'volunteering' ? 'No shifts yet' : 'Nothing on your day yet'}
+                  </div>
+                  <div className="mt-1 text-[13px] text-white/75">
+                    {ownKind === 'volunteering' ? 'An organizer will assign your tracks.' : 'Browse the disciplines to add a track.'}
+                  </div>
+                </>
+              )}
+        </div>
+      </section>
+
       <div className={cn('grid grid-cols-[minmax(0,1fr)] gap-6', showYourDay && 'xl:grid-cols-[minmax(0,1fr)_380px]')}>
         {showYourDay && (
           <section className="glass flex flex-col rounded-3xl p-4 sm:p-6 xl:min-h-[480px]">
@@ -449,57 +508,6 @@ export default function HomePage() {
                 </StatTile>
               ))}
             </div>
-          )}
-          {canSchedule && (
-            <section aria-label="Up next" className="relative overflow-hidden rounded-2xl bg-[#0A5F43] p-5 text-white">
-              <div className="pointer-events-none absolute -right-12 -top-24 h-56 w-56 rounded-full bg-emerald-300/25 blur-[80px]" aria-hidden />
-              <div className="relative">
-              {next ? (
-                <>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-[10.5px] font-medium uppercase tracking-[0.1em] text-emerald-300">
-                      Up next · {next.kind}
-                    </span>
-                    <span className="rounded-full bg-emerald-300 px-2.5 py-0.5 text-[11.5px] font-bold text-[#0B2E22]">
-                      {showTimes ? next.session.time : `Time ${TBD}`}
-                    </span>
-                  </div>
-                  <div className="mt-2.5 font-display text-[21px] font-bold leading-snug">
-                    {next.session.title}
-                  </div>
-                  <div className="mt-1 text-[13px] text-white/75">
-                    {joinParts(sessionPlace(next.session), showTimes ? next.session.duration : undefined)}
-                  </div>
-                  <div className="mt-4 flex gap-1" aria-hidden>
-                    {daySlots.map((t, i) => (
-                      <span
-                        key={t}
-                        className={cn(
-                          'h-[5px] flex-1 rounded-full',
-                          i <= slotIndex ? 'bg-emerald-300' : 'bg-white/20',
-                        )}
-                      />
-                    ))}
-                  </div>
-                  <div className="mt-2 text-[11.5px] text-white/60">
-                    Time slot {slotIndex + 1} of {daySlots.length}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="font-mono text-[10.5px] font-medium uppercase tracking-[0.1em] text-emerald-300">
-                    Up next
-                  </div>
-                  <div className="mt-2.5 font-display text-[21px] font-bold leading-snug">
-                    {ownKind === 'volunteering' ? 'No shifts yet' : 'Nothing on your day yet'}
-                  </div>
-                  <div className="mt-1 text-[13px] text-white/75">
-                    {ownKind === 'volunteering' ? 'An organizer will assign your tracks.' : 'Browse the disciplines to add a track.'}
-                  </div>
-                </>
-              )}
-              </div>
-            </section>
           )}
           <div className="min-h-0 flex-1 overflow-y-auto rounded-2xl">
             <AnnouncementsPanel

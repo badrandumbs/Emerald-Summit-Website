@@ -102,4 +102,11 @@ describe('Up next', () => {
     expect(within(card).getByText('Genetics Lab')).toBeInTheDocument();
     expect(screen.queryByText(/First up/)).not.toBeInTheDocument();
   });
+
+  test.each(['admin', 'volunteer', 'expert', 'participant'])('shows for %s too', (role) => {
+    state.role = role;
+    state.spectating = ['b'];
+    renderHome();
+    expect(within(screen.getByRole('region', { name: 'Up next' })).getByText('Genetics Lab')).toBeInTheDocument();
+  });
 });
