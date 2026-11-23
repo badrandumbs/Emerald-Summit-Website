@@ -158,7 +158,7 @@ export default function SponsorTiers({ sponsors = SPONSORS }: { sponsors?: Spons
           );
         })}
       </ol>
-      <div className="flex flex-wrap gap-2.5">
+      <div className="sponsor-actions flex flex-wrap gap-2.5">
         <LinkButton href={SPONSOR_FORM_URL} primary icon={Handshake}>Become a sponsor</LinkButton>
         <LinkButton href={SPONSORSHIP_DETAILS_URL}>Sponsorship details</LinkButton>
       </div>

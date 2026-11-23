@@ -531,3 +531,13 @@
 .lp-soon { display: grid; gap: var(--space-sm); max-width: 46rem; padding: var(--space-xl); border: 1px solid var(--color-rule); border-radius: var(--radius-card); background: var(--color-paper-2); }
 .lp-soon p { color: var(--color-ink-2); font-size: var(--text-lead); line-height: 1.5; }
 .lp-soon .lp-soon__tag { justify-self: start; padding: 4px 12px; border-radius: var(--radius-pill); background: color-mix(in oklab, var(--color-accent) 14%, transparent); color: var(--color-accent-hover); font-size: var(--text-sm); font-weight: 600; }
+
+/* The sponsor buttons on the landing page: bigger and brighter than the portal's (SponsorTiers' .sponsor-actions). */
+#sponsors .sponsor-actions { gap: var(--space-sm); margin-top: var(--space-md); }
+#sponsors .sponsor-actions a { gap: 10px; padding: 14px 24px; border-radius: 12px; font-size: 1.0625rem; }
+#sponsors .sponsor-actions a svg { width: 18px; height: 18px; }
+#sponsors .sponsor-actions a:first-child { background: var(--color-accent); color: var(--color-accent-ink); box-shadow: 0 10px 30px -8px color-mix(in oklab, var(--color-accent) 70%, transparent); }
+#sponsors .sponsor-actions a:first-child:hover { background: var(--color-accent-hover); transform: translateY(-1px); }
+#sponsors .sponsor-actions a:last-child { border: 1.5px solid color-mix(in oklab, var(--color-accent) 70%, transparent); background: color-mix(in oklab, var(--color-accent) 10%, transparent); color: var(--color-ink); }
+#sponsors .sponsor-actions a:last-child:hover { background: color-mix(in oklab, var(--color-accent) 20%, transparent); }
+@media (max-width: 40rem) { #sponsors .sponsor-actions a { flex: 1 1 100%; justify-content: center; } }
