@@ -22,13 +22,18 @@ describe('suggestedSessions', () => {
     expect(suggestedSessions(current, all, new Set(['mine'])).map((s) => s.id)).toEqual(['earlier', 'later']);
   });
 
+  const clashing = [
+    current,
+    session('managing', '13:00', '14:00'),
+    session('clash', '13:30', '14:30'),
+    session('touching', '14:00', '15:00'),
+  ];
+
   test("leaves out sessions that clash with something I'm registered for or managing", () => {
-    const all = [
-      current,
-      session('managing', '13:00', '14:00'),
-      session('clash', '13:30', '14:30'),
-      session('touching', '14:00', '15:00'),
-    ];
-    expect(suggestedSessions(current, all, new Set(['managing'])).map((s) => s.id)).toEqual(['touching']);
+    expect(suggestedSessions(current, clashing, new Set(['managing'])).map((s) => s.id)).toEqual(['touching']);
+  });
+
+  test('keeps clashing sessions while time conflicts are off', () => {
+    expect(suggestedSessions(current, clashing, new Set(['managing']), false).map((s) => s.id)).toEqual(['clash', 'touching']);
   });
 });

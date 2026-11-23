@@ -23,6 +23,7 @@ import { rgba, vibeFor } from '../../models/verseVibes';
 import {
   addModesForRole,
   conflictMessage,
+  participationLimitMessage,
   formatDeadline,
   mustHandOff,
   normalizeTeamCode,
@@ -215,11 +216,16 @@ export default function SessionView({
   // The explicit hero, or the first photo when none was set, as in the app.
   const photos = photoSet?.sessionId === s.id ? photoSet.photos : [];
   const { hero, gallery } = splitHero(s.heroImageUrl, photos);
-  // More sessions in this discipline that fit an open slot on their day.
+  // Participating is capped (summit_settings.max_participating); spectating
+  // is not. The server refuses it too (participation_cap.sql).
+  const participatingCap = switches.maxParticipating;
+  const atParticipatingCap = participatingCap != null && schedule.mySchedule.length >= participatingCap;
+  // More open sessions in this discipline; while time conflicts are on, only
+  // ones that fit an open slot on their day.
   const suggested = signedIn
     ? suggestedSessions(s, MOCK_SESSIONS, new Set([
       ...schedule.mySchedule, ...schedule.expertSchedule, ...schedule.spectating, ...schedule.volunteerSchedule,
-    ]))
+    ]), switches.scheduleConflictsOn)
     : [];
 
   const guarded = async <T,>(call: () => Promise<T>): Promise<T | null> => {
@@ -270,6 +276,9 @@ export default function SessionView({
         break;
       case 'invalid_project':
         setBlocked({ title: "Couldn't register", body: result.message });
+        break;
+      case 'limit_reached':
+        setBlocked({ title: 'Participation limit reached', body: result.message });
         break;
       case 'full':
         setBlocked({ title: 'Track full', body: `This track has reached its capacity of ${s.capacity}. You can still join the waitlist on the day.` });
@@ -334,6 +343,10 @@ export default function SessionView({
     setChoosing(false);
     if (mode === 'manage') return setManage(true);
     if (mode === 'participate') {
+      // At the cap: say so before any questions. Spectating is still open.
+      if (atParticipatingCap) {
+        return setBlocked({ title: 'Participation limit reached', body: participationLimitMessage(participatingCap) });
+      }
       // A track that asks nothing registers straight away. One that only
       // skips the project name and allows no teams registers them solo.
       if (s.askQuestions === false) return register('participant');

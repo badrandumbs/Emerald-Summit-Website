@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { ReactNode } from 'react';
 
@@ -109,7 +109,20 @@ describe('personal schedule', () => {
       <Route path="/sessions/:id" element={<p>Session page</p>} />
     </Routes></MemoryRouter>);
     fireEvent.click(screen.getByRole('button', { name: 'Remove Morning registered session from schedule' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Remove' }));
     expect(await screen.findByText('Session page')).toBeInTheDocument();
+  });
+
+  test('the minus button asks before removing, and Keep it removes nothing', async () => {
+    state.schedule.mySchedule = ['morning'];
+    render(page());
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Morning registered session from schedule' }));
+    expect(await screen.findByRole('heading', { name: 'Remove from your day?' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Keep it' }));
+    expect(state.schedule.releaseSession).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Morning registered session from schedule' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Remove' }));
+    await waitFor(() => expect(state.schedule.releaseSession).toHaveBeenCalledWith('morning'));
   });
 
   test('attendees can open their personal spectator schedule', () => {

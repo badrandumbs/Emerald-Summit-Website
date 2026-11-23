@@ -7,6 +7,8 @@ import { isRemovedFromSession, REMOVED_FROM_SESSION_MESSAGE } from './sessionRem
 import {
   GRADE_BLOCK_MESSAGE,
   gradeBlockFromError,
+  isParticipationLimitReached,
+  participationLimitMessage,
   myProjectFromRow,
   normalizeTeamCode,
   projectModeId,
@@ -74,6 +76,9 @@ export async function toggleRegistration(
     }
     if (isRegistrationClosed(error.message)) {
       return { outcome: 'invalid_project', message: `${REGISTRATION_CLOSED_MESSAGE}.` };
+    }
+    if (isParticipationLimitReached(error.message)) {
+      return { outcome: 'limit_reached', message: error.hint || participationLimitMessage(null) };
     }
     if (isRemovedFromSession(error.message)) {
       return { outcome: 'invalid_project', message: REMOVED_FROM_SESSION_MESSAGE };

@@ -3,7 +3,7 @@ import { countWord, replaceDisciplines, USER_DISCIPLINES, NEW_DISCIPLINE_COLOR }
 import { vibeFor, EMERALD_VIBE } from '../verseVibes';
 import { DISCIPLINE_ICONS } from '@/components/icons';
 import { bannerFor, type Announcement } from '../announcements';
-import { bookedMinutes, formatMinutes, openSessionsThatFit } from '../suggested';
+import { bookedMinutes, formatMinutes } from '../suggested';
 import { quoteForDay, QUOTES } from '../../components/home/QuoteCard';
 import { detailLabel } from '../profileFields';
 import type { Session } from '../sessions';
@@ -80,10 +80,9 @@ describe("the schedule's day summary", () => {
     expect(formatMinutes(90)).toBe('1 hr 30 min');
   });
 
-  test('sums booked time and counts open sessions that fit', () => {
+  test('sums booked time', () => {
     const all = [s('a', '10:00', '11:00'), s('b', '10:30', '11:30'), s('c', '13:00', '14:30'), s('full', '15:00', '16:00', { enrolled: 10 })];
     expect(bookedMinutes([all[0]])).toBe(60);
-    expect(openSessionsThatFit(all, new Set(['a']))).toBe(1);
   });
 });
 

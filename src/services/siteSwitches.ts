@@ -11,17 +11,33 @@
 // Both stay off until the backend says true, so a missing column, a failed
 // read or a slow network never opens registration or shows times by accident.
 // The mobile app doesn't read these columns.
+//
+// Two more, read separately so a missing column can't close registration
+// (app repo, supabase/participation_cap.sql). register_for_session enforces
+// both; the website only uses them for its wording and suggestions:
+//
+//   max_participating           how many tracks a person can participate in
+//                               (3 for now; null = no cap). Spectating is
+//                               never capped.
+//   schedule_conflicts_on       false while track times are not final:
+//                               overlapping tracks can be added.
 import { useEffect, useSyncExternalStore } from 'react';
 import { supabase } from '../lib/supabase';
 
 export interface SiteSwitches {
   registrationOpen: boolean;
   showTimes: boolean;
+  /** Cap on tracks a person participates in, or null for none (or unknown). */
+  maxParticipating: number | null;
+  /** True once track times are final and overlapping sign-ups are refused. */
+  scheduleConflictsOn: boolean;
   /** False until the backend has answered (or failed to). */
   loaded: boolean;
 }
 
-export const SWITCHES_OFF: SiteSwitches = { registrationOpen: false, showTimes: false, loaded: false };
+export const SWITCHES_OFF: SiteSwitches = {
+  registrationOpen: false, showTimes: false, maxParticipating: null, scheduleConflictsOn: false, loaded: false,
+};
 
 /** Shown on the greyed-out "Add to my day" buttons while registration is closed. */
 export const REGISTRATION_CLOSED_MESSAGE = 'Registration will open on November 21st';
@@ -42,12 +58,33 @@ export async function fetchSiteSwitches(): Promise<SiteSwitches> {
     if (error || !data) return off;
     const row = data as { website_registration_open?: unknown; website_show_session_times?: unknown };
     return {
+      ...off,
+      ...(await fetchRegistrationRules()),
       registrationOpen: row.website_registration_open === true,
       showTimes: row.website_show_session_times === true,
-      loaded: true,
     };
   } catch {
     return off;
+  }
+}
+
+/** max_participating and schedule_conflicts_on; defaults when unreadable. */
+async function fetchRegistrationRules(): Promise<Pick<SiteSwitches, 'maxParticipating' | 'scheduleConflictsOn'>> {
+  const fallback = { maxParticipating: null, scheduleConflictsOn: false };
+  try {
+    const { data, error } = await supabase!
+      .from('summit_settings')
+      .select('max_participating, schedule_conflicts_on')
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) return fallback;
+    const row = data as { max_participating?: unknown; schedule_conflicts_on?: unknown };
+    return {
+      maxParticipating: typeof row.max_participating === 'number' ? row.max_participating : null,
+      scheduleConflictsOn: row.schedule_conflicts_on === true,
+    };
+  } catch {
+    return fallback;
   }
 }
 

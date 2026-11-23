@@ -1,6 +1,6 @@
 // The website uses the same registrations and assignment RPCs as the mobile app.
 import { supabase } from '../lib/supabase';
-import { GRADE_BLOCK_MESSAGE, gradeBlockFromError } from '../models/registration';
+import { GRADE_BLOCK_MESSAGE, gradeBlockFromError, isParticipationLimitReached, participationLimitMessage } from '../models/registration';
 
 export type ReservationKind = 'competing' | 'spectating' | 'judging' | 'volunteering';
 
@@ -62,7 +62,7 @@ function checkOutcome(data: { outcome?: string; conflicting_title?: string } | n
   throw new Error(messages[outcome ?? ''] ?? `Could not update registration (${outcome ?? 'no result'}).`);
 }
 
-/** Writes use the mobile RPC so capacity and time conflicts stay server-enforced. */
+/** Writes use the mobile RPC so capacity, the participation cap and time conflicts stay server-enforced. */
 export async function reserve(sessionId: string, kind: ReservationKind): Promise<void> {
   if (kind === 'volunteering') throw new Error('Volunteer tracks are assigned by an organizer.');
   if (!(await canSaveSchedule())) throw new Error('Sign in to save your schedule.');
@@ -71,6 +71,7 @@ export async function reserve(sessionId: string, kind: ReservationKind): Promise
     p_session_id: sessionId, p_participation_type: type, p_answers: {}, p_intent: 'add',
   });
   if (error) {
+    if (isParticipationLimitReached(error.message)) throw new Error(error.hint || participationLimitMessage(null));
     const gradeBlock = gradeBlockFromError(error.message);
     throw new Error(gradeBlock ? GRADE_BLOCK_MESSAGE[gradeBlock] : error.message);
   }

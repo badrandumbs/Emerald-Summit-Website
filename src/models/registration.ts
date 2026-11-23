@@ -219,10 +219,25 @@ export function conflictKindFrom(raw: unknown): ConflictKind {
   return raw === 'managing' || raw === 'managing_this' || raw === 'registered_this' ? raw : 'registered';
 }
 
+/**
+ * The cap on tracks a person participates in (summit_settings.max_participating,
+ * 3 for now). Spectating and serving as an expert have no cap.
+ * register_for_session enforces it (app repo, supabase/participation_cap.sql).
+ */
+export function participationLimitMessage(cap: number | null): string {
+  return `You can participate in up to ${cap ?? 'a limited number of'} tracks for now. You can still spectate as many as you like.`;
+}
+
+/** The server's refusal when the person already participates in the cap. */
+export function isParticipationLimitReached(message: string | undefined): boolean {
+  return (message ?? '').includes('participation_limit_reached');
+}
+
 export type RegistrationResult =
   | { outcome: 'added'; teamCode: string | null; projectName?: string | null }
   | { outcome: 'removed' }
   | { outcome: 'full' }
+  | { outcome: 'limit_reached'; message: string }
   | { outcome: 'participation_closed' }
   | { outcome: 'conflict'; conflictingTitle: string | null; conflictKind: ConflictKind }
   | { outcome: 'invalid_project'; message: string };

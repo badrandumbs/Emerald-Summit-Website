@@ -1,7 +1,8 @@
-// "Sessions similar to this", the same rule as the app's
-// AppState.suggestedSessions: other sessions in the same discipline that
-// aren't on the person's day, aren't full, and don't overlap anything they're
-// registered for or managing. Earliest first.
+// "Sessions similar to this", the app's AppState.suggestedSessions: other
+// sessions in the same discipline that are not on the person's day and are
+// not full, earliest first. While time conflicts are on
+// (summit_settings.schedule_conflicts_on) it also leaves out any that overlap
+// something they're registered for or managing.
 import type { Session } from './sessions';
 
 const minutes = (hhmm?: string): number | null => {
@@ -16,8 +17,13 @@ export function overlaps(a: Session, b: Session): boolean {
 }
 
 /** [onMyDay] is every session the person is registered for or managing. */
-export function suggestedSessions(current: Session, all: Session[], onMyDay: Set<string>): Session[] {
-  const busy = all.filter((s) => onMyDay.has(s.id));
+export function suggestedSessions(
+  current: Session,
+  all: Session[],
+  onMyDay: Set<string>,
+  avoidOverlaps = true,
+): Session[] {
+  const busy = avoidOverlaps ? all.filter((s) => onMyDay.has(s.id)) : [];
   return all
     .filter((s) =>
       s.id !== current.id &&
@@ -26,15 +32,6 @@ export function suggestedSessions(current: Session, all: Session[], onMyDay: Set
       s.enrolled < s.capacity &&
       !busy.some((b) => overlaps(b, s)))
     .sort((a, b) => (minutes(a.start) ?? 0) - (minutes(b.start) ?? 0));
-}
-
-/**
- * The app's DaySummary counts: sessions that are open (not full), not on the
- * person's day, and fit around everything on it, in any discipline.
- */
-export function openSessionsThatFit(all: Session[], onMyDay: Set<string>): number {
-  const busy = all.filter((s) => onMyDay.has(s.id));
-  return all.filter((s) => !onMyDay.has(s.id) && s.enrolled < s.capacity && !busy.some((b) => overlaps(b, s))).length;
 }
 
 /** Minutes the sessions take, end minus start, as the app sums "booked". */

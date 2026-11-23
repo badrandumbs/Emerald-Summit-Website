@@ -14,7 +14,9 @@ import { projectProblemMessage } from '../models/registration';
 import { toMinutes, useSummitContent } from '../services/summitContent';
 import { TBD, useSiteSwitches } from '../services/siteSwitches';
 import { MOCK_SESSIONS, sessionPlace, type Session } from '../models/sessions';
-import { bookedMinutes, formatMinutes, openSessionsThatFit } from '../models/suggested';
+import { bookedMinutes, formatMinutes } from '../models/suggested';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
@@ -31,9 +33,12 @@ export default function SchedulePage() {
   const { mySchedule, expertSchedule, volunteerSchedule, spectating, releaseSession, loading, scheduleError } = useSchedule();
   const committed = new Set([...mySchedule, ...expertSchedule, ...volunteerSchedule, ...spectating]);
   const { theme } = useTheme();
-  const { showTimes } = useSiteSwitches();
+  const { showTimes, maxParticipating } = useSiteSwitches();
   const navigate = useNavigate();
   const [justAdded, setJustAdded] = useState<string | null>(null);
+  // The track the minus button asked to remove, waiting for a yes.
+  const [confirmRemove, setConfirmRemove] = useState<Session | null>(null);
+  const [removing, setRemoving] = useState(false);
 
   useEffect(() => {
     if (!justAdded) return;
@@ -48,10 +53,29 @@ export default function SchedulePage() {
   }
 
   const added = MOCK_SESSIONS.filter((s) => committed.has(s.id)).sort((a, b) => startMinutes(a) - startMinutes(b));
-  // The app's DaySummary: time booked in sessions they registered for (not
-  // ones they manage), and how many open sessions still fit around the day.
+  // Time booked in sessions they registered for (not ones they manage), and
+  // how many more they can participate in (participation_cap.sql).
   const booked = bookedMinutes(added.filter((s) => !volunteerSchedule.includes(s.id)));
-  const fits = openSessionsThatFit(MOCK_SESSIONS, committed);
+  const participating = mySchedule.length;
+
+  const remove = async (s: Session) => {
+    setRemoving(true);
+    try {
+      await releaseSession(s.id);
+      toast.success(`Removed "${s.title}" from your day`);
+    } catch (e) {
+      // A team owner with teammates picks a new owner first, which the
+      // session page does, like the app.
+      const message = (e as Error).message;
+      if (message === projectProblemMessage('choose_new_owner')) {
+        toast(message);
+        navigate(`/sessions/${s.id}`);
+      } else toast.error(message);
+    } finally {
+      setRemoving(false);
+      setConfirmRemove(null);
+    }
+  };
 
   return (
     <AppShell>
@@ -64,10 +88,9 @@ export default function SchedulePage() {
             {showTimes && booked > 0 && <span className="text-muted-foreground">{'  ·  '}{formatMinutes(booked)} booked</span>}
           </p>
           {isVolunteer && <p className="text-sm text-muted-foreground">Volunteer tracks are assigned by an organizer.</p>}
-          {added.length > 0 && fits > 0 && (
+          {!isVolunteer && maxParticipating != null && (
             <p className="mt-0.5 text-sm text-muted-foreground">
-              {fits} open {fits === 1 ? 'track still fits' : 'tracks still fit'} around these.{' '}
-              <Link to="/disciplines" className="font-semibold text-emerald hover:underline">Find one</Link>
+              Participating in {participating} of {maxParticipating} tracks. You can spectate as many as you like.
             </p>
           )}
         </div>
@@ -116,14 +139,7 @@ export default function SchedulePage() {
                     aria-label={`Remove ${s.title} from schedule`}
                     title="Remove from schedule"
                     className="shrink-0 rounded-lg border border-border p-2 text-muted-foreground hover:bg-accent hover:text-red-400"
-                    onClick={() => void releaseSession(s.id).catch((e: Error) => {
-                      // A team owner with teammates picks a new owner first,
-                      // which the session page does, like the app.
-                      if (e.message === projectProblemMessage('choose_new_owner')) {
-                        toast(e.message);
-                        navigate(`/sessions/${s.id}`);
-                      } else toast.error(e.message);
-                    })}
+                    onClick={() => setConfirmRemove(s)}
                   ><Minus className="h-4 w-4" /></button>}
                 </div>
               </article>
@@ -131,6 +147,20 @@ export default function SchedulePage() {
           })}
         </div>
       )}
+      <Dialog open={confirmRemove != null} onOpenChange={(o) => !o && !removing && setConfirmRemove(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Remove from your day?</DialogTitle>
+            <DialogDescription>
+              "{confirmRemove?.title}" will come off your schedule. You can add it again later if seats are left.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" disabled={removing} onClick={() => setConfirmRemove(null)}>Keep it</Button>
+            <Button variant="destructive" disabled={removing} onClick={() => confirmRemove && void remove(confirmRemove)}>Remove</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

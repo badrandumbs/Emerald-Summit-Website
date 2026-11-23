@@ -134,7 +134,9 @@ describe('while registration is closed and times are hidden', () => {
     setSiteSwitchesForTests(null);
     const { fetchSiteSwitches } = await import('../../services/siteSwitches');
     // supabase is mocked as null here, like a failed read.
-    expect(await fetchSiteSwitches()).toEqual({ registrationOpen: false, showTimes: false, loaded: true });
+    expect(await fetchSiteSwitches()).toEqual({
+      registrationOpen: false, showTimes: false, maxParticipating: null, scheduleConflictsOn: false, loaded: true,
+    });
   });
 });
 
