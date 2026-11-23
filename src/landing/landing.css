@@ -138,9 +138,11 @@
 
 /* The arrival: the hero sits over the page while the sun crosses, with a ground below it the page fades in from. */
 .lp-hero--intro { z-index: var(--z-raised); }
+/* Only while the name glides into place; a lasting layer is one more thing a fast scroll has to repaint. */
+.lp-hero--intro .lp-hero__title-in { will-change: transform; }
 .lp-hero__ground { position: absolute; top: 100%; left: 0; right: 0; height: 100lvh; background: var(--color-night); color: var(--color-night-ink); pointer-events: none; transition: opacity 700ms var(--ease-out); }
 .lp-hero__ground[data-done] { opacity: 0; }
-.lp-hero__title .lp-hero__title-in { display: inline-block; will-change: transform; filter: drop-shadow(0 2px 18px rgb(2 12 9 / 0.55)); }
+.lp-hero__title .lp-hero__title-in { display: inline-block; filter: drop-shadow(0 2px 18px rgb(2 12 9 / 0.55)); }
 .lp-sun { position: absolute; inset: 0; width: 100%; height: 100%; }
 /* The opening push-in: the whole sky (stars, sun, ridges) drifts slowly in toward the upper sky where the sun crests, so the foot of the range slips out of frame. */
 /* Depth (WelcomePage sets --px/--py from the pointer, -1 to 1, and --sy from the scroll, in px).
@@ -151,10 +153,10 @@
 .lp-hero [data-ridge="0"] { --d: 10; --lag: 0.3; }
 .lp-hero [data-ridge="1"] { --d: 22; --lag: 0.16; }
 .lp-hero [data-ridge="2"] { --d: 40; --lag: 0.04; }
-/* The copy drifts up faster than the sky on scroll, and the name alone turns slightly toward the
-   pointer. Only the name turns: the frosted panel behind the date (a backdrop blur) drew a seam
-   across the screen when it sat inside a 3D-turned block. */
-.lp-hero:not(.lp-hero--intro) .lp-hero__inner { translate: 0 calc(var(--sy, 0) * -0.25px); }
+/* The name alone turns slightly toward the pointer. The copy is not moved on scroll: the frosted
+   panel behind the date (a backdrop blur) showed as a dark band across the screen, with the text
+   missing, when a fast scroll back up outran the browser's repaint of the moving block. The
+   split on scroll comes from the ridges and sun lagging instead. */
 .lp-hero:not(.lp-hero--intro) .lp-hero__title-in { transform: perspective(900px) rotateX(calc(var(--py, 0) * -6deg)) rotateY(calc(var(--px, 0) * 8deg)); transition: transform 600ms var(--ease-out); }
 .lp-hero .lp-sky { transform-origin: 50% 20%; transition: transform 1500ms var(--ease-in-out); }
 /* The settled hero keeps the pushed-in framing (since Nov 20, 2026), so the sun at rest sits well inside the sky and the range stays low in frame. */
@@ -511,7 +513,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .lp-nav__bar, .lp-btn, .lp-icon-btn, .lp-faq__a, .lp-faq__icon, .lp-hero .lp-sky { transition: none; }
-  .lp-hero [data-ridge], .lp-hero .lp-sun, .lp-hero__inner { translate: none !important; }
+  .lp-hero [data-ridge], .lp-hero .lp-sun { translate: none !important; }
   .lp-hero:not(.lp-hero--intro) .lp-hero__title-in { transform: none; }
   .lp-viewer__overlay[data-state="open"], .lp-viewer[data-state="open"] { animation: none; }
 }
