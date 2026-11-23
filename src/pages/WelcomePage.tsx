@@ -378,7 +378,7 @@ export default function WelcomePage() {
         </section>
 
         {/* The day, in the owner's photographs. */}
-        <section className="lp-section lp-section--tight" aria-labelledby="rail-title">
+        <section className="lp-section lp-section--tight lp-ruled" aria-labelledby="rail-title">
           <PhotoRail
             photos={RAIL_PHOTOS}
             label="Photographs from the last Summit"

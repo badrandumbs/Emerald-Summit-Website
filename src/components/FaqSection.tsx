@@ -130,7 +130,7 @@ export default function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="lp-section" aria-labelledby="faq-title">
+    <section id="faq" className="lp-section lp-ruled" aria-labelledby="faq-title">
       <div className="container lp-grid">
         <div className="lp-faq__head">
           <h2 id="faq-title">Frequently Asked Questions</h2>
