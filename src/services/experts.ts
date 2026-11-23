@@ -4,18 +4,12 @@
 // itself: an expert shows up once they sign up to serve in a track.
 import { supabase } from '../lib/supabase';
 import { normalizeLinkedInUrl } from '../models/expertLinkedIn';
-import type { SessionExpert } from './sessionRegistration';
+import { parseExpertTracks, type ExpertTrack, type SessionExpert } from './sessionRegistration';
 
-export interface ExpertTrack {
-  id: string;
-  title: string;
-  /** The discipline id, e.g. "techverse". */
-  discipline: string;
-}
+export type { ExpertTrack };
 
-export interface PublicExpert extends SessionExpert {
-  tracks: ExpertTrack[];
-}
+/** Same shape as a track page's expert (tracks included). */
+export type PublicExpert = SessionExpert;
 
 const textOrNull = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : null);
 
@@ -32,10 +26,6 @@ export async function fetchPublicExperts(): Promise<PublicExpert[]> {
     expertise: textOrNull(r.expertise),
     bio: textOrNull(r.bio),
     linkedInUrl: normalizeLinkedInUrl(textOrNull(r.linkedin_url) ?? ''),
-    tracks: (Array.isArray(r.tracks) ? r.tracks : []).map((t: Record<string, unknown>) => ({
-      id: String(t.id),
-      title: String(t.title ?? ''),
-      discipline: String(t.discipline ?? ''),
-    })),
+    tracks: parseExpertTracks(r.tracks),
   }));
 }

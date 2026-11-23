@@ -187,6 +187,23 @@ export async function fetchSessionExperts(sessionId: string): Promise<string[]> 
   return ((data ?? []) as unknown[]).map(String);
 }
 
+/** A track an expert serves in. */
+export interface ExpertTrack {
+  id: string;
+  title: string;
+  /** The discipline id, e.g. "techverse". */
+  discipline: string;
+}
+
+/** The tracks from session_expert_profiles / public_experts, in time order. */
+export function parseExpertTracks(raw: unknown): ExpertTrack[] {
+  return (Array.isArray(raw) ? raw : []).map((t: Record<string, unknown>) => ({
+    id: String(t.id),
+    title: String(t.title ?? ''),
+    discipline: String(t.discipline ?? ''),
+  }));
+}
+
 /** An approved expert's public card on a track page (session_expert_profiles). */
 export interface SessionExpert {
   id: string;
@@ -198,6 +215,8 @@ export interface SessionExpert {
   bio: string | null;
   /** Only when the expert chose to show their LinkedIn to students. */
   linkedInUrl: string | null;
+  /** Every track they serve in (empty in the names-only fallback). */
+  tracks: ExpertTrack[];
 }
 
 const textOrNull = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : null);
@@ -213,7 +232,7 @@ export async function fetchSessionExpertProfiles(sessionId: string): Promise<Ses
   if (error) {
     const names = await fetchSessionExperts(sessionId);
     return names.map((name, i) => ({
-      id: `name-${i}`, name, photoUrl: null, title: null, company: null, expertise: null, bio: null, linkedInUrl: null,
+      id: `name-${i}`, name, photoUrl: null, title: null, company: null, expertise: null, bio: null, linkedInUrl: null, tracks: [],
     }));
   }
   return ((data ?? []) as Record<string, unknown>[]).map((r) => ({
@@ -226,6 +245,7 @@ export async function fetchSessionExpertProfiles(sessionId: string): Promise<Ses
     bio: textOrNull(r.bio),
     // Only a real LinkedIn link becomes a link (the address is the expert's own text).
     linkedInUrl: normalizeLinkedInUrl(textOrNull(r.linkedin_url) ?? ''),
+    tracks: parseExpertTracks(r.tracks),
   }));
 }
 

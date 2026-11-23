@@ -50,6 +50,7 @@ describe('Experts page list', () => {
 
     await user.click(screen.getByRole('button', { name: 'See more about Ada Park' }));
     const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText('Serving as an expert in 1 track')).toBeInTheDocument();
     expect(within(dialog).getByRole('link', { name: 'CADathon Workshop' })).toHaveAttribute('href', '/sessions/s1');
     expect(within(dialog).getByRole('link', { name: /Connect on LinkedIn/ })).toHaveAttribute('href', 'https://www.linkedin.com/in/ada');
   });

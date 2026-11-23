@@ -1,6 +1,6 @@
 // Expert cards (Nov 23, 2026): photo, name, title, company and area of
-// expertise, with See more opening the whole profile (bio, the tracks they
-// serve in when known, and Connect on LinkedIn when they chose to attach it).
+// expertise, with See more opening the whole profile (bio, every track they
+// serve in as an expert, and Connect on LinkedIn when they chose to attach it).
 // Used on a track page (SessionExperts) and on the Experts page
 // (components/ExpertsDirectory.tsx).
 import { useState } from 'react';
@@ -9,10 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { rgba } from '../../models/verseVibes';
 import type { SessionExpert } from '../../services/sessionRegistration';
-import type { ExpertTrack } from '../../services/experts';
 import LinkedInIcon from '../LinkedInIcon';
 
-type Expert = SessionExpert & { tracks?: ExpertTrack[] };
+type Expert = SessionExpert;
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -93,8 +92,10 @@ export function ExpertProfileDialog({ expert, accent, onClose }: { expert: Exper
             )}
             {expert.tracks && expert.tracks.length > 0 && (
               <div>
-                <h3 className="mb-1.5 text-sm font-semibold">{expert.tracks.length === 1 ? 'Track' : 'Tracks'}</h3>
-                <ul className="space-y-1 text-[15px]">
+                <h3 className="mb-1.5 text-sm font-semibold">
+                  Serving as an expert in {expert.tracks.length === 1 ? '1 track' : `${expert.tracks.length} tracks`}
+                </h3>
+                <ul className="list-disc space-y-1 pl-5 text-[15px]" style={{ color: accent }}>
                   {expert.tracks.map((t) => (
                     <li key={t.id}>
                       <Link to={`/sessions/${t.id}`} className="font-medium underline-offset-4 hover:underline" style={{ color: accent }}>
