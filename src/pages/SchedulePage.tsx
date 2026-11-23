@@ -119,7 +119,8 @@ export default function SchedulePage() {
                 id={`my-schedule-${s.id}`}
                 className={cn('rounded-2xl p-4 sm:p-5', justAdded === s.id && 'ring-2 ring-emerald ring-offset-2 ring-offset-background')}
                 style={{
-                  background: `radial-gradient(120% 140% at 0% 0%, ${rgba(vibe.accent2, 0.28)}, transparent 60%), ${vibe.surface}`,
+                  // The verse's own canvas colour, as on its Explore card and verse page.
+                  background: `radial-gradient(120% 140% at 0% 0%, ${rgba(vibe.flowColors[0], 0.22)}, transparent 60%), ${vibe.background}`,
                   color: vibe.text,
                   border: `1px solid ${rgba(accent, 0.4)}`,
                   borderLeft: `4px solid ${accent}`,

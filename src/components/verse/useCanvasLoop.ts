@@ -9,12 +9,20 @@ export type DrawFrame = (
 
 /** Seconds shown when motion is reduced: a settled, representative frame. */
 const STILL_FRAME = 2.5;
+/**
+ * How long a motif or flowing border plays before it settles. The last
+ * SLOW_DOWN seconds ease the clock to a stop, so it comes to rest rather than
+ * freezing mid-move; after that the canvas holds its last frame.
+ */
+export const PLAY_SECONDS = 10;
+const SLOW_DOWN = 2;
 
 /**
  * Runs `draw` every animation frame on a canvas sized to its box (at device
  * pixel ratio). Like the mobile app's effect ticker, the clock pauses while
  * the canvas is off screen or the tab is hidden, and resumes where it left
- * off. Under prefers-reduced-motion it draws one still frame instead.
+ * off. It plays for PLAY_SECONDS, then rests on its last frame. Under
+ * prefers-reduced-motion it draws one still frame instead.
  */
 export function useCanvasLoop(canvasRef: RefObject<HTMLCanvasElement | null>, draw: DrawFrame) {
   const drawRef = useRef(draw);
@@ -35,6 +43,8 @@ export function useCanvasLoop(canvasRef: RefObject<HTMLCanvasElement | null>, dr
     let last: number | null = null;
     let frame = 0;
     let onScreen = true;
+    let played = 0;
+    let done = false;
 
     const paint = () => {
       if (width === 0 || height === 0) return;
@@ -56,14 +66,24 @@ export function useCanvasLoop(canvasRef: RefObject<HTMLCanvasElement | null>, dr
     };
 
     const tick = (now: number) => {
-      if (last !== null) clock += Math.min((now - last) / 1000, 0.1);
+      if (last !== null) {
+        const dt = Math.min((now - last) / 1000, 0.1);
+        played += dt;
+        // Ease out over the last SLOW_DOWN seconds, then stop for good.
+        clock += dt * Math.min(1, Math.max(0, (PLAY_SECONDS - played) / SLOW_DOWN));
+      }
       last = now;
       paint();
+      if (played >= PLAY_SECONDS) {
+        done = true;
+        frame = 0;
+        return;
+      }
       frame = requestAnimationFrame(tick);
     };
 
     const start = () => {
-      if (reduced || frame || !onScreen || document.hidden) return;
+      if (reduced || done || frame || !onScreen || document.hidden) return;
       last = null;
       frame = requestAnimationFrame(tick);
     };
