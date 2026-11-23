@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { ReactNode } from 'react';
 
@@ -85,12 +86,23 @@ describe('personal schedule', () => {
     expect(screen.getByRole('link', { name: /^Explore$/ })).toHaveAttribute('href', '/disciplines');
   });
 
-  test('admin-assigned volunteer sessions have no remove action', () => {
+  test('admin-assigned volunteer sessions have no remove action', async () => {
     state.role = 'volunteer';
     state.schedule.volunteerSchedule = ['morning'];
     render(page());
     expect(screen.getByText('Managing')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Remove .* from my day/ })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'More options for Morning registered session' }));
+    expect(await screen.findByRole('menuitem', { name: 'Open track' })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'Remove from my day' })).not.toBeInTheDocument();
+  });
+
+  test('Remove is hidden until the ⋯ menu is opened', async () => {
+    state.schedule.mySchedule = ['morning'];
+    render(page());
+    expect(screen.queryByRole('menuitem', { name: 'Remove from my day' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Remove/ })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'More options for Morning registered session' }));
+    expect(await screen.findByRole('menuitem', { name: 'Remove from my day' })).toBeInTheDocument();
   });
 
   test('session titles open the session page', () => {
@@ -108,19 +120,22 @@ describe('personal schedule', () => {
       <Route path="/schedule" element={<SchedulePage />} />
       <Route path="/sessions/:id" element={<p>Session page</p>} />
     </Routes></MemoryRouter>);
-    fireEvent.click(screen.getByRole('button', { name: 'Remove Morning registered session from my day' }));
+    await userEvent.click(screen.getByRole('button', { name: 'More options for Morning registered session' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Remove from my day' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Remove' }));
     expect(await screen.findByText('Session page')).toBeInTheDocument();
   });
 
-  test('the minus button asks before removing, and Keep it removes nothing', async () => {
+  test('Remove in the ⋯ menu asks before removing, and Keep it removes nothing', async () => {
     state.schedule.mySchedule = ['morning'];
     render(page());
-    fireEvent.click(screen.getByRole('button', { name: 'Remove Morning registered session from my day' }));
+    await userEvent.click(screen.getByRole('button', { name: 'More options for Morning registered session' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Remove from my day' }));
     expect(await screen.findByRole('heading', { name: 'Remove from your day?' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Keep it' }));
     expect(state.schedule.releaseSession).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Remove Morning registered session from my day' }));
+    await userEvent.click(screen.getByRole('button', { name: 'More options for Morning registered session' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Remove from my day' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Remove' }));
     await waitFor(() => expect(state.schedule.releaseSession).toHaveBeenCalledWith('morning'));
   });

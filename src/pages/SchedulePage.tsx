@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CalendarDays, Check, Clock, MapPin, Minus, ArrowRight } from '@/components/icons';
+import { CalendarDays, Check, Clock, MapPin, Minus, MoreHorizontal, ArrowRight } from '@/components/icons';
 import AppShell from '../components/AppShell';
 import PageHeader from '../components/PageHeader';
 import TrackPill from '../components/TrackPill';
@@ -16,6 +16,7 @@ import { TBD, useSiteSwitches } from '../services/siteSwitches';
 import { MOCK_SESSIONS, sessionPlace, type Session } from '../models/sessions';
 import { bookedMinutes, formatMinutes } from '../models/suggested';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -36,7 +37,7 @@ export default function SchedulePage() {
   const { showTimes, maxParticipating } = useSiteSwitches();
   const navigate = useNavigate();
   const [justAdded, setJustAdded] = useState<string | null>(null);
-  // The track the minus button asked to remove, waiting for a yes.
+  // The track the ⋯ menu asked to remove, waiting for a yes.
   const [confirmRemove, setConfirmRemove] = useState<Session | null>(null);
   const [removing, setRemoving] = useState(false);
 
@@ -142,12 +143,28 @@ export default function SchedulePage() {
                     <p className="mt-2 text-sm leading-relaxed" style={{ color: vibe.textDim }}>{s.description}</p>
                     {sessionPlace(s) && <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium" style={{ color: accent }}><MapPin className="h-3 w-3" /> {sessionPlace(s)}</p>}
                   </div>
-                  {!managing && <button
-                    type="button"
-                    aria-label={`Remove ${s.title} from my day`}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-red-400/50 bg-red-500/10 px-3 py-1.5 text-sm font-semibold text-red-600 transition-colors hover:bg-red-500/20 dark:text-red-300"
-                    onClick={() => setConfirmRemove(s)}
-                  ><Minus className="h-4 w-4" aria-hidden /> Remove</button>}
+                  {/* Remove sits behind ⋯, like the announcement menu, so it is
+                      not one stray tap away. Tracks an organizer assigned
+                      (Managing) only get Open track. */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      aria-label={`More options for ${s.title}`}
+                      className="-mr-1.5 -mt-1 shrink-0 rounded-md p-1.5 transition-colors hover:bg-black/5 dark:hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald"
+                      style={{ color: vibe.textDim }}
+                    >
+                      <MoreHorizontal className="h-5 w-5" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onSelect={() => navigate(`/sessions/${s.id}`)}>
+                        <ArrowRight className="h-4 w-4" /> Open track
+                      </DropdownMenuItem>
+                      {!managing && (
+                        <DropdownMenuItem onSelect={() => setConfirmRemove(s)} className="text-destructive focus:text-destructive">
+                          <Minus className="h-4 w-4" /> Remove from my day
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </article>
             );
