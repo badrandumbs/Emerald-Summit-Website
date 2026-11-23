@@ -50,7 +50,7 @@ describe("Summit '27 page", () => {
     expect(within(screen.getByRole('navigation', { name: 'Main' })).queryByText("Summit '27")).not.toBeInTheDocument();
   });
 
-  test('the landing navbar has Experts, Sponsors, Keynote and Team after Disciplines, Donate before Contact; Team opens the Keynote & Team page', async () => {
+  test('the landing navbar has Sponsors, Keynote, Experts and Team after Disciplines, Donate before Contact; Team opens the Keynote, Experts & Team page', async () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter initialEntries={['/']}>
@@ -62,12 +62,13 @@ describe("Summit '27 page", () => {
     );
     const nav = screen.getByRole('navigation', { name: 'Main' });
     expect(within(nav).getAllByRole('button').map((b) => b.textContent)).toEqual(
-      ['About', 'Disciplines', 'Experts', 'Sponsors', 'Keynote', 'Team', 'FAQ', 'Donate', 'Contact'],
+      ['About', 'Disciplines', 'Sponsors', 'Keynote', 'Experts', 'Team', 'FAQ', 'Donate', 'Contact'],
     );
     await user.click(within(nav).getByRole('button', { name: 'Team' }));
-    // Both on one page, Keynote first.
+    // All three on one page, Experts between Keynote and Team.
     const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
-    expect(headings).toEqual(['Keynote', 'Team']);
+    expect(headings).toEqual(['Keynote', 'Experts', 'Team']);
+    expect(await screen.findByText(EXPERTS_EMPTY)).toBeInTheDocument();
     expect(screen.getAllByText('Coming soon')).toHaveLength(2);
   });
 

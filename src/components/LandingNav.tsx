@@ -7,14 +7,14 @@ import { Menu, X } from '@/components/icons';
 import BrandMark from './BrandMark';
 import { cn } from '@/lib/utils';
 
-/** Keynote and Team live on their own page (KeynoteTeamPage), Experts on ExpertsPage; the rest are sections of "/". */
+/** Keynote, Experts and Team live on their own page (KeynoteTeamPage); the rest are sections of "/". */
 const KEYNOTE_TEAM_PATH = '/keynote-and-team';
 const SECTION_LINKS: { id: string; label: string; path?: string }[] = [
   { id: 'about', label: 'About' },
   { id: 'disciplines', label: 'Disciplines' },
-  { id: 'experts', label: 'Experts', path: '/experts' },
   { id: 'sponsors', label: 'Sponsors' },
   { id: 'keynote', label: 'Keynote', path: KEYNOTE_TEAM_PATH },
+  { id: 'experts', label: 'Experts', path: KEYNOTE_TEAM_PATH },
   { id: 'team', label: 'Team', path: KEYNOTE_TEAM_PATH },
   { id: 'faq', label: 'FAQ' },
   { id: 'donate', label: 'Donate' },

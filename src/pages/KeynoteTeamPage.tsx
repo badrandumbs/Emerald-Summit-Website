@@ -1,14 +1,17 @@
-// The public Keynote & Team page (/keynote-and-team), reached from the landing
-// nav's Keynote and Team links, which scroll to their own section here. Both
-// say "Coming soon" until the speaker's and the team's details come in.
+// The public Keynote, Experts & Team page (/keynote-and-team), reached from the
+// landing nav's Keynote, Experts and Team links, which scroll to their own
+// section here. Keynote and Team say "Coming soon" until their details come in;
+// Experts fills in by itself (ExpertsDirectory). /experts lands on Experts.
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import LandingNav from '../components/LandingNav';
 import LandingFooter from '../components/LandingFooter';
+import ExpertsDirectory, { EXPERTS_INTRO } from '../components/ExpertsDirectory';
 import '../landing/landing.css';
 
 const SECTIONS = [
   { id: 'keynote', title: 'Keynote', text: 'This year’s keynote speaker will be announced soon.' },
+  { id: 'experts', title: 'Experts', text: '' },
   { id: 'team', title: 'Team', text: 'Meet the students and organizers behind Emerald Summit ’27. Their profiles are coming soon.' },
 ];
 
@@ -32,11 +35,16 @@ export default function KeynoteTeamPage() {
             <div className="container">
               <div className="lp-head">
                 <h2 id={`${s.id}-title`}>{s.title}</h2>
+                {s.id === 'experts' && <p className="lead">{EXPERTS_INTRO}</p>}
               </div>
-              <div className="lp-soon">
-                <p className="lp-soon__tag">Coming soon</p>
-                <p>{s.text}</p>
-              </div>
+              {s.id === 'experts' ? (
+                <ExpertsDirectory />
+              ) : (
+                <div className="lp-soon">
+                  <p className="lp-soon__tag">Coming soon</p>
+                  <p>{s.text}</p>
+                </div>
+              )}
             </div>
           </section>
         ))}

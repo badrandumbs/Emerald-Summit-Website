@@ -522,6 +522,9 @@
 }
 
 /* ───────────── Keynote & Team page: coming-soon cards ───────────── */
+/* Under the public pages, the page itself is paper, not the app's black dark-mode
+   background, so a fast scroll or an overscroll never flashes a black band. */
+html:has(.lp-page), body:has(.lp-page) { background: var(--color-paper); }
 .lp-lineup { padding-top: var(--space-2xl); }
 .lp-lineup .lp-section { padding-block: var(--space-2xl); }
 .lp-lineup .lp-head { margin-bottom: var(--space-lg); }
