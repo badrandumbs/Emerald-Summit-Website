@@ -17,7 +17,7 @@ import {
 } from '../models/metrics';
 import { fetchExpertRequests, fetchSummitMetrics } from '../services/organizer';
 import { contentSource, useSummitContent } from '../services/summitContent';
-import { BarList, FilterChips, HeatTable, MetricsSection, StatTiles } from '../components/MetricsBits';
+import { BarList, FilterChips, HeatTable, MetricsSection, PieChart, StatTiles } from '../components/MetricsBits';
 
 type Who = 'participants' | 'parents' | 'everyone';
 const NOUN: Record<Who, string> = { participants: 'participants', parents: 'parents or spectators', everyone: 'people' };
@@ -137,7 +137,12 @@ function Charts({ data, who }: { data: SummitMetrics; who: Who }) {
         <p className="-mt-2 text-xs text-muted-foreground">
           People registered for at least one track, by the school they picked. Accounts with no track sign-up are not counted.
         </p>
-        <BarList rows={countBy(people.map((p) => [p.school, p.id]), { last: NO_SCHOOL_LABEL })} total={people.length} emptyText={none} />
+        <PieChart
+          rows={countBy(people.map((p) => [p.school, p.id]), { last: NO_SCHOOL_LABEL })}
+          total={people.length}
+          emptyText={none}
+          mutedLabel={NO_SCHOOL_LABEL}
+        />
       </MetricsSection>
       <MetricsSection title="Disciplines by school">
         <p className="-mt-2 text-xs text-muted-foreground">

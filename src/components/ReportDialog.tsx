@@ -37,7 +37,7 @@ export default function ReportDialog({ open, onOpenChange, kind: initialKind = '
   email: string;
 }) {
   const [kind, setKind] = useState<ReportKind>(initialKind);
-  const [name, setName] = useState(defaultName);
+  const name = defaultName;
   const [description, setDescription] = useState('');
   const [shots, setShots] = useState<Shot[]>([]);
   const [emailCopy, setEmailCopy] = useState(true);
@@ -50,7 +50,6 @@ export default function ReportDialog({ open, onOpenChange, kind: initialKind = '
   const shotsRef = useRef(shots);
   shotsRef.current = shots;
 
-  useEffect(() => { if (!name) setName(defaultName); }, [defaultName]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (open) setKind(initialKind); }, [open, initialKind]);
   useEffect(() => () => shotsRef.current.forEach((s) => URL.revokeObjectURL(s.url)), []);
 
@@ -170,7 +169,7 @@ export default function ReportDialog({ open, onOpenChange, kind: initialKind = '
 
             <div className="space-y-2">
               <Label htmlFor="report-name">Your name</Label>
-              <Input id="report-name" autoComplete="name" maxLength={MAX_NAME} value={name} onChange={(e) => setName(e.target.value)} required />
+              <Input id="report-name" autoComplete="name" maxLength={MAX_NAME} value={name} readOnly disabled required />
             </div>
 
             <div className="space-y-2">

@@ -44,12 +44,13 @@ describe('ReportDialog', () => {
     expect(screen.getByRole('button', { name: 'Send feedback' })).toBeInTheDocument();
   });
 
-  test('requires a name', async () => {
+  test('does not allow editing the name', async () => {
     open();
-    await userEvent.clear(screen.getByLabelText('Your name'));
-    await userEvent.type(screen.getByLabelText('What went wrong?'), 'Broken');
-    await userEvent.click(screen.getByRole('button', { name: 'Send bug report' }));
-    expect(screen.getByRole('alert')).toHaveTextContent('Please add your name.');
+    const nameInput = screen.getByLabelText('Your name');
+    expect(nameInput).toBeDisabled();
+    expect(nameInput).toHaveAttribute('readonly');
+    await userEvent.type(nameInput, ' Someone Else');
+    expect(nameInput).toHaveValue('Ada Lovelace');
   });
 
   test('sends the report with screenshots and shows the ticket number', async () => {
