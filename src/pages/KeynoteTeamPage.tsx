@@ -1,6 +1,7 @@
 // The public Keynote & Team page (/keynote-and-team), reached from the landing
-// nav's Keynote and Team links, which scroll to their own section here. Both
-// say "Coming soon" until the speaker's and the team's details come in.
+// nav's Keynote and Team links. It shows one section at a time, the one whose
+// link was clicked (Keynote when opened directly), so neither peeks into the
+// other and there's no empty filler. Both say "Coming soon" for now.
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import LandingNav from '../components/LandingNav';
@@ -16,18 +17,17 @@ export default function KeynoteTeamPage() {
   const location = useLocation();
 
   // The nav sends { scrollTo: 'team' } (or keynote) when it brings you here.
+  const asked = (location.state as { scrollTo?: string } | null)?.scrollTo;
+  const shown = SECTIONS.find((s) => s.id === asked) ?? SECTIONS[0];
   useEffect(() => {
-    const id = (location.state as { scrollTo?: string } | null)?.scrollTo;
-    if (!id) return;
-    const frame = requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: 'start' }));
-    return () => cancelAnimationFrame(frame);
-  }, [location.state]);
+    window.scrollTo(0, 0);
+  }, [shown.id]);
 
   return (
     <div className="lp lp-page">
       <LandingNav />
       <main id="main" className="lp-lineup">
-        {SECTIONS.map((s) => (
+        {[shown].map((s) => (
           <section key={s.id} id={s.id} className="lp-section" aria-labelledby={`${s.id}-title`}>
             <div className="container">
               <div className="lp-head">

@@ -233,6 +233,34 @@ export default function WelcomePage() {
     return () => clearTimeout(id);
   }, [revealed, playingIntro]);
 
+  // Depth: the ridges, sun and name shift by their distance as the pointer moves
+  // and as the page scrolls, so the sky reads as layers rather than a flat
+  // picture. The stylesheet does the moving from these three variables.
+  const heroRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero || reduceMotion) return;
+    let frame = 0;
+    const set = (k: string, v: number) => hero.style.setProperty(k, v.toFixed(3));
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        set('--px', (e.clientX / window.innerWidth) * 2 - 1);
+        set('--py', (e.clientY / window.innerHeight) * 2 - 1);
+      });
+    };
+    const onScroll = () => set('--sy', Math.min(window.scrollY, window.innerHeight));
+    onScroll();
+    window.addEventListener('pointermove', onMove, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, [reduceMotion]);
+
   // Cross-route anchor nav: LandingNav sends { scrollTo: id } when the link
   // is clicked from a different route; finish the scroll once we've landed.
   useEffect(() => {
@@ -271,6 +299,7 @@ export default function WelcomePage() {
             summit and sets behind the ridges while the name is wiped on in
             the middle; then the name lifts and the details come in under it. */}
         <section
+          ref={heroRef}
           className={`lp-hero lp-night${introGone ? '' : ' lp-hero--intro'}`}
           data-zoom={zoomed || undefined}
           aria-labelledby="hero-title"

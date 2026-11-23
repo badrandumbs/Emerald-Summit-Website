@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties } from 'react';
+import { Component, lazy, Suspense, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import {
   motion,
   useMotionValueEvent,
@@ -24,6 +24,20 @@ import { MOCK_SESSIONS } from '../models/sessions';
  */
 function sessionTitles(discipline: string): string[] {
   return landingTrackTitles(discipline, MOCK_SESSIONS);
+}
+
+// The planets as 3D spheres, loaded on demand so three.js stays out of the first paint.
+const OrbitPlanets3D = lazy(() => import('./OrbitPlanets3D'));
+
+/** No WebGL (or three.js failed to load): keep the flat planets. */
+class Fallback extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
 }
 
 const COUNT = USER_DISCIPLINES.length;
@@ -69,6 +83,8 @@ function UniverseOrbit() {
   const counterRotate = useTransform(rotate, (r) => -r);
 
   const [active, setActive] = useState(0);
+  // The flat planets show until the 3D ones have a renderer.
+  const [spheres, setSpheres] = useState(false);
   useMotionValueEvent(scrollYProgress, 'change', (v) => {
     const i = Math.min(COUNT - 1, Math.max(0, Math.floor(v * COUNT)));
     setActive((prev) => (prev === i ? prev : i));
@@ -97,6 +113,17 @@ function UniverseOrbit() {
         <div className="container lp-grid lp-orbit__inner">
           <div className="lp-orbit__stage" aria-hidden>
             <div className="lp-orbit__ring" />
+            <Fallback>
+              <Suspense fallback={null}>
+                <OrbitPlanets3D
+                  rotate={rotate}
+                  active={active}
+                  colors={USER_DISCIPLINES.map((u) => u.color)}
+                  radius={R}
+                  onReady={() => setSpheres(true)}
+                />
+              </Suspense>
+            </Fallback>
             <motion.div className="lp-orbit__wheel" style={{ rotate }}>
               {USER_DISCIPLINES.map((u, i) => {
                 const angle = (i / COUNT) * 2 * Math.PI - Math.PI / 2;
@@ -113,7 +140,7 @@ function UniverseOrbit() {
                     <motion.div className="lp-orbit__body" style={{ rotate: counterRotate }}>
                       <motion.span
                         className="lp-orbit__planet"
-                        style={{ '--uni': u.color } as CSSProperties}
+                        style={{ '--uni': u.color, visibility: spheres ? 'hidden' : undefined } as CSSProperties}
                         animate={{ scale: isActive ? 2 : 1, opacity: isActive ? 1 : 0.6 }}
                         transition={{ type: 'spring', stiffness: 260, damping: 26 }}
                       />

@@ -136,6 +136,18 @@
 .lp-hero__title .lp-hero__title-in { display: inline-block; will-change: transform; filter: drop-shadow(0 2px 18px rgb(2 12 9 / 0.55)); }
 .lp-sun { position: absolute; inset: 0; width: 100%; height: 100%; }
 /* The opening push-in: the whole sky (stars, sun, ridges) drifts slowly in toward the upper sky where the sun crests, so the foot of the range slips out of frame. */
+/* Depth (WelcomePage sets --px/--py from the pointer, -1 to 1, and --sy from the scroll, in px).
+   Far layers lag the scroll and barely follow the pointer; near ones do the opposite. Uses the
+   separate translate property so it adds to the sky's zoom instead of replacing it. */
+.lp-hero { perspective: 1200px; }
+.lp-hero [data-ridge], .lp-hero .lp-sun { translate: calc(var(--px, 0) * var(--d) * -1px) calc(var(--py, 0) * var(--d) * -0.4px + var(--sy, 0) * var(--lag) * 1px); transition: translate 500ms var(--ease-out); }
+.lp-hero .lp-sun { --d: 4; --lag: 0.45; }
+.lp-hero [data-ridge="0"] { --d: 10; --lag: 0.3; }
+.lp-hero [data-ridge="1"] { --d: 22; --lag: 0.16; }
+.lp-hero [data-ridge="2"] { --d: 40; --lag: 0.04; }
+/* The name floats in front: a slight turn toward the pointer, and it drifts up faster than the sky on scroll. */
+.lp-hero:not(.lp-hero--intro) .lp-hero__inner { transform: rotateX(calc(var(--py, 0) * -5deg)) rotateY(calc(var(--px, 0) * 7deg)) translateY(calc(var(--sy, 0) * -0.25px)); transform-style: preserve-3d; transition: transform 600ms var(--ease-out); }
+.lp-hero:not(.lp-hero--intro) .lp-hero__title { transform: translateZ(60px); }
 .lp-hero .lp-sky { transform-origin: 50% 20%; transition: transform 1500ms var(--ease-in-out); }
 /* The settled hero keeps the pushed-in framing (since Nov 20, 2026), so the sun at rest sits well inside the sky and the range stays low in frame. */
 .lp-hero:not(.lp-hero--intro) .lp-sky { transform: scale(1.18); }
@@ -336,6 +348,7 @@
 .lp-orbit__stage { grid-column: 1 / span 6; position: relative; width: min(100%, 560px, calc(100svh - var(--bar-h) - var(--space-3xl))); aspect-ratio: 1; justify-self: center; }
 .lp-orbit__ring { position: absolute; inset: 8%; border: 1px solid var(--color-night-rule); border-radius: var(--radius-pill); }
 .lp-orbit__wheel { position: absolute; inset: 0; }
+.lp-orbit__planets3d { position: absolute; inset: 0; pointer-events: none; }
 .lp-orbit__slot { position: absolute; transform: translate(-50%, -50%); }
 .lp-orbit__body { display: grid; justify-items: center; gap: var(--space-md); }
 .lp-orbit__planet { display: block; width: 28px; height: 28px; border-radius: var(--radius-pill); background: var(--uni); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-night-ink) 25%, transparent); }
@@ -490,17 +503,14 @@
 
 @media (prefers-reduced-motion: reduce) {
   .lp-nav__bar, .lp-btn, .lp-icon-btn, .lp-faq__a, .lp-faq__icon, .lp-hero .lp-sky { transition: none; }
+  .lp-hero [data-ridge], .lp-hero .lp-sun, .lp-hero__inner, .lp-hero__title { translate: none !important; transform: none !important; }
   .lp-viewer__overlay[data-state="open"], .lp-viewer[data-state="open"] { animation: none; }
 }
 
 /* ───────────── Keynote & Team page: coming-soon cards ───────────── */
 .lp-lineup { padding-top: var(--space-2xl); }
 .lp-lineup .lp-section { padding-block: var(--space-2xl); }
-/* Each section fills the screen under the bar, and the nav lands it right under the bar, so Keynote and Team never show at once. */
-.lp-lineup .lp-section { min-height: calc(100svh - var(--bar-h)); scroll-margin-top: calc(var(--bar-h) - var(--space-3xl)); }
 .lp-lineup .lp-head { margin-bottom: var(--space-lg); }
-/* A full-width rule between Keynote and Team, like the landing sections. */
-.lp-lineup .lp-section + .lp-section { border-top: 1px solid var(--color-rule); }
 .lp-soon { display: grid; gap: var(--space-sm); max-width: 46rem; padding: var(--space-xl); border: 1px solid var(--color-rule); border-radius: var(--radius-card); background: var(--color-paper-2); }
 .lp-soon p { color: var(--color-ink-2); font-size: var(--text-lead); line-height: 1.5; }
 .lp-soon .lp-soon__tag { justify-self: start; padding: 4px 12px; border-radius: var(--radius-pill); background: color-mix(in oklab, var(--color-accent) 14%, transparent); color: var(--color-accent-hover); font-size: var(--text-sm); font-weight: 600; }
