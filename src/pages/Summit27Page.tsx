@@ -11,6 +11,7 @@ import { ROLL_ATTR } from '../components/Summit27Intro';
 import { SupportEafCard } from '../components/home/AboutSections';
 import SponsorTiers from '../components/SponsorTiers';
 import ExpertsDirectory, { EXPERTS_INTRO } from '../components/ExpertsDirectory';
+import TeamDirectory from '../components/TeamDirectory';
 import { useRequireProfile } from '../hooks/useRequireProfile';
 import { SUMMIT_DATE_LABEL, SUMMIT_HOURS, VENUE } from '../models/summitFacts';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -101,9 +102,7 @@ export default function Summit27Page() {
       </nav>
 
       {current.id === 'keynote' && <ComingSoon>This year's keynote speaker will be announced soon.</ComingSoon>}
-      {current.id === 'team' && (
-        <ComingSoon>About Me pages for the students and organizers working on Emerald Summit '27 are coming soon.</ComingSoon>
-      )}
+      {current.id === 'team' && <TeamDirectory />}
       {current.id === 'experts' && (
         <div className="space-y-4">
           <p className="max-w-2xl text-[15px] leading-relaxed">{EXPERTS_INTRO}</p>

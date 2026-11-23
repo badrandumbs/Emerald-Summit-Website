@@ -69,7 +69,9 @@ describe("Summit '27 page", () => {
     const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
     expect(headings).toEqual(['Keynote', 'Experts', 'Team']);
     expect(await screen.findByText(EXPERTS_EMPTY)).toBeInTheDocument();
-    expect(screen.getAllByText('Coming soon')).toHaveLength(2);
+    expect(screen.getAllByText('Coming soon')).toHaveLength(1);
+    expect(within(screen.getByRole('list', { name: 'Summit team' })).getAllByRole('listitem')).toHaveLength(13);
+    expect(screen.getByRole('heading', { name: 'Deep Shah' })).toBeInTheDocument();
   });
 
   test('the sidebar has one Summit \'27 tab, opening Keynote, for every role', () => {
@@ -88,7 +90,9 @@ describe("Summit '27 page", () => {
     const tabs = screen.getByRole('navigation', { name: "Summit '27" });
     await userEvent.click(within(tabs).getByRole('link', { name: /Team/ }));
     expect(screen.getByRole('heading', { level: 1, name: "Summit '27" })).toBeInTheDocument();
-    expect(screen.getByText(/About Me pages/)).toBeInTheDocument();
+    expect(within(screen.getByRole('list', { name: 'Summit team' })).getAllByRole('listitem')).toHaveLength(13);
+    expect(screen.getByRole('heading', { name: 'Guhan Bala' })).toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: /CADathon/i })[0]).toHaveAttribute('href', '/team/tracks/cadathon');
 
     // Experts fills in from the database; with none yet it says so.
     await userEvent.click(within(tabs).getByRole('link', { name: /Experts/ }));

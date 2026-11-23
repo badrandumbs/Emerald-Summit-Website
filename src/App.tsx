@@ -23,6 +23,7 @@ const ResourcesPage = lazyPage(() => import('./pages/ResourcesPage'));
 const VersesPage = lazyPage(() => import('./pages/VersesPage'));
 const VolunteerDashboard = lazyPage(() => import('./pages/VolunteerDashboard'));
 const SessionPage = lazyPage(() => import('./pages/SessionPage'));
+const TeamTrackPage = lazyPage(() => import('./pages/TeamTrackPage'));
 const VolunteerHoursPage = lazyPage(() => import('./pages/VolunteerHoursPage'));
 const ExpertApprovalsPage = lazyPage(() => import('./pages/ExpertApprovalsPage'));
 const BeAMentorPage = lazyPage(() => import('./pages/BeAMentorPage'));
@@ -57,6 +58,7 @@ export default function App() {
           <Route path="/profile" element={<ProfileSetupPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/sessions/:id" element={<SessionPage />} />
+          <Route path="/team/tracks/:key" element={<TeamTrackPage />} />
           <Route path="/announcements" element={<AnnouncementsPage />} />
           <Route path="/archie" element={<ArchiePage />} />
           <Route path="/summit-27" element={<Navigate to="/summit-27/keynote" replace />} />
