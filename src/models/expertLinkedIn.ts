@@ -1,4 +1,6 @@
-// An expert's choice to show their LinkedIn to students (Nov 23, 2026).
+// An expert's choice to attach their LinkedIn to their expert profile, so
+// students can connect with them (Nov 23, 2026). Asked when an expert signs up
+// to serve in a track (ExpertTrackDialog), and changeable in Edit profile.
 // Saved in profiles.details as linkedin_visible ('yes' or 'no') and
 // linkedin_url. The track page's expert cards only get the address when the
 // expert chose 'yes' (session_expert_profiles, app repo
@@ -9,14 +11,24 @@ export type LinkedInVisible = 'yes' | 'no';
 export const LINKEDIN_VISIBLE_KEY = 'linkedin_visible';
 export const LINKEDIN_URL_KEY = 'linkedin_url';
 
+/** LinkedIn sends a signed-in member from here to their own profile. */
+export const LINKEDIN_OWN_PROFILE_URL = 'https://www.linkedin.com/in/me/';
+
+/** What an expert is told when they sign up to serve in a track. */
+export function expertTrackNotice(trackTitle: string): string {
+  return `Your profile will be visible to students on the ${trackTitle} page and on a page where we recognize all our experts.`;
+}
+
 export const LINKEDIN_CHOICE = {
   heading: 'LinkedIn',
-  prompt: 'Can students see your LinkedIn profile, so they can connect with you?',
-  yes: 'Yes, show my LinkedIn on my expert profile',
-  no: 'No, keep my LinkedIn private',
+  prompt: 'Do you want your LinkedIn attached to your profile so students can connect with you?',
+  yes: 'Yes, attach my LinkedIn',
+  no: 'No, leave it off',
   urlLabel: 'Your LinkedIn profile link',
   urlHint: 'linkedin.com/in/your-name',
-  chooseError: 'Please choose whether students can see your LinkedIn.',
+  findLink: 'Find my link',
+  findHelp: 'opens your own LinkedIn profile when you are signed in to LinkedIn; copy the address from there.',
+  chooseError: 'Please choose whether to attach your LinkedIn.',
   urlError: 'Paste your LinkedIn profile link, like linkedin.com/in/your-name.',
 } as const;
 

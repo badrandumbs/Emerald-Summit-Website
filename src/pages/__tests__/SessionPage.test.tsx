@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
@@ -22,14 +22,21 @@ const state = vi.hoisted(() => ({
   replace: vi.fn(),
   project: vi.fn(),
   photos: vi.fn(),
+  saveLinkedIn: vi.fn(),
+  details: {} as Record<string, string>,
 }));
 
 vi.mock('../../lib/supabase', () => ({ supabase: null, isSupabaseConfigured: false }));
 vi.mock('../../context/AuthContext', () => ({ useAuth: () => ({
   session: { user: { id: 'me' } },
-  profile: { id: 'me', role: state.role, profile_setup_complete: true, expert_status: 'approved', details: { grade: state.grade } },
+  profile: { id: 'me', role: state.role, profile_setup_complete: true, expert_status: 'approved', details: { grade: state.grade, ...state.details } },
   loadingProfile: false,
+  refreshProfile: vi.fn().mockResolvedValue(undefined),
 }) }));
+vi.mock('../../services/auth', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../services/auth')>(),
+  saveExpertLinkedIn: (...args: unknown[]) => state.saveLinkedIn(...args),
+}));
 vi.mock('../../context/ScheduleContext', () => ({ useSchedule: () => state.schedule }));
 vi.mock('../../context/ThemeContext', () => ({ useTheme: () => ({ theme: 'light' }) }));
 vi.mock('../../components/verse/VerseMotif', () => ({ default: () => null }));
@@ -83,6 +90,7 @@ vi.mock('../../models/sessions', async (importOriginal) => {
 });
 
 import SessionPage from '../SessionPage';
+import { expertTrackNotice, LINKEDIN_CHOICE, LINKEDIN_OWN_PROFILE_URL } from '../../models/expertLinkedIn';
 import { REGISTRATION_CLOSED_MESSAGE, setSiteSwitchesForTests } from '../../services/siteSwitches';
 
 function page() {
@@ -101,6 +109,8 @@ beforeEach(() => {
   state.project.mockResolvedValue(null);
   state.photos.mockResolvedValue([]);
   state.toggle.mockResolvedValue({ outcome: 'added', teamCode: null });
+  state.saveLinkedIn.mockResolvedValue(undefined);
+  state.details = {};
   setSiteSwitchesForTests({ registrationOpen: true, showTimes: true });
 });
 
@@ -197,6 +207,38 @@ describe('session page', () => {
       answers: { q1: 'A laptop' },
       project: { action: 'solo', projectName: 'Line follower' },
     }));
+  });
+
+  test('serving as an expert says who sees their profile and asks about LinkedIn first', async () => {
+    state.role = 'expert';
+    const user = userEvent.setup();
+    page();
+    await user.click(screen.getByRole('button', { name: /Add to my day/ }));
+    await user.click(screen.getByRole('button', { name: /Serve as an expert/ }));
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent(expertTrackNotice('Robot Showcase'));
+    await user.click(within(dialog).getByRole('button', { name: 'Serve in this track' }));
+    expect(within(dialog).getByRole('alert')).toHaveTextContent(LINKEDIN_CHOICE.chooseError);
+    await user.click(within(dialog).getByRole('radio', { name: LINKEDIN_CHOICE.yes }));
+    expect(within(dialog).getByRole('link', { name: LINKEDIN_CHOICE.findLink })).toHaveAttribute('href', LINKEDIN_OWN_PROFILE_URL);
+    await user.type(within(dialog).getByLabelText(LINKEDIN_CHOICE.urlLabel), 'linkedin.com/in/robo-expert');
+    await user.click(within(dialog).getByRole('button', { name: 'Serve in this track' }));
+    await waitFor(() => expect(state.toggle).toHaveBeenCalledWith('s1', expect.objectContaining({ add: true, type: 'expert' })));
+    expect(state.saveLinkedIn).toHaveBeenCalledWith({ linkedin_visible: 'yes', linkedin_url: 'https://www.linkedin.com/in/robo-expert' });
+  });
+
+  test('an expert who already answered keeps their answer and is not saved again', async () => {
+    state.role = 'expert';
+    state.details = { linkedin_visible: 'no', linkedin_url: '' };
+    const user = userEvent.setup();
+    page();
+    await user.click(screen.getByRole('button', { name: /Add to my day/ }));
+    await user.click(screen.getByRole('button', { name: /Serve as an expert/ }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('radio', { name: LINKEDIN_CHOICE.no })).toBeChecked();
+    await user.click(within(dialog).getByRole('button', { name: 'Serve in this track' }));
+    await waitFor(() => expect(state.toggle).toHaveBeenCalledWith('s1', expect.objectContaining({ type: 'expert' })));
+    expect(state.saveLinkedIn).not.toHaveBeenCalled();
   });
 
   test('a parent or spectator is added straight as a spectator', async () => {

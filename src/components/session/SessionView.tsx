@@ -15,7 +15,7 @@ import { Award, Clock, Eye, Info, MapPin, Pencil, Plus, User, Users } from '@/co
 import { useAuth } from '../../context/AuthContext';
 import { useSchedule } from '../../context/ScheduleContext';
 import { useTheme } from '../../context/ThemeContext';
-import { needsProfileSetup } from '../../services/auth';
+import { needsProfileSetup, saveExpertLinkedIn } from '../../services/auth';
 import { canEditVerse, useSummitContent, loadSummitContent } from '../../services/summitContent';
 import { MOCK_SESSIONS, SESSION_ROOMS_ENABLED, type Session } from '../../models/sessions';
 import { disciplineByName } from '../../models/disciplines';
@@ -51,6 +51,8 @@ import {
   type SessionExpert,
 } from '../../services/sessionRegistration';
 import SessionExperts from './SessionExperts';
+import ExpertTrackDialog from './ExpertTrackDialog';
+import { LINKEDIN_URL_KEY, LINKEDIN_VISIBLE_KEY, linkedInAnswers } from '../../models/expertLinkedIn';
 import RegistrationForm, { projectPromptOf, type RegistrationFormResult } from './RegistrationForm';
 import ProjectCard, { TeamCodeChip } from './ProjectCard';
 import SessionRoster from './SessionRoster';
@@ -117,7 +119,7 @@ export default function SessionView({
   onOpenSession: (id: string, opts?: { add?: boolean }) => void;
 }) {
   useSummitContent();
-  const { session: auth, profile, loadingProfile } = useAuth();
+  const { session: auth, profile, loadingProfile, refreshProfile } = useAuth();
   const schedule = useSchedule();
   const { theme } = useTheme();
   const switches = useSiteSwitches();
@@ -140,6 +142,9 @@ export default function SessionView({
   const [project, setProject] = useState<MyProject | null>(null);
   const [projectLoaded, setProjectLoaded] = useState(false);
   const [choosing, setChoosing] = useState(false);
+  // Serving as an expert first shows who will see their profile and asks about LinkedIn.
+  const [expertConfirm, setExpertConfirm] = useState(false);
+  const [savingLinkedIn, setSavingLinkedIn] = useState(false);
   const [form, setForm] = useState<null | { editing: boolean; answers: Record<string, string> }>(null);
   const [blocked, setBlocked] = useState<Blocked | null>(null);
   const [replacing, setReplacing] = useState<ReplaceRequest | null>(null);
@@ -355,7 +360,29 @@ export default function SessionView({
       if (!registrationAsksAnything(s)) return register('participant', { project: { action: 'solo', projectName: '' }, answers: {} });
       return setForm({ editing: false, answers: {} });
     }
+    if (mode === 'expert') return setExpertConfirm(true);
     await register(TYPE_FOR[mode]);
+  };
+
+  // Saves the LinkedIn answer (only when it changed), then signs them up.
+  const serveAsExpert = async (answers: Record<string, string>) => {
+    const next = linkedInAnswers(answers);
+    const details = (profile?.details ?? {}) as Record<string, unknown>;
+    const changed = [LINKEDIN_VISIBLE_KEY, LINKEDIN_URL_KEY].some((k) => String(details[k] ?? '') !== next[k]);
+    if (changed) {
+      setSavingLinkedIn(true);
+      try {
+        await saveExpertLinkedIn(next);
+        await refreshProfile?.();
+      } catch {
+        toast.error("Couldn't save your LinkedIn choice. Try again.");
+        return;
+      } finally {
+        setSavingLinkedIn(false);
+      }
+    }
+    setExpertConfirm(false);
+    await register('expert');
   };
 
   const removeFromDay = async () => {
@@ -657,6 +684,14 @@ export default function SessionView({
       ) : about}
 
       {/* Add to my day: the role's choices, like the app's bottom sheet. */}
+      <ExpertTrackDialog
+        open={expertConfirm}
+        trackTitle={s.title}
+        saved={profile?.details as Record<string, unknown> | null | undefined}
+        busy={savingLinkedIn || busy}
+        onCancel={() => setExpertConfirm(false)}
+        onConfirm={(answers) => void serveAsExpert(answers)}
+      />
       <Dialog open={choosing} onOpenChange={setChoosing}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader><DialogTitle>Add to my day</DialogTitle></DialogHeader>

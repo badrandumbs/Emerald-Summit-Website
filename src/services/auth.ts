@@ -668,6 +668,22 @@ export async function saveProfileDetails(
 }
 
 /**
+ * Saves only the expert's LinkedIn choice (details.linkedin_visible and
+ * details.linkedin_url), asked when they sign up to serve in a track.
+ */
+export async function saveExpertLinkedIn(values: Record<string, string>): Promise<void> {
+  const session = await requireRealSession();
+  const client = requireSupabase();
+  const { data: current, error: readError } = await client.from('profiles').select('details')
+    .eq('id', session.user.id).single();
+  if (readError || !current) throw new Error(LOAD_FAILED_MESSAGE);
+  const details: Record<string, unknown> = { ...(current.details ?? {}), ...values };
+  const { data, error } = await client.from('profiles').update({ details, updated_at: new Date().toISOString() })
+    .eq('id', session.user.id).select('id').single();
+  if (error || !data) throw error ?? new Error(LOAD_FAILED_MESSAGE);
+}
+
+/**
  * Records that the signed-in account agreed to agreement `version`, with the
  * Code of Conduct's photo permission answer (null for the Guest Expert Policy).
  */
