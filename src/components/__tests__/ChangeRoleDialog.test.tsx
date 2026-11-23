@@ -14,6 +14,7 @@ vi.mock('../../services/roleChange', () => ({
   changeRole: (role: string) => rc.change(role),
   describeRoleChange: () => '',
   roleChangeLeadIn: () => '',
+  roleChangedPath: (role: string) => `/profile?changed=${role}`,
 }));
 
 beforeEach(() => {
@@ -37,6 +38,9 @@ function renderDialog(onOpenChange = vi.fn()) {
 }
 
 test('picks a new role in the popup and confirms it in place, without the sign-in page', async () => {
+  // It leaves before the profile reloads, so the page it was on cannot send it
+  // to /profile without the new role first.
+  rc.refresh.mockReturnValue(new Promise(() => {}));
   const user = userEvent.setup();
   const onOpenChange = renderDialog();
   expect(screen.getByRole('button', { name: /Participant/ })).toBeDisabled();

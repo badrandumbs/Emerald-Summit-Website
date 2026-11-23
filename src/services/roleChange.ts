@@ -105,6 +105,15 @@ export async function checkRoleEligible(role: string): Promise<void> {
   if (!eligible) throw new Error(notEligibleMessage(role));
 }
 
+/**
+ * Where Change role sends people next: the new role's sign-up questions. The
+ * query survives what router state does not: a gate redirecting to plain
+ * /profile, and the round trip to LinkedIn to connect it.
+ */
+export function roleChangedPath(role: string): string {
+  return `/profile?changed=${encodeURIComponent(role)}`;
+}
+
 /** Saves the new role and returns the profile the server kept. */
 export async function changeRole(role: string): Promise<Profile> {
   const c = client();

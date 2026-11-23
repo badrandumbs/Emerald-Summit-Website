@@ -12,6 +12,7 @@ import {
   describeRoleChange,
   previewRoleChange,
   roleChangeLeadIn,
+  roleChangedPath,
   type RoleChangeItem,
 } from '../services/roleChange';
 import { Button } from '@/components/ui/button';
@@ -70,11 +71,14 @@ export default function ChangeRolePanel({
     setError(null);
     try {
       const kept = await changeRole(role.name);
-      await refreshProfile();
       toast.success(`You’re now a ${roleLabelFor(kept.role, kept.volunteer_subtype)}.`);
       onDone?.();
-      // Like the app, the new role's sign-up questions come next.
-      navigate('/profile', { replace: true, state: { roleChanged: true } });
+      // Like the app, the new role's sign-up questions come next. Go there
+      // before the profile reloads: the new role's agreement is due, and the
+      // page we are on would otherwise send us to /profile without the flag,
+      // straight to the agreement and past the questions and headshot.
+      navigate(roleChangedPath(kept.role ?? role.name), { replace: true });
+      await refreshProfile();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setBusy(false);

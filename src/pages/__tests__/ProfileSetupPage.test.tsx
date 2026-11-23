@@ -12,6 +12,8 @@ const state = vi.hoisted(() => ({
   // Whether the profile row has the Code of Conduct columns, and its value.
   conduct: undefined as undefined | { code_of_conduct_version: string | null },
   details: {} as Record<string, string>,
+  // Other profile columns, e.g. BeAMentor's.
+  extra: {} as Record<string, unknown>,
   save: vi.fn(),
   refresh: vi.fn(),
   agree: vi.fn(),
@@ -20,11 +22,12 @@ vi.mock('../../context/AuthContext', () => ({ useAuth: () => ({
   session: { user: { id: 'user-1', email: 'team@example.com', user_metadata: {} } },
   profile: {
     id: 'user-1', name: 'Summit Team', email: 'team@example.com', role: state.role,
-    profile_setup_complete: !state.onboarding, details: state.details, ...state.conduct,
+    profile_setup_complete: !state.onboarding, details: state.details, ...state.conduct, ...state.extra,
   },
   loadingProfile: false,
   refreshProfile: state.refresh,
 }) }));
+vi.mock('../../components/ExpertPhotoInput', () => ({ default: () => <p>Headshot</p> }));
 vi.mock('../../components/AuthLayout', () => ({ default: ({ children }: { children: ReactNode }) => <>{children}</>, AUTH_ENTER: '', authStagger: () => ({}) }));
 vi.mock('../../services/auth', () => ({
   needsProfileSetup: () => state.onboarding,
@@ -42,6 +45,7 @@ beforeEach(() => {
   state.onboarding = true;
   state.conduct = undefined;
   state.details = {};
+  state.extra = {};
   state.agree.mockResolvedValue(undefined);
   state.save.mockResolvedValue(undefined);
   state.refresh.mockResolvedValue(undefined);
@@ -193,4 +197,46 @@ test('an existing expert who has not agreed sees only the Guest Expert Policy', 
   expect(screen.queryByRole('radio')).toBeNull();
   expect(state.agree).toHaveBeenCalledWith(GUEST_EXPERT_POLICY.version, null);
   expect(state.save).not.toHaveBeenCalled();
+});
+
+const BEAMENTOR_DUE = { beamentor_submitted_at: null, beamentor_verified_at: null };
+
+test('an existing expert with BeAMentor still to do is not told the policy is the last step', () => {
+  state.role = 'expert';
+  state.onboarding = false;
+  state.conduct = { code_of_conduct_version: null };
+  state.extra = BEAMENTOR_DUE;
+  render(<MemoryRouter><ProfileSetupPage /></MemoryRouter>);
+  expect(screen.getByText('One more step')).toBeInTheDocument();
+  expect(screen.queryByText('One last step')).toBeNull();
+});
+
+test('switching to expert asks for the headshot and the Guest Expert Policy on one page', async () => {
+  state.role = 'expert';
+  state.onboarding = false;
+  // They agreed to the Code of Conduct as a participant.
+  state.conduct = { code_of_conduct_version: CODE_OF_CONDUCT.version };
+  state.extra = BEAMENTOR_DUE;
+  const user = userEvent.setup();
+  render(<MemoryRouter initialEntries={['/profile?changed=expert']}><ProfileSetupPage /></MemoryRouter>);
+  expect(screen.getByText(/^Your details as an? /)).toBeInTheDocument();
+  expect(screen.getByText('Headshot')).toBeInTheDocument();
+  expect(screen.queryByText('One last step')).toBeNull();
+  const continueButton = screen.getByRole('button', { name: 'Continue' });
+  expect(continueButton).toBeDisabled();
+  await user.click(screen.getByRole('checkbox', { name: GUEST_EXPERT_POLICY.checkbox }));
+  for (const f of screen.queryAllByRole('textbox')) {
+    if ((f as HTMLInputElement).required && !(f as HTMLInputElement).value) await user.type(f, 'Robotics');
+  }
+  await user.click(continueButton);
+  expect(state.save).toHaveBeenCalledWith('Summit Team', expect.any(Object), false);
+  expect(state.agree).toHaveBeenCalledWith(GUEST_EXPERT_POLICY.version, null);
+});
+
+test('after Change role, the page waits for the new role before asking anything', () => {
+  state.role = 'participant';
+  state.onboarding = false;
+  render(<MemoryRouter initialEntries={['/profile?changed=expert']}><ProfileSetupPage /></MemoryRouter>);
+  expect(screen.queryByRole('button', { name: 'Continue' })).toBeNull();
+  expect(screen.queryByLabelText('School')).toBeNull();
 });

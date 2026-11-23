@@ -3,7 +3,8 @@
 //   (models/profileFields.ts);
 // - a signed-in volunteer or admin with no number, or a student volunteer or
 //   EAF ambassador with no grade, is asked for just that before going on;
-// - after Change role, the new role's questions are asked again, prefilled;
+// - after Change role, the new role's questions are asked again, prefilled,
+//   with the new role's agreement under them (an expert also adds a headshot);
 // - every account agrees to the Code of Conduct once: under the questions at
 //   sign-up, or on its own for an account made before it existed.
 import { useEffect, useState } from 'react';
@@ -15,7 +16,8 @@ import { agreeToCodeOfConduct, linkedInDetails, needsProfileSetup, saveProfileDe
 import CodeOfConductWindow from '../components/CodeOfConductWindow';
 import { Checkbox } from '@/components/ui/checkbox';
 import ExpertPhotoInput from '../components/ExpertPhotoInput';
-import { tracksBeamentor } from '../models/beamentor';
+import { needsBeamentor, tracksBeamentor } from '../models/beamentor';
+import { roleChangedPath } from '../services/roleChange';
 
 const SECTION_HEADING = 'font-display text-2xl font-bold tracking-tight';
 // What sits under a heading is indented a little, except the agreement box.
@@ -48,7 +50,10 @@ export default function ProfileSetupPage() {
   const { session, profile, loadingProfile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const roleChanged = (location.state as ProfileSetupState | null)?.roleChanged === true;
+  // Change role sends ?changed=<new role> (roleChangedPath). Held once seen,
+  // so a later redirect to plain /profile does not drop it.
+  const [changedTo] = useState(() => new URLSearchParams(location.search).get('changed'));
+  const roleChanged = changedTo != null || (location.state as ProfileSetupState | null)?.roleChanged === true;
 
   const [name, setName] = useState('');
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -70,17 +75,27 @@ export default function ProfileSetupPage() {
   const agreement = agreementFor(profile?.role as string | undefined);
   const media = agreement.mediaChoice;
 
+  // Change role goes here before the profile has reloaded with the new role.
+  const waitingForRole = changedTo != null && profile != null && profile.role !== changedTo;
+
   useEffect(() => {
-    if (prefilled || loadingProfile) return;
+    if (prefilled || loadingProfile || waitingForRole) return;
     const details = (profile?.details ?? {}) as Record<string, unknown>;
     // Google and LinkedIn give a name with the sign-in; an emailed code does not.
     const meta = session?.user.user_metadata ?? {};
     setName(((profile?.name as string | undefined) || meta.full_name || meta.name || linkedInDetails(session?.user)?.name || '').trim());
     setAnswers(Object.fromEntries(Object.entries(details).map(([k, v]) => [k, v == null ? '' : String(v)])));
     setPrefilled(true);
-  }, [profile, loadingProfile, prefilled, session]);
+  }, [profile, loadingProfile, prefilled, session, waitingForRole]);
 
   if (!loadingProfile && session == null) return <Navigate to="/home" replace />;
+  if (waitingForRole) {
+    return (
+      <div className="flex min-h-svh items-center justify-center" aria-busy="true">
+        <span className="h-6 w-6 animate-spin rounded-full border-2 border-emerald/30 border-t-emerald" />
+      </div>
+    );
+  }
   // Nothing to ask: go on into the site.
   if (!loadingProfile && session != null && !onboarding && !gate && !roleChanged && !conductDue) {
     return <Navigate to="/home" replace />;
@@ -91,8 +106,9 @@ export default function ProfileSetupPage() {
   const gateOnly = !onboarding && !roleChanged && gate != null;
   // A finished account with nothing else missing: just the Code of Conduct.
   const conductOnly = !onboarding && !roleChanged && gate == null && conductDue;
-  // Sign-up asks for it under the questions, once the SQL has added the columns.
-  const askConduct = conductOnly || (onboarding && tracksCodeOfConduct(profile));
+  // Sign-up asks for it under the questions, once the SQL has added the columns;
+  // so does Change role, when the new role's agreement is still due.
+  const askConduct = conductOnly || (onboarding && tracksCodeOfConduct(profile)) || (roleChanged && conductDue);
   const fields: ProfileField[] = conductOnly ? [] : gateOnly
     ? gate === 'grade'
       ? [VOLUNTEER_GRADE_FIELD]
@@ -158,7 +174,8 @@ export default function ProfileSetupPage() {
   };
 
   const title = conductOnly
-    ? 'One last step'
+    // An expert still has BeAMentor after this.
+    ? needsBeamentor(profile) ? 'One more step' : 'One last step'
     : gateOnly
     ? gate === 'phone' ? 'Add your number' : gate === 'school' ? 'Add your school' : 'Add your grade'
     : roleChanged ? `Your details as ${/^[aeiou]/i.test(label) ? 'an' : 'a'} ${label}` : 'Tell us a bit about yourself';
@@ -235,7 +252,7 @@ export default function ProfileSetupPage() {
                 value={answers.photo_url ?? ''}
                 onChange={(url) => setAnswers((a) => ({ ...a, photo_url: url }))}
                 onBusyChange={setPhotoBusy}
-                returnPath="/profile"
+                returnPath={changedTo ? roleChangedPath(changedTo) : '/profile'}
                 autoImport
               />
             )}
