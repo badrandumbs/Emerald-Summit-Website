@@ -88,7 +88,7 @@ test('the Summit logo takes you home from a discipline and from a track inside i
   render(
     <MemoryRouter initialEntries={['/disciplines?verse=techverse']}>
       <Routes>
-        <Route path="/" element={<p>landing page</p>} />
+        <Route path="/home" element={<p>dashboard</p>} />
         <Route
           path="/disciplines"
           element={
@@ -101,12 +101,12 @@ test('the Summit logo takes you home from a discipline and from a track inside i
     </MemoryRouter>,
   );
   const home = () => screen.getByRole('link', { name: 'Emerald Summit ’27, back to home' });
-  expect(home()).toHaveAttribute('href', '/');
+  expect(home()).toHaveAttribute('href', '/home');
   expect(home()).toHaveTextContent('Emerald Summit ’27');
   // Still there once a track is open.
   const dialog = screen.getByRole('dialog', { name: 'TechVerse' });
   fireEvent.click(dialog.querySelector('h3 a') as HTMLAnchorElement);
   fireEvent.click(home());
-  expect(screen.getByText('landing page')).toBeInTheDocument();
+  expect(screen.getByText('dashboard')).toBeInTheDocument();
   expect(screen.queryByRole('dialog')).toBeNull();
 });

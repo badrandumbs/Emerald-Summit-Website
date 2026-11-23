@@ -117,7 +117,7 @@ beforeEach(() => {
 test('the Summit logo next to Back takes you home', () => {
   page();
   const home = screen.getByRole('link', { name: 'Emerald Summit ’27, back to home' });
-  expect(home).toHaveAttribute('href', '/');
+  expect(home).toHaveAttribute('href', '/home');
   expect(home).toHaveTextContent('Emerald Summit ’27');
 });
 
