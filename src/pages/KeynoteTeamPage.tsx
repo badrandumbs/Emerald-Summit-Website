@@ -1,18 +1,19 @@
 // The public Keynote, Experts & Team page (/keynote-and-team), reached from the
 // landing nav's Keynote, Experts and Team links, which scroll to their own
-// section here. Keynote and Team say "Coming soon" until their details come in;
-// Experts fills in by itself (ExpertsDirectory). /experts lands on Experts.
+// section here. Team shares its profiles with the portal, while Experts fills
+// in by itself (ExpertsDirectory). /experts lands on Experts.
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import LandingNav from '../components/LandingNav';
 import LandingFooter from '../components/LandingFooter';
 import ExpertsDirectory, { EXPERTS_INTRO } from '../components/ExpertsDirectory';
+import TeamDirectory from '../components/TeamDirectory';
 import '../landing/landing.css';
 
 const SECTIONS = [
   { id: 'keynote', title: 'Keynote', text: 'This year’s keynote speaker will be announced soon.' },
   { id: 'experts', title: 'Experts', text: '' },
-  { id: 'team', title: 'Team', text: 'Meet the students and organizers behind Emerald Summit ’27. Their profiles are coming soon.' },
+  { id: 'team', title: 'Team', text: '' },
 ];
 
 export default function KeynoteTeamPage() {
@@ -44,6 +45,8 @@ export default function KeynoteTeamPage() {
               </div>
               {s.id === 'experts' ? (
                 <ExpertsDirectory />
+              ) : s.id === 'team' ? (
+                <TeamDirectory />
               ) : (
                 <div className="lp-soon">
                   <p className="lp-soon__tag">Coming soon</p>
