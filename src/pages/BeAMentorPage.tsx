@@ -14,6 +14,7 @@ import {
   BEAMENTOR_TIMING, BEAMENTOR_URL, needsBeamentor,
 } from '../models/beamentor';
 import AuthLayout, { AUTH_ENTER, authStagger } from '../components/AuthLayout';
+import { roleChangedPath } from '../services/roleChange';
 import { roleByName, USER_ROLES } from '../models/roles';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -77,8 +78,9 @@ export default function BeAMentorPage() {
       icon={role.icon}
       eyebrow="Set up your profile"
       title={role.label}
-      backLabel={isSigningOut ? 'Signing out…' : 'Sign out'}
-      onBack={() => void handleSignOut()}
+      backLabel="Back"
+      // Back to the expert details (headshot, questions) to change them.
+      onBack={() => navigate(roleChangedPath('expert'), { state: { from: '/expert/beamentor' } })}
     >
       <div style={authStagger(1)} className={AUTH_ENTER}>
         <h1 className="font-display text-4xl font-bold leading-[1.08] tracking-tight">BeAMentor clearance</h1>
@@ -172,6 +174,14 @@ export default function BeAMentorPage() {
         >
           {saving ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : 'Continue to the app'}
         </Button>
+        <button
+          type="button"
+          onClick={() => void handleSignOut()}
+          disabled={isSigningOut}
+          className="mx-auto block text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        >
+          {isSigningOut ? 'Signing out…' : 'Sign out'}
+        </button>
       </form>
     </AuthLayout>
   );

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import ProfileSetupPage from '../ProfileSetupPage';
 import { CODE_OF_CONDUCT, GUEST_EXPERT_POLICY } from '../../models/codeOfConduct';
 
@@ -17,6 +17,7 @@ const state = vi.hoisted(() => ({
   save: vi.fn(),
   refresh: vi.fn(),
   agree: vi.fn(),
+  changeRole: vi.fn(),
 }));
 vi.mock('../../context/AuthContext', () => ({ useAuth: () => ({
   session: { user: { id: 'user-1', email: 'team@example.com', user_metadata: {} } },
@@ -27,8 +28,18 @@ vi.mock('../../context/AuthContext', () => ({ useAuth: () => ({
   loadingProfile: false,
   refreshProfile: state.refresh,
 }) }));
+vi.mock('../../services/roleChange', () => ({
+  changeRole: (role: string) => state.changeRole(role),
+  roleChangedPath: (role: string) => `/profile?changed=${role}`,
+}));
 vi.mock('../../components/ExpertPhotoInput', () => ({ default: () => <p>Headshot</p> }));
-vi.mock('../../components/AuthLayout', () => ({ default: ({ children }: { children: ReactNode }) => <>{children}</>, AUTH_ENTER: '', authStagger: () => ({}) }));
+vi.mock('../../components/AuthLayout', () => ({
+  default: ({ children, backLabel, onBack }: { children: ReactNode; backLabel: string; onBack: () => void }) => (
+    <><button type="button" onClick={onBack}>{backLabel}</button>{children}</>
+  ),
+  AUTH_ENTER: '',
+  authStagger: () => ({}),
+}));
 vi.mock('../../services/auth', () => ({
   needsProfileSetup: () => state.onboarding,
   saveProfileDetails: (...args: unknown[]) => state.save(...args),
@@ -48,6 +59,7 @@ beforeEach(() => {
   state.extra = {};
   state.agree.mockResolvedValue(undefined);
   state.save.mockResolvedValue(undefined);
+  state.changeRole.mockResolvedValue({ role: 'expert' });
   state.refresh.mockResolvedValue(undefined);
 });
 
@@ -212,7 +224,8 @@ test('an existing expert with BeAMentor still to do is not told the policy is th
 });
 
 test('switching to expert asks for the headshot and the Guest Expert Policy on one page', async () => {
-  state.role = 'expert';
+  // Nothing is saved before this page: they are still a participant.
+  state.role = 'participant';
   state.onboarding = false;
   // They agreed to the Code of Conduct as a participant.
   state.conduct = { code_of_conduct_version: CODE_OF_CONDUCT.version };
@@ -229,14 +242,39 @@ test('switching to expert asks for the headshot and the Guest Expert Policy on o
     if ((f as HTMLInputElement).required && !(f as HTMLInputElement).value) await user.type(f, 'Robotics');
   }
   await user.click(continueButton);
+  expect(state.changeRole).toHaveBeenCalledWith('expert');
+  expect(state.changeRole.mock.invocationCallOrder[0]).toBeLessThan(state.save.mock.invocationCallOrder[0]);
   expect(state.save).toHaveBeenCalledWith('Summit Team', expect.any(Object), false);
   expect(state.agree).toHaveBeenCalledWith(GUEST_EXPERT_POLICY.version, null);
 });
 
-test('after Change role, the page waits for the new role before asking anything', () => {
+test('Back after Change role goes back to where they were, with nothing changed', async () => {
   state.role = 'participant';
   state.onboarding = false;
-  render(<MemoryRouter initialEntries={['/profile?changed=expert']}><ProfileSetupPage /></MemoryRouter>);
-  expect(screen.queryByRole('button', { name: 'Continue' })).toBeNull();
-  expect(screen.queryByLabelText('School')).toBeNull();
+  state.conduct = { code_of_conduct_version: CODE_OF_CONDUCT.version };
+  const user = userEvent.setup();
+  render(
+    <MemoryRouter initialEntries={[{ pathname: '/profile', search: '?changed=expert', state: { from: '/settings' } }]}>
+      <Routes>
+        <Route path="/profile" element={<ProfileSetupPage />} />
+        <Route path="/settings" element={<p>Settings page</p>} />
+      </Routes>
+    </MemoryRouter>,
+  );
+  expect(screen.queryByRole('button', { name: /Sign out/ })).toBeNull();
+  await user.click(screen.getByRole('button', { name: 'Back' }));
+  expect(screen.getByText('Settings page')).toBeInTheDocument();
+  expect(state.changeRole).not.toHaveBeenCalled();
+  expect(state.save).not.toHaveBeenCalled();
+});
+
+test('a role the switch refuses shows why and saves nothing else', async () => {
+  state.role = 'participant';
+  state.onboarding = false;
+  state.changeRole.mockRejectedValue(new Error('You are not eligible to sign up as a volunteer.'));
+  const user = userEvent.setup();
+  render(<MemoryRouter initialEntries={['/profile?changed=attendee']}><ProfileSetupPage /></MemoryRouter>);
+  await user.click(screen.getByRole('button', { name: 'Continue' }));
+  expect(screen.getByRole('alert')).toHaveTextContent('You are not eligible to sign up as a volunteer.');
+  expect(state.save).not.toHaveBeenCalled();
 });

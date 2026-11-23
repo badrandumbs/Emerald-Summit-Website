@@ -38,16 +38,14 @@ function renderDialog(onOpenChange = vi.fn()) {
 }
 
 test('picks a new role in the popup and confirms it in place, without the sign-in page', async () => {
-  // It leaves before the profile reloads, so the page it was on cannot send it
-  // to /profile without the new role first.
-  rc.refresh.mockReturnValue(new Promise(() => {}));
   const user = userEvent.setup();
   const onOpenChange = renderDialog();
   expect(screen.getByRole('button', { name: /Participant/ })).toBeDisabled();
   await user.click(screen.getByRole('button', { name: /Spectator/ }));
   expect(rc.eligible).toHaveBeenCalledWith('attendee');
-  await user.click(await screen.findByRole('button', { name: /Confirm/ }));
-  expect(rc.change).toHaveBeenCalledWith('attendee');
+  await user.click(await screen.findByRole('button', { name: /Continue/ }));
+  // The role is saved on the next page, so Back there leaves nothing changed.
+  expect(rc.change).not.toHaveBeenCalled();
   expect(onOpenChange).toHaveBeenCalledWith(false);
   expect(await screen.findByText('Profile questions')).toBeInTheDocument();
 });

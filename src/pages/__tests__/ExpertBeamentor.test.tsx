@@ -23,7 +23,13 @@ vi.mock('../../context/AuthContext', () => ({ useAuth: () => ({
   loadingProfile: false,
   refreshProfile: state.refresh,
 }) }));
-vi.mock('../../components/AuthLayout', () => ({ default: ({ children }: { children: ReactNode }) => <>{children}</>, AUTH_ENTER: '', authStagger: () => ({}) }));
+vi.mock('../../components/AuthLayout', () => ({
+  default: ({ children, backLabel, onBack }: { children: ReactNode; backLabel: string; onBack: () => void }) => (
+    <><button type="button" onClick={onBack}>{backLabel}</button>{children}</>
+  ),
+  AUTH_ENTER: '',
+  authStagger: () => ({}),
+}));
 vi.mock('../../components/AppShell', () => ({ default: ({ children }: { children: ReactNode }) => <>{children}</> }));
 vi.mock('../../hooks/useRequireProfile', () => ({ useRequireRole: () => ({ ready: true, redirect: null, roleName: 'admin' }) }));
 vi.mock('../../services/auth', () => ({
@@ -77,6 +83,19 @@ test('the BeAMentor step links to BeAMentor and continues only once the box is t
   await user.click(go);
   expect(state.mark).toHaveBeenCalled();
   expect(await screen.findByText('Home')).toBeInTheDocument();
+});
+
+test('Back on the BeAMentor step goes to the expert details, and Sign out is still there', async () => {
+  const { GUEST_EXPERT_POLICY } = await import('../../models/codeOfConduct');
+  state.profile = { ...expert, code_of_conduct_version: GUEST_EXPERT_POLICY.version };
+  const user = userEvent.setup();
+  render(<MemoryRouter initialEntries={['/expert/beamentor']}><Routes>
+    <Route path="/expert/beamentor" element={<BeAMentorPage />} />
+    <Route path="/profile" element={<div>Expert details</div>} />
+  </Routes></MemoryRouter>);
+  expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Back' }));
+  expect(screen.getByText('Expert details')).toBeInTheDocument();
 });
 
 test('the waiting banner shows until verified, and the X hides it for good, on the account too', async () => {

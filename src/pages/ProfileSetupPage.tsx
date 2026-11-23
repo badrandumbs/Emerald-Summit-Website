@@ -4,7 +4,8 @@
 // - a signed-in volunteer or admin with no number, or a student volunteer or
 //   EAF ambassador with no grade, is asked for just that before going on;
 // - after Change role, the new role's questions are asked again, prefilled,
-//   with the new role's agreement under them (an expert also adds a headshot);
+//   with the new role's agreement under them (an expert also adds a headshot).
+//   The role is only saved by Continue here, so Back leaves nothing changed;
 // - every account agrees to the Code of Conduct once: under the questions at
 //   sign-up, or on its own for an account made before it existed.
 import { useEffect, useState } from 'react';
@@ -17,7 +18,7 @@ import CodeOfConductWindow from '../components/CodeOfConductWindow';
 import { Checkbox } from '@/components/ui/checkbox';
 import ExpertPhotoInput from '../components/ExpertPhotoInput';
 import { needsBeamentor, tracksBeamentor } from '../models/beamentor';
-import { roleChangedPath } from '../services/roleChange';
+import { changeRole, roleChangedPath } from '../services/roleChange';
 
 const SECTION_HEADING = 'font-display text-2xl font-bold tracking-tight';
 // What sits under a heading is indented a little, except the agreement box.
@@ -41,19 +42,23 @@ import { cn } from '@/lib/utils';
 
 const FIELD_CLASS = 'h-12 rounded-xl bg-secondary/40 text-[15px]';
 
-/** Router state from Change role: ask the new role's questions. */
+/** Router state from Change role and BeAMentor: where Back goes. */
 export interface ProfileSetupState {
-  roleChanged?: boolean;
+  from?: string;
 }
 
 export default function ProfileSetupPage() {
   const { session, profile, loadingProfile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  // Change role sends ?changed=<new role> (roleChangedPath). Held once seen,
-  // so a later redirect to plain /profile does not drop it.
-  const [changedTo] = useState(() => new URLSearchParams(location.search).get('changed'));
-  const roleChanged = changedTo != null || (location.state as ProfileSetupState | null)?.roleChanged === true;
+  // Change role sends ?changed=<new role> (roleChangedPath) and saves nothing
+  // yet. Held once seen, so a later redirect to plain /profile does not drop it.
+  const [changedTo] = useState(() => {
+    const r = new URLSearchParams(location.search).get('changed');
+    return r != null && roleByName(r) ? r : null;
+  });
+  const [backTo] = useState(() => (location.state as ProfileSetupState | null)?.from ?? '/home');
+  const roleChanged = changedTo != null;
 
   const [name, setName] = useState('');
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -66,36 +71,30 @@ export default function ProfileSetupPage() {
   const [agreed, setAgreed] = useState(false);
   const [photoBusy, setPhotoBusy] = useState(false);
 
-  const roleName = profile?.role as string | undefined;
+  // After Change role, the questions are the new role's, saved on Continue.
+  const roleName = changedTo ?? (profile?.role as string | undefined);
   const subtype = profile?.volunteer_subtype as string | null | undefined;
   const onboarding = needsProfileSetup(profile);
   const gate = missingGateField(profile as Parameters<typeof missingGateField>[0]);
-  const conductDue = needsCodeOfConduct(profile);
   // Experts agree to the Speaker Policy; everyone else to the Code of Conduct.
-  const agreement = agreementFor(profile?.role as string | undefined);
+  const agreement = agreementFor(roleName);
   const media = agreement.mediaChoice;
-
-  // Change role goes here before the profile has reloaded with the new role.
-  const waitingForRole = changedTo != null && profile != null && profile.role !== changedTo;
+  // Due for the new role's agreement, when the role is changing.
+  const conductDue = changedTo
+    ? tracksCodeOfConduct(profile) && profile?.code_of_conduct_version !== agreement.version
+    : needsCodeOfConduct(profile);
 
   useEffect(() => {
-    if (prefilled || loadingProfile || waitingForRole) return;
+    if (prefilled || loadingProfile) return;
     const details = (profile?.details ?? {}) as Record<string, unknown>;
     // Google and LinkedIn give a name with the sign-in; an emailed code does not.
     const meta = session?.user.user_metadata ?? {};
     setName(((profile?.name as string | undefined) || meta.full_name || meta.name || linkedInDetails(session?.user)?.name || '').trim());
     setAnswers(Object.fromEntries(Object.entries(details).map(([k, v]) => [k, v == null ? '' : String(v)])));
     setPrefilled(true);
-  }, [profile, loadingProfile, prefilled, session, waitingForRole]);
+  }, [profile, loadingProfile, prefilled, session]);
 
   if (!loadingProfile && session == null) return <Navigate to="/home" replace />;
-  if (waitingForRole) {
-    return (
-      <div className="flex min-h-svh items-center justify-center" aria-busy="true">
-        <span className="h-6 w-6 animate-spin rounded-full border-2 border-emerald/30 border-t-emerald" />
-      </div>
-    );
-  }
   // Nothing to ask: go on into the site.
   if (!loadingProfile && session != null && !onboarding && !gate && !roleChanged && !conductDue) {
     return <Navigate to="/home" replace />;
@@ -159,14 +158,26 @@ export default function ProfileSetupPage() {
     if (askConduct && !agreed) return setError(`Please tick the box to agree to the ${agreement.name}.`);
     if (askConduct && media && photoConsent == null) return setError('Please choose whether you grant photo permission.');
     setIsSaving(true);
+    // Change role is saved first; until then, nothing has changed.
+    const switching = changedTo != null && profile?.role !== changedTo;
+    if (switching) {
+      try {
+        await changeRole(changedTo);
+      } catch (err) {
+        setIsSaving(false);
+        return setError(err instanceof Error ? err.message : 'Could not change your role. Please try again.');
+      }
+    }
     try {
       const out = Object.fromEntries(fields.map((f) => [f.key, answers[f.key] ?? '']));
       if (askPhoto) out.photo_url = answers.photo_url ?? '';
       await saveProfileDetails(gateOnly ? (profile?.name as string) ?? name : name, out, onboarding);
       if (askConduct) await agreeToCodeOfConduct(agreement.version, media ? photoConsent : null);
       await refreshProfile();
+      if (switching) toast.success(`You’re now ${/^[aeiou]/i.test(label) ? 'an' : 'a'} ${label}.`);
       navigate('/home', { replace: true });
     } catch {
+      if (switching) await refreshProfile().catch(() => {});
       setError(gate === 'phone' && gateOnly ? 'Could not save your number. Please try again.' : 'Could not save your profile. Please try again.');
     } finally {
       setIsSaving(false);
@@ -205,8 +216,8 @@ export default function ProfileSetupPage() {
       icon={role.icon}
       eyebrow="Set up your profile"
       title={label}
-      backLabel={isSigningOut ? 'Signing out…' : 'Sign out'}
-      onBack={() => void handleSignOut()}
+      backLabel={roleChanged ? 'Back' : isSigningOut ? 'Signing out…' : 'Sign out'}
+      onBack={() => (roleChanged ? navigate(backTo) : void handleSignOut())}
     >
       <div style={authStagger(1)} className={AUTH_ENTER}>
         <h1 className="font-display text-4xl font-bold leading-[1.08] tracking-tight">{title}</h1>
