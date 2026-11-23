@@ -57,6 +57,8 @@ const PIE_PALETTE = [
   '#F97316', // orange
 ];
 const MUTED_SLICE_COLOR = '#475569';
+/** The palette first; past it, hues a golden angle apart, so no two slices share a colour. */
+const sliceColor = (i: number) => (i < PIE_PALETTE.length ? PIE_PALETTE[i] : `hsl(${Math.round(i * 137.508) % 360} 62% 52%)`);
 
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
@@ -91,7 +93,7 @@ export function PieChart({
     const color =
       mutedLabel && label === mutedLabel
         ? MUTED_SLICE_COLOR
-        : PIE_PALETTE[colorIdx++ % PIE_PALETTE.length];
+        : sliceColor(colorIdx++);
     const sweep = (n / sum) * 360;
     const startAngle = angle;
     const endAngle = angle + sweep;
@@ -112,7 +114,7 @@ export function PieChart({
   return (
     <div className="flex flex-col items-center gap-6 rounded-2xl border border-border p-5 sm:flex-row sm:items-center">
       <div className="relative h-44 w-44 shrink-0">
-        <svg viewBox="0 0 200 200" className="h-full w-full overflow-visible" role="img" aria-label="Pie chart">
+        <svg viewBox="0 0 200 200" className="h-full w-full overflow-visible" role="img" aria-label={slices.map((s) => `${s.label}: ${s.n} (${s.pct}%)`).join(', ')}>
           {slices.map((s, i) => {
             const dimmed = hovered != null && hovered !== i;
             const isHovered = hovered === i;
