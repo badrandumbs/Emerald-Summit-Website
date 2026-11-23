@@ -90,7 +90,7 @@ describe('personal schedule', () => {
     state.schedule.volunteerSchedule = ['morning'];
     render(page());
     expect(screen.getByText('Managing')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Remove .* from schedule/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Remove .* from my day/ })).not.toBeInTheDocument();
   });
 
   test('session titles open the session page', () => {
@@ -108,7 +108,7 @@ describe('personal schedule', () => {
       <Route path="/schedule" element={<SchedulePage />} />
       <Route path="/sessions/:id" element={<p>Session page</p>} />
     </Routes></MemoryRouter>);
-    fireEvent.click(screen.getByRole('button', { name: 'Remove Morning registered session from schedule' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Morning registered session from my day' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Remove' }));
     expect(await screen.findByText('Session page')).toBeInTheDocument();
   });
@@ -116,11 +116,11 @@ describe('personal schedule', () => {
   test('the minus button asks before removing, and Keep it removes nothing', async () => {
     state.schedule.mySchedule = ['morning'];
     render(page());
-    fireEvent.click(screen.getByRole('button', { name: 'Remove Morning registered session from schedule' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Morning registered session from my day' }));
     expect(await screen.findByRole('heading', { name: 'Remove from your day?' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Keep it' }));
     expect(state.schedule.releaseSession).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Remove Morning registered session from schedule' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Morning registered session from my day' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Remove' }));
     await waitFor(() => expect(state.schedule.releaseSession).toHaveBeenCalledWith('morning'));
   });

@@ -110,37 +110,43 @@ export default function SchedulePage() {
             const isSpec = !managing && spectating.includes(s.id);
             const label = managing ? 'Managing' : isSpec ? 'Spectating' : expertSchedule.includes(s.id) ? 'Expert' : 'Participating';
             const keynote = s.track === 'keynote';
-            const accent = vibeFor(keynote ? null : s.track, theme).accent;
+            // Each card wears its verse's own colors, the same as the verse page.
+            const vibe = vibeFor(keynote ? null : s.track, theme);
+            const accent = vibe.accent;
             return (
               <article
                 key={s.id}
                 id={`my-schedule-${s.id}`}
-                className={cn('glass rounded-2xl border p-4 sm:p-5', justAdded === s.id && 'ring-2 ring-emerald ring-offset-2 ring-offset-background')}
-                style={{ background: `linear-gradient(120deg, ${rgba(accent, 0.22)}, ${rgba(accent, 0.06)} 65%), hsl(var(--card))`, borderColor: rgba(accent, 0.3), borderLeft: `4px solid ${accent}` }}
+                className={cn('rounded-2xl p-4 sm:p-5', justAdded === s.id && 'ring-2 ring-emerald ring-offset-2 ring-offset-background')}
+                style={{
+                  background: `radial-gradient(120% 140% at 0% 0%, ${rgba(vibe.accent2, 0.28)}, transparent 60%), ${vibe.surface}`,
+                  color: vibe.text,
+                  border: `1px solid ${rgba(accent, 0.4)}`,
+                  borderLeft: `4px solid ${accent}`,
+                }}
               >
                 <div className="flex items-start gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
                       <span className="text-sm font-bold" style={{ color: accent }}>{showTimes ? s.time : `Time ${TBD}`}</span>
-                      <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-semibold">{label}</span>
+                      <span className="rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ background: rgba(accent, 0.18), color: accent }}>{label}</span>
                       {justAdded === s.id && <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald"><Check className="h-3 w-3" /> Added</span>}
                     </div>
                     <div className="mb-2 flex flex-wrap items-center gap-2">
                       {keynote && <TrackPill track={s.track} />}
-                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><Clock className="h-3 w-3" /> {showTimes ? s.duration : TBD}</span>
+                      <span className="inline-flex items-center gap-1 text-xs" style={{ color: vibe.textDim }}><Clock className="h-3 w-3" /> {showTimes ? s.duration : TBD}</span>
                     </div>
                     <h2 className="text-base font-semibold"><Link to={`/sessions/${s.id}`} className="text-left hover:underline">{s.title}</Link></h2>
-                    {s.speaker && <p className="mt-1 text-xs text-muted-foreground">{s.speaker}</p>}
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.description}</p>
+                    {s.speaker && <p className="mt-1 text-xs" style={{ color: vibe.textDim }}>{s.speaker}</p>}
+                    <p className="mt-2 text-sm leading-relaxed" style={{ color: vibe.textDim }}>{s.description}</p>
                     {sessionPlace(s) && <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium" style={{ color: accent }}><MapPin className="h-3 w-3" /> {sessionPlace(s)}</p>}
                   </div>
                   {!managing && <button
                     type="button"
-                    aria-label={`Remove ${s.title} from schedule`}
-                    title="Remove from schedule"
-                    className="shrink-0 rounded-lg border border-border p-2 text-muted-foreground hover:bg-accent hover:text-red-400"
+                    aria-label={`Remove ${s.title} from my day`}
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-red-400/50 bg-red-500/10 px-3 py-1.5 text-sm font-semibold text-red-600 transition-colors hover:bg-red-500/20 dark:text-red-300"
                     onClick={() => setConfirmRemove(s)}
-                  ><Minus className="h-4 w-4" /></button>}
+                  ><Minus className="h-4 w-4" aria-hidden /> Remove</button>}
                 </div>
               </article>
             );
