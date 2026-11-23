@@ -2,9 +2,11 @@ import { Link, useLocation } from 'react-router-dom';
 import type { TeamMention } from '../models/team';
 import { TEAM_TARGETS, teamLinkHref, teamTextParts } from '../models/teamLinks';
 
-export default function TeamLinkedText({ text, mentions }: {
+export default function TeamLinkedText({ text, mentions, colorFor }: {
   text: string;
   mentions: readonly TeamMention[];
+  /** Colours each link (the roles use their discipline's colour); links are emerald otherwise. */
+  colorFor?: (key: keyof typeof TEAM_TARGETS) => string;
 }) {
   const { pathname } = useLocation();
   const inPortal = pathname === '/summit-27/team';
@@ -18,6 +20,7 @@ export default function TeamLinkedText({ text, mentions }: {
           key={index}
           to={publicDiscipline(part.target) ? '/' : teamLinkHref(part.target)}
           state={publicDiscipline(part.target) ? { scrollTo: 'disciplines' } : { teamReturnTo }}
+          style={colorFor ? { color: colorFor(part.target), textDecorationColor: `color-mix(in srgb, ${colorFor(part.target)} 45%, transparent)` } : undefined}
           className="text-emerald underline decoration-emerald/40 underline-offset-2 hover:decoration-emerald focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           {part.text}

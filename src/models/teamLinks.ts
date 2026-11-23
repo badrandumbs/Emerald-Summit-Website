@@ -1,5 +1,6 @@
 import type { Session } from './sessions';
-import type { TeamLinkKey, TeamMention } from './team';
+import type { TeamLinkKey, TeamMember, TeamMention } from './team';
+import { VERSE_VIBES } from './verseVibes';
 
 type TrackTarget = {
   kind: 'track';
@@ -125,4 +126,34 @@ export function teamTextParts(text: string, mentions: readonly TeamMention[]): T
   }
   if (cursor < text.length) parts.push({ text: text.slice(cursor) });
   return parts;
+}
+
+/** The discipline a link belongs to (a track's or the discipline itself). */
+export const disciplineOf = (key: TeamLinkKey) => TEAM_TARGETS[key].discipline;
+
+/**
+ * The Team's order: event organization leads (no discipline) first, then by
+ * discipline in the site's order (TechVerse, VentureVerse, BioSphere,
+ * NovaSphere, CivicVerse, ImagineX), a discipline's leads before its track
+ * leads. Someone in two disciplines sits with the earlier one.
+ */
+export function sortTeam(members: readonly TeamMember[]): TeamMember[] {
+  const order = Object.keys(VERSE_VIBES);
+  const rank = (m: TeamMember) => {
+    if (!m.affiliations.length) return [0, 0, 0];
+    const first = Math.min(...m.affiliations.map((k) => order.indexOf(disciplineOf(k)) >>> 0));
+    const leads = m.affiliations.some((k) => TEAM_TARGETS[k].kind === 'discipline' && order.indexOf(disciplineOf(k)) === first);
+    return [1, first, leads ? 0 : 1];
+  };
+  return [...members].sort((a, b) => {
+    const [ra, rb] = [rank(a), rank(b)];
+    return ra[0] - rb[0] || ra[1] - rb[1] || ra[2] - rb[2];
+  });
+}
+
+/** The member's main discipline (see sortTeam), or null for event organization leads. */
+export function mainDiscipline(m: TeamMember): string | null {
+  const order = Object.keys(VERSE_VIBES);
+  const ds = m.affiliations.map(disciplineOf).sort((a, b) => (order.indexOf(a) >>> 0) - (order.indexOf(b) >>> 0));
+  return ds[0] ?? null;
 }
