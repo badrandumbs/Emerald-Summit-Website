@@ -149,6 +149,7 @@ export function isRealSchoolName(raw: unknown): boolean {
  * "Student id").
  */
 export function detailLabel(key: string): string {
+  if (key === 'linkedin_url') return 'LinkedIn';
   for (const role of ['participant', 'expert', 'volunteer', 'ambassador', 'attendee', 'admin']) {
     const field = onboardingFields(role).find((f) => f.key === key);
     if (field) return field.label.replace(' (optional)', '');

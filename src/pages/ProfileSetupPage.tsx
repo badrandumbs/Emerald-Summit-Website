@@ -17,6 +17,8 @@ import { agreeToCodeOfConduct, linkedInDetails, needsProfileSetup, saveProfileDe
 import CodeOfConductWindow from '../components/CodeOfConductWindow';
 import { Checkbox } from '@/components/ui/checkbox';
 import ExpertPhotoInput from '../components/ExpertPhotoInput';
+import ExpertLinkedInChoice from '../components/ExpertLinkedInChoice';
+import { linkedInAnswers, linkedInProblem } from '../models/expertLinkedIn';
 import { needsBeamentor, tracksBeamentor } from '../models/beamentor';
 import { changeRole, roleChangedPath } from '../services/roleChange';
 
@@ -116,6 +118,8 @@ export default function ProfileSetupPage() {
   const email = (session?.user.email ?? profile?.email ?? '').trim();
   // Experts add a headshot once expert_beamentor.sql has made its bucket.
   const askPhoto = roleName === 'expert' && !gateOnly && !conductOnly && tracksBeamentor(profile);
+  // Experts choose whether students can see their LinkedIn (expert cards on a track page).
+  const askLinkedIn = roleName === 'expert' && !gateOnly && !conductOnly;
   const role = roleByName(roleName) ?? USER_ROLES[0];
   const label = roleLabelFor(role.name, subtype);
 
@@ -155,6 +159,8 @@ export default function ProfileSetupPage() {
     // An optional school may stay blank, but anything typed must name a school.
     const badSchool = fields.find((f) => f.schoolPicker && (answers[f.key] ?? '').trim() && !isRealSchoolName(answers[f.key]));
     if (badSchool) return setError("Type your school's full name.");
+    const linkedInError = askLinkedIn ? linkedInProblem(answers, { mustChoose: true }) : null;
+    if (linkedInError) return setError(linkedInError);
     if (askConduct && !agreed) return setError(`Please tick the box to agree to the ${agreement.name}.`);
     if (askConduct && media && photoConsent == null) return setError('Please choose whether you grant photo permission.');
     setIsSaving(true);
@@ -171,6 +177,7 @@ export default function ProfileSetupPage() {
     try {
       const out = Object.fromEntries(fields.map((f) => [f.key, answers[f.key] ?? '']));
       if (askPhoto) out.photo_url = answers.photo_url ?? '';
+      if (askLinkedIn) Object.assign(out, linkedInAnswers(answers));
       await saveProfileDetails(gateOnly ? (profile?.name as string) ?? name : name, out, onboarding);
       if (askConduct) await agreeToCodeOfConduct(agreement.version, media ? photoConsent : null);
       await refreshProfile();
@@ -268,6 +275,9 @@ export default function ProfileSetupPage() {
               />
             )}
             {roleFields}
+            {askLinkedIn && (
+              <ExpertLinkedInChoice answers={answers} onChange={(k, v) => setAnswers((a) => ({ ...a, [k]: v }))} />
+            )}
             </div>
           </section>
         )}

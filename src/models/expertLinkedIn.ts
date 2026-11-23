@@ -1,0 +1,67 @@
+// An expert's choice to show their LinkedIn to students (Nov 23, 2026).
+// Saved in profiles.details as linkedin_visible ('yes' or 'no') and
+// linkedin_url. The track page's expert cards only get the address when the
+// expert chose 'yes' (session_expert_profiles, app repo
+// supabase/expert_public_profiles.sql).
+
+export type LinkedInVisible = 'yes' | 'no';
+
+export const LINKEDIN_VISIBLE_KEY = 'linkedin_visible';
+export const LINKEDIN_URL_KEY = 'linkedin_url';
+
+export const LINKEDIN_CHOICE = {
+  heading: 'LinkedIn',
+  prompt: 'Can students see your LinkedIn profile, so they can connect with you?',
+  yes: 'Yes, show my LinkedIn on my expert profile',
+  no: 'No, keep my LinkedIn private',
+  urlLabel: 'Your LinkedIn profile link',
+  urlHint: 'linkedin.com/in/your-name',
+  chooseError: 'Please choose whether students can see your LinkedIn.',
+  urlError: 'Paste your LinkedIn profile link, like linkedin.com/in/your-name.',
+} as const;
+
+export function linkedInVisible(value: unknown): LinkedInVisible | null {
+  return value === 'yes' || value === 'no' ? value : null;
+}
+
+/**
+ * A LinkedIn profile link written out in full ("https://www.linkedin.com/in/x"),
+ * from what someone pasted ("linkedin.com/in/x", "www.linkedin.com/in/x/",
+ * with or without https). Null when it isn't a LinkedIn profile or company page.
+ */
+export function normalizeLinkedInUrl(raw: string): string | null {
+  const text = raw.trim();
+  if (!text) return null;
+  let url: URL;
+  try {
+    url = new URL(/^https?:\/\//i.test(text) ? text : `https://${text}`);
+  } catch {
+    return null;
+  }
+  const host = url.hostname.toLowerCase();
+  if (host !== 'linkedin.com' && !host.endsWith('.linkedin.com')) return null;
+  const path = url.pathname.replace(/\/+$/, '');
+  if (!/^\/(in|pub|company)\/[^/]+/i.test(path)) return null;
+  return `https://www.linkedin.com${path}`;
+}
+
+/** What's wrong with the expert's LinkedIn answers, or null when they're fine. */
+export function linkedInProblem(
+  answers: Record<string, string>,
+  { mustChoose }: { mustChoose: boolean },
+): string | null {
+  const visible = linkedInVisible(answers[LINKEDIN_VISIBLE_KEY]);
+  if (visible == null) return mustChoose ? LINKEDIN_CHOICE.chooseError : null;
+  if (visible === 'yes' && normalizeLinkedInUrl(answers[LINKEDIN_URL_KEY] ?? '') == null) return LINKEDIN_CHOICE.urlError;
+  return null;
+}
+
+/** The two details keys to save, with the link written out in full. */
+export function linkedInAnswers(answers: Record<string, string>): Record<string, string> {
+  const visible = linkedInVisible(answers[LINKEDIN_VISIBLE_KEY]);
+  const raw = answers[LINKEDIN_URL_KEY] ?? '';
+  return {
+    [LINKEDIN_VISIBLE_KEY]: visible ?? '',
+    [LINKEDIN_URL_KEY]: normalizeLinkedInUrl(raw) ?? raw.trim(),
+  };
+}

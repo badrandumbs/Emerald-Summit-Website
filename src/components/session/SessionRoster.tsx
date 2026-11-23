@@ -204,7 +204,9 @@ export default function SessionRoster({
           ))}
           {/* The rest of their sign-up answers, as the app's person sheet lists them. */}
           {Object.entries(e.details)
-            .filter(([k, v]) => !['school', 'grade', 'phone', 'photo_url'].includes(k) && v.trim())
+            // LinkedIn only when the expert chose to show it.
+            .filter(([k, v]) => !['school', 'grade', 'phone', 'photo_url', 'linkedin_visible'].includes(k) && v.trim()
+              && (k !== 'linkedin_url' || e.details.linkedin_visible === 'yes'))
             .map(([k, v]) => (
               <p key={k} className="text-xs text-muted-foreground">{detailLabel(k)}: {v}</p>
             ))}

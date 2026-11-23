@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { LINKEDIN_CHOICE } from '../../models/expertLinkedIn';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -241,8 +242,17 @@ test('switching to expert asks for the headshot and the Guest Expert Policy on o
   for (const f of screen.queryAllByRole('textbox')) {
     if ((f as HTMLInputElement).required && !(f as HTMLInputElement).value) await user.type(f, 'Robotics');
   }
+  // Experts choose whether students see their LinkedIn; showing it needs the link.
+  await user.click(continueButton);
+  expect(screen.getByRole('alert')).toHaveTextContent(LINKEDIN_CHOICE.chooseError);
+  expect(state.changeRole).not.toHaveBeenCalled();
+  await user.click(screen.getByRole('radio', { name: LINKEDIN_CHOICE.yes }));
+  await user.click(continueButton);
+  expect(screen.getByRole('alert')).toHaveTextContent(LINKEDIN_CHOICE.urlError);
+  await user.type(screen.getByLabelText(LINKEDIN_CHOICE.urlLabel), 'linkedin.com/in/summit-team');
   await user.click(continueButton);
   expect(state.changeRole).toHaveBeenCalledWith('expert');
+  expect(state.save.mock.calls[0][1]).toMatchObject({ linkedin_visible: 'yes', linkedin_url: 'https://www.linkedin.com/in/summit-team' });
   expect(state.changeRole.mock.invocationCallOrder[0]).toBeLessThan(state.save.mock.invocationCallOrder[0]);
   expect(state.save).toHaveBeenCalledWith('Summit Team', expect.any(Object), false);
   expect(state.agree).toHaveBeenCalledWith(GUEST_EXPERT_POLICY.version, null);

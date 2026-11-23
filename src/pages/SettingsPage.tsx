@@ -20,6 +20,8 @@ import { deleteMyAccount, saveProfileDetails, signOut, type Profile } from '../s
 import { formFields } from '../models/profileFields';
 import ProfileFieldInput from '../components/ProfileFieldInput';
 import ExpertPhotoInput from '../components/ExpertPhotoInput';
+import ExpertLinkedInChoice from '../components/ExpertLinkedInChoice';
+import { linkedInAnswers, linkedInProblem } from '../models/expertLinkedIn';
 import { tracksBeamentor } from '../models/beamentor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -76,6 +78,7 @@ function ProfileSettings({ profile, onSaved }: { profile: Profile; onSaved: () =
   const [isSaving, setIsSaving] = useState(false);
   const [photoBusy, setPhotoBusy] = useState(false);
   const askPhoto = profile.role === 'expert' && tracksBeamentor(profile);
+  const askLinkedIn = profile.role === 'expert';
 
   useEffect(() => {
     setName(profile.name ?? '');
@@ -84,7 +87,8 @@ function ProfileSettings({ profile, onSaved }: { profile: Profile; onSaved: () =
 
   const saved = detailsOf(profile);
   const isDirty = name !== (profile.name ?? '') || fields.some((f) => (answers[f.key] ?? '') !== (saved[f.key] ?? ''))
-    || (askPhoto && (answers.photo_url ?? '') !== (saved.photo_url ?? ''));
+    || (askPhoto && (answers.photo_url ?? '') !== (saved.photo_url ?? ''))
+    || (askLinkedIn && ['linkedin_visible', 'linkedin_url'].some((k) => (answers[k] ?? '') !== (saved[k] ?? '')));
   const isDirtyRef = useRef(isDirty);
   isDirtyRef.current = isDirty;
 
@@ -109,10 +113,17 @@ function ProfileSettings({ profile, onSaved }: { profile: Profile; onSaved: () =
       toast.error(missing.key === 'phone' ? 'Mobile number is required.' : `Please answer "${missing.label}".`);
       return;
     }
+    // Experts from before the LinkedIn choice don't have to make it to save.
+    const linkedInError = askLinkedIn ? linkedInProblem(answers, { mustChoose: false }) : null;
+    if (linkedInError) {
+      toast.error(linkedInError);
+      return;
+    }
     setIsSaving(true);
     try {
       const out = Object.fromEntries(fields.map((f) => [f.key, answers[f.key] ?? '']));
       if (askPhoto) out.photo_url = answers.photo_url ?? '';
+      if (askLinkedIn) Object.assign(out, linkedInAnswers(answers));
       await saveProfileDetails(name, out, false);
       await onSaved();
       isDirtyRef.current = false;
@@ -141,6 +152,9 @@ function ProfileSettings({ profile, onSaved }: { profile: Profile; onSaved: () =
         {fields.map((f) => (
           <ProfileFieldInput key={f.key} field={f} value={answers[f.key] ?? ''} onChange={(v) => setAnswers((a) => ({ ...a, [f.key]: v }))} />
         ))}
+        {askLinkedIn && (
+          <ExpertLinkedInChoice compact answers={answers} onChange={(k, v) => setAnswers((a) => ({ ...a, [k]: v }))} />
+        )}
         <div className="space-y-2">
           <Label htmlFor="profile-email">Email</Label>
           <Input id="profile-email" type="email" value={profile.email} readOnly />

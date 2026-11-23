@@ -2,6 +2,7 @@
 // the mobile app (lib/backend/supabase/supabase_repositories.dart,
 // SupabaseScheduleRepository and SupabaseExpertsRepository).
 import { supabase } from '../lib/supabase';
+import { normalizeLinkedInUrl } from '../models/expertLinkedIn';
 import { REGISTRATION_CLOSED_MESSAGE } from './siteSwitches';
 import { isRemovedFromSession, REMOVED_FROM_SESSION_MESSAGE } from './sessionRemovals';
 import {
@@ -184,6 +185,48 @@ export async function fetchSessionExperts(sessionId: string): Promise<string[]> 
   const { data, error } = await supabase.rpc('session_experts', { p_session_id: sessionId });
   if (error) throw new Error(error.message);
   return ((data ?? []) as unknown[]).map(String);
+}
+
+/** An approved expert's public card on a track page (session_expert_profiles). */
+export interface SessionExpert {
+  id: string;
+  name: string;
+  photoUrl: string | null;
+  title: string | null;
+  company: string | null;
+  expertise: string | null;
+  bio: string | null;
+  /** Only when the expert chose to show their LinkedIn to students. */
+  linkedInUrl: string | null;
+}
+
+const textOrNull = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : null);
+
+/**
+ * The approved experts signed up for a track, with what their card and full
+ * profile show. Falls back to names alone (session_experts) if the database
+ * doesn't have session_expert_profiles yet.
+ */
+export async function fetchSessionExpertProfiles(sessionId: string): Promise<SessionExpert[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc('session_expert_profiles', { p_session_id: sessionId });
+  if (error) {
+    const names = await fetchSessionExperts(sessionId);
+    return names.map((name, i) => ({
+      id: `name-${i}`, name, photoUrl: null, title: null, company: null, expertise: null, bio: null, linkedInUrl: null,
+    }));
+  }
+  return ((data ?? []) as Record<string, unknown>[]).map((r) => ({
+    id: String(r.id),
+    name: String(r.name ?? '').trim(),
+    photoUrl: textOrNull(r.photo_url),
+    title: textOrNull(r.title),
+    company: textOrNull(r.company),
+    expertise: textOrNull(r.expertise),
+    bio: textOrNull(r.bio),
+    // Only a real LinkedIn link becomes a link (the address is the expert's own text).
+    linkedInUrl: normalizeLinkedInUrl(textOrNull(r.linkedin_url) ?? ''),
+  }));
 }
 
 export type ManageResult =

@@ -49,6 +49,7 @@ vi.mock('../../services/sessionRegistration', async (importOriginal) => ({
   setSessionManage: (...args: unknown[]) => state.manage(...args),
   fetchMyProject: () => state.project(),
   fetchSessionExperts: vi.fn().mockResolvedValue([]),
+  fetchSessionExpertProfiles: vi.fn().mockResolvedValue([]),
   fetchMyAnswers: vi.fn().mockResolvedValue({}),
 }));
 vi.mock('../../services/organizer', async (importOriginal) => ({

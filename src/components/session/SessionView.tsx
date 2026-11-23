@@ -41,14 +41,16 @@ import {
 import {
   fetchMyAnswers,
   fetchMyProject,
-  fetchSessionExperts,
+  fetchSessionExpertProfiles,
   removeTeamMember,
   setSessionManage,
   TeamCodeError,
   toggleRegistration,
   transferTeamOwnership,
   updateMyRegistration,
+  type SessionExpert,
 } from '../../services/sessionRegistration';
+import SessionExperts from './SessionExperts';
 import RegistrationForm, { projectPromptOf, type RegistrationFormResult } from './RegistrationForm';
 import ProjectCard, { TeamCodeChip } from './ProjectCard';
 import SessionRoster from './SessionRoster';
@@ -134,7 +136,7 @@ export default function SessionView({
   const canSeeRoster = signedIn && (canMarkAttendance || canEdit);
 
   const [busy, setBusy] = useState(false);
-  const [experts, setExperts] = useState<string[]>([]);
+  const [experts, setExperts] = useState<SessionExpert[]>([]);
   const [project, setProject] = useState<MyProject | null>(null);
   const [projectLoaded, setProjectLoaded] = useState(false);
   const [choosing, setChoosing] = useState(false);
@@ -166,7 +168,7 @@ export default function SessionView({
 
   const loadExperts = useCallback(() => {
     if (!sessionId) return;
-    fetchSessionExperts(sessionId).then(setExperts).catch(() => setExperts([]));
+    fetchSessionExpertProfiles(sessionId).then(setExperts).catch(() => setExperts([]));
   }, [sessionId]);
   useEffect(loadExperts, [loadExperts]);
 
@@ -473,9 +475,6 @@ export default function SessionView({
       <div className="space-y-2 text-sm">
         <p className="flex items-center gap-2"><Clock className="h-4 w-4" style={{ color: accent }} /> {timeLabel(s, showTimes)}</p>
         {SESSION_ROOMS_ENABLED && s.room && <p className="flex items-center gap-2"><MapPin className="h-4 w-4" style={{ color: accent }} /> {s.room}</p>}
-        {experts.length > 0 && (
-          <p className="flex items-center gap-2"><User className="h-4 w-4" style={{ color: accent }} /> {experts.length === 1 ? 'Expert' : 'Experts'}: {experts.join(', ')}</p>
-        )}
         <p className="flex items-center gap-2">
           <Users className="h-4 w-4" style={{ color: accent }} />
           {left === 0 ? `Full (${s.enrolled}/${s.capacity})` : `${left} of ${s.capacity} seats left`}
@@ -514,6 +513,7 @@ export default function SessionView({
           {b.body.trim() && <p className="whitespace-pre-line leading-relaxed">{b.body}</p>}
         </section>
       ))}
+      <SessionExperts experts={experts} accent={accent} />
       {gallery.length > 0 && (
         <section>
           <h2 className="mb-3 font-semibold">Gallery</h2>
