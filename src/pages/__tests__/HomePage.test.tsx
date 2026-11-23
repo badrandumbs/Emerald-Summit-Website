@@ -95,12 +95,11 @@ describe('Your day for spectators', () => {
 });
 
 describe('Up next', () => {
-  test('is its own card above announcements, not in the greeting, and shows the first session', () => {
+  test('sits in the greeting card and shows the first session', () => {
     state.spectating = ['c', 'b'];
     renderHome();
     const card = screen.getByRole('region', { name: 'Up next' });
     expect(within(card).getByText('Genetics Lab')).toBeInTheDocument();
-    expect(screen.queryByText(/First up/)).not.toBeInTheDocument();
   });
 
   test.each(['admin', 'volunteer', 'expert', 'participant'])('shows for %s too', (role) => {

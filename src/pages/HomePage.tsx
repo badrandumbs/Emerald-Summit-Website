@@ -384,19 +384,8 @@ export default function HomePage() {
             </div>
           </div>
 
-        </div>
-      </section>
-
-      {/* The app's slideshow and quote, under its header. */}
-      <div className="mb-6 flex flex-col gap-5 lg:flex-row">
-        <PhotoSlideshow className="lg:flex-[1.25]" />
-        <QuoteCard className="lg:flex-1" />
-      </div>
-
-      {/* Up next: its own full-width card between the slideshow and Your day / announcements. */}
-      <section aria-label="Up next" className="relative mb-6 overflow-hidden rounded-2xl bg-[#0A5F43] p-5 text-white sm:p-6">
-        <div className="pointer-events-none absolute -right-12 -top-24 h-56 w-56 rounded-full bg-emerald-300/25 blur-[80px]" aria-hidden />
-        <div className="relative">
+          {/* Up next, inside the greeting card, for every role. */}
+          <section aria-label="Up next" className="w-full rounded-lg border border-white/20 bg-white/10 p-5 backdrop-blur-sm lg:w-[360px] lg:shrink-0">
               {next ? (
                 <>
                   <div className="flex items-center justify-between gap-2">
@@ -441,8 +430,15 @@ export default function HomePage() {
                   </div>
                 </>
               )}
+          </section>
         </div>
       </section>
+
+      {/* The app's slideshow and quote, under its header. */}
+      <div className="mb-6 flex flex-col gap-5 lg:flex-row">
+        <PhotoSlideshow className="lg:flex-[1.25]" />
+        <QuoteCard className="lg:flex-1" />
+      </div>
 
       <div className={cn('grid grid-cols-[minmax(0,1fr)] gap-6', showYourDay && 'xl:grid-cols-[minmax(0,1fr)_380px]')}>
         {showYourDay && (
