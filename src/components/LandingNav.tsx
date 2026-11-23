@@ -80,8 +80,7 @@ export default function LandingNav({
 
   const goToSection = (id: string, path = '/') => {
     setOpen(false);
-    // Keynote & Team shows one section at a time, so its links always go through the router.
-    if (location.pathname === path && path === '/') {
+    if (location.pathname === path) {
       document
         .getElementById(id)
         ?.scrollIntoView({ behavior: 'smooth', block: 'start' });

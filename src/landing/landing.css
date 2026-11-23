@@ -511,6 +511,10 @@
 .lp-lineup { padding-top: var(--space-2xl); }
 .lp-lineup .lp-section { padding-block: var(--space-2xl); }
 .lp-lineup .lp-head { margin-bottom: var(--space-lg); }
+/* Each section fills the screen under the bar, and the nav lands it right under the bar, so the one you clicked shows alone. */
+.lp-lineup .lp-section { min-height: calc(100svh - var(--bar-h)); scroll-margin-top: calc(var(--bar-h) - var(--space-3xl)); background: var(--color-paper); }
+/* A full-width rule between Keynote and Team, Keynote on top. */
+.lp-lineup .lp-section + .lp-section { border-top: 1px solid var(--color-rule); }
 .lp-soon { display: grid; gap: var(--space-sm); max-width: 46rem; padding: var(--space-xl); border: 1px solid var(--color-rule); border-radius: var(--radius-card); background: var(--color-paper-2); }
 .lp-soon p { color: var(--color-ink-2); font-size: var(--text-lead); line-height: 1.5; }
 .lp-soon .lp-soon__tag { justify-self: start; padding: 4px 12px; border-radius: var(--radius-pill); background: color-mix(in oklab, var(--color-accent) 14%, transparent); color: var(--color-accent-hover); font-size: var(--text-sm); font-weight: 600; }

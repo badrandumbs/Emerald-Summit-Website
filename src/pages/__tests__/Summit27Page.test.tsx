@@ -63,13 +63,10 @@ describe("Summit '27 page", () => {
       ['About', 'Disciplines', 'Sponsors', 'Keynote', 'Team', 'FAQ', 'Contact'],
     );
     await user.click(within(nav).getByRole('button', { name: 'Team' }));
-    // One section at a time: Team, not Keynote.
-    expect(screen.getByRole('heading', { name: 'Team' })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'Keynote' })).not.toBeInTheDocument();
-    await user.click(within(screen.getByRole('navigation', { name: 'Main' })).getByRole('button', { name: 'Keynote' }));
-    expect(screen.getByRole('heading', { name: 'Keynote' })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'Team' })).not.toBeInTheDocument();
-    expect(screen.getAllByText('Coming soon')).toHaveLength(1);
+    // Both on one page, Keynote first.
+    const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
+    expect(headings).toEqual(['Keynote', 'Team']);
+    expect(screen.getAllByText('Coming soon')).toHaveLength(2);
   });
 
   test('the sidebar has one Summit \'27 tab, opening Keynote, for every role', () => {
