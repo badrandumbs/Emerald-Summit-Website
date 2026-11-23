@@ -14,8 +14,8 @@ const STILL_FRAME = 2.5;
  * SLOW_DOWN seconds ease the clock to a stop, so it comes to rest rather than
  * freezing mid-move; after that the canvas holds its last frame.
  */
-export const PLAY_SECONDS = 10;
-const SLOW_DOWN = 2;
+export const PLAY_SECONDS = 5;
+const SLOW_DOWN = 1.5;
 
 /**
  * Runs `draw` every animation frame on a canvas sized to its box (at device
