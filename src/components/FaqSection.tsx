@@ -35,6 +35,10 @@ const FAQ_ITEMS: FaqItem[] = [
     a: 'Awards would only tell you who won. You’d lose the raw feedback: what you did well, where you can improve, and whether your roadmap needs a pivot. The Summit is about learning, picking up knowledge, and meeting experts and peers, so collaborate, share ideas, and grow. Every participant does receive a certificate of participation.',
   },
   {
+    q: 'What will I take away from the Summit?',
+    a: 'Personal feedback from industry professionals, educators, and mentors on what you did well and where to go next, new connections across schools and disciplines, and a clearer sense of direction for your project. Families and guests get to see interdisciplinary learning in action.',
+  },
+  {
     q: 'What are the six disciplines?',
     a: 'TechVerse, BioSphere, NovaSphere, ImagineX, VentureVerse, and CivicVerse, with 20+ tracks and 30+ visiting experts across them.',
   },

@@ -321,6 +321,15 @@ export default function WelcomePage() {
             <div className="lp-about__text">
               <h2 id="about-title">What is Emerald Summit?</h2>
               <p>{SUMMIT_ABOUT}</p>
+              {/* The Summit's vision, carried here instead of on a page of its own. */}
+              <p>
+                It’s a journey of ideas, not a race to win. Projects are shared, not judged, so students from
+                schools across the Tri-Valley build on each other’s work, and younger students and families get
+                a front-row view of what’s possible.
+              </p>
+              <blockquote className="lp-about__quote">
+                “A spark: not just to show what’s been done, but to light up what’s possible.”
+              </blockquote>
             </div>
             <PhotoMosaic className="lp-about__photo" />
             <dl className="lp-figures">
@@ -419,7 +428,7 @@ export default function WelcomePage() {
         <div className="container lp-cta__inner">
           <h2 id="contact-title">Start the trek.</h2>
           <p className="lp-cta__lede">
-            Free to attend. Questions? Email us.
+            Let’s create, learn and grow, together. Free to attend. Questions? Email us.
           </p>
           <div className="lp-cta__actions">
             <button type="button" className="lp-btn" onClick={() => navigate('/home')}>

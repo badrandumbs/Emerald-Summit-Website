@@ -148,6 +148,7 @@
 /* ───────────── What is Emerald Summit? Split, then the given figures ───────────── */
 .lp-about__text { grid-column: 1 / span 5; align-self: center; display: grid; gap: var(--space-lg); }
 .lp-about__text p { color: var(--color-ink-2); font-size: var(--text-lead); line-height: 1.5; }
+.lp-about__quote { margin: 0; padding-left: var(--space-md); border-left: 2px solid var(--color-accent); font: 500 1.125rem/1.45 var(--font-display); letter-spacing: -0.01em; color: var(--color-ink); }
 .lp-about__photo { grid-column: 6 / span 7; }
 .lp-mosaic { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: var(--space-sm); aspect-ratio: 5 / 4; min-height: 440px; }
 .lp-mosaic__tile { border-radius: var(--radius-card); }
