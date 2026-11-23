@@ -495,11 +495,17 @@ export default function AppShell({ children }: { children: ReactNode }) {
         )}
 
         <div className="relative">
-          <button
-            type="button"
-            onClick={() => setChangeRoleOpen(true)}
-            aria-label={`${name}, ${roleLabel}. Switch role`}
-            className="group flex w-full items-center gap-2.5 rounded-xl border border-white/10 p-2.5 pr-[58px] text-left transition-colors hover:border-white/25 hover:bg-white/[0.06]"
+          {/* The card itself opens the profile (same as the phone's top-bar
+              avatar). Switch role and Sign out are their own buttons on top. */}
+          <NavLink
+            to="/account"
+            aria-label={`Profile: ${name}, ${roleLabel}`}
+            className={({ isActive }) =>
+              cn(
+                'flex w-full items-center gap-2.5 rounded-xl border p-2.5 pr-[94px] text-left transition-colors hover:border-white/25 hover:bg-white/[0.06]',
+                isActive ? 'border-white/25 bg-white/[0.06]' : 'border-white/10',
+              )
+            }
           >
             <div
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[12px] font-bold text-white"
@@ -512,14 +518,19 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <div className="break-words whitespace-normal text-[13px] font-semibold">{name}</div>
               <div className="truncate text-[11.5px] text-white/55">{roleLabel}</div>
             </div>
-            <span className="relative flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] font-semibold text-white/55 transition-colors group-hover:bg-white/10 group-hover:text-white group-focus-visible:bg-white/10 group-focus-visible:text-white">
-              <ArrowLeftRight className="h-4 w-4" />
-              <span
-                aria-hidden
-                className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md bg-white px-2 py-1 text-[11.5px] font-semibold text-navy opacity-0 shadow-lg transition-[opacity,transform] duration-150 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100"
-              >
-                Switch role
-              </span>
+          </NavLink>
+          <button
+            type="button"
+            onClick={() => setChangeRoleOpen(true)}
+            aria-label="Switch role"
+            className="group/switch absolute right-[54px] top-1/2 flex -translate-y-1/2 items-center rounded-md px-1.5 py-1.5 text-white/55 transition-colors hover:bg-white/10 hover:text-white focus-visible:bg-white/10 focus-visible:text-white"
+          >
+            <ArrowLeftRight className="h-4 w-4" />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md bg-white px-2 py-1 text-[11.5px] font-semibold text-navy opacity-0 shadow-lg transition-[opacity,transform] duration-150 group-hover/switch:translate-y-0 group-hover/switch:opacity-100 group-focus-visible/switch:translate-y-0 group-focus-visible/switch:opacity-100"
+            >
+              Switch role
             </span>
           </button>
           <button
