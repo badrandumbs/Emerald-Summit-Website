@@ -1,11 +1,17 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronDown } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
 interface FaqItem {
   q: string;
-  a: string | readonly string[];
+  a: ReactNode | readonly ReactNode[];
 }
+
+/** EAF's own page for parent and community volunteers (form + Be A Mentor step). */
+const EAF_VOLUNTEER_URL = 'https://www.ehsacademics.org/get-involved/parent-volunteering';
+const EXPERT_SIGN_UP_PATH = '/login/expert?mode=signup';
+const CONTACT_EMAIL = 'contact@ehsacademics.org';
 
 const FAQ_ITEMS: FaqItem[] = [
   {
@@ -53,8 +59,28 @@ const FAQ_ITEMS: FaqItem[] = [
     a: [
       'There are several ways to contribute!',
       'Emerald students: Sign up as a Volunteer to help organize and run the event.',
-      'EHS parents and community members: Sign up as a Volunteer to support event operations, or as an Expert to lead a track and share feedback with participating students.',
-      'Professionals and subject-matter experts: Sign up as an Expert to lead a track, share your knowledge, and provide feedback to students.',
+      <>
+        EHS parents and community members: Volunteer through EAF on the{' '}
+        <a className="lp-link" href={EAF_VOLUNTEER_URL} target="_blank" rel="noopener noreferrer">
+          Parent Volunteering page
+        </a>{' '}
+        to support event operations. It also walks you through the required Be A Mentor sign-up. You can also
+        sign up as an Expert to lead a track and share feedback with participating students (see below).
+      </>,
+      <>
+        Professionals and subject-matter experts:{' '}
+        <Link className="lp-link" to={EXPERT_SIGN_UP_PATH}>
+          Sign up as an Expert
+        </Link>{' '}
+        right here on this site to lead a track, share your knowledge, and give students feedback.
+      </>,
+      <>
+        Questions about any of these? Email{' '}
+        <a className="lp-link" href={`mailto:${CONTACT_EMAIL}`}>
+          {CONTACT_EMAIL}
+        </a>
+        .
+      </>,
       'We welcome everyone who wants to help make Emerald Summit a meaningful learning experience!',
     ],
   },
@@ -86,8 +112,9 @@ function FaqRow({
       </button>
       <div id={panelId} className={cn('lp-faq__a', open && 'is-open')}>
         <div>
-          {(typeof item.a === 'string' ? [item.a] : item.a).map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
+          {(Array.isArray(item.a) ? item.a : [item.a]).map((paragraph, i) => (
+            // The list is fixed, so the index is a stable key.
+            <p key={i}>{paragraph}</p>
           ))}
         </div>
       </div>
