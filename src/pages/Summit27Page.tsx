@@ -65,39 +65,81 @@ function ComingSoon({ children }: { children: string }) {
   );
 }
 
+/**
+ * Five bars stepping up, filled up to the tier's level (Capstone all five,
+ * Cornerstone one), so the ranking reads at a glance. Decorative: the badge
+ * and the "Tier n of 5" label carry it for screen readers.
+ */
+function TierMeter({ level, of }: { level: number; of: number }) {
+  return (
+    <span aria-hidden className="flex items-end gap-[3px]">
+      {Array.from({ length: of }, (_, i) => (
+        <span
+          key={i}
+          className={cn('w-[5px] rounded-sm', i < level ? 'bg-emerald' : 'bg-border')}
+          style={{ height: 6 + i * 3 }}
+        />
+      ))}
+    </span>
+  );
+}
+
 export function SponsorTiers({ sponsors = SPONSORS }: { sponsors?: Sponsor[] }) {
+  const count = SPONSOR_TIERS.length;
   return (
     <div className="space-y-5">
-      <ol className="grid gap-3 md:grid-cols-2" aria-label="Sponsor tiers, highest first">
-        {SPONSOR_TIERS.map((tier) => {
+      <ol className="space-y-3" aria-label="Sponsor tiers, highest first">
+        {SPONSOR_TIERS.map((tier, i) => {
           const here = sponsors.filter((s) => s.tier === tier.name);
+          const rank = i + 1;
           return (
-            <li key={tier.name} className="flex flex-col rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-baseline justify-between gap-3">
-                <h3 className="font-display text-lg font-bold">{tier.name}</h3>
-                <span className="font-semibold tabular-nums text-emerald">{tier.amount}</span>
-              </div>
-              <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted-foreground">{tier.perks}</p>
-              <div className="mt-auto pt-4">
-                {here.length > 0 ? (
-                  <ul className="flex flex-wrap gap-2" aria-label={`${tier.name} sponsors`}>
-                    {here.map((s) => (
-                      <li key={s.name}>
-                        <a
-                          href={s.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          title={s.name}
-                          className="flex h-12 items-center rounded-lg bg-white px-3 ring-1 ring-border"
-                        >
-                          <img src={s.logo} alt={s.name} loading="lazy" className="max-h-8 w-auto" />
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-[13px] font-medium text-muted-foreground">Open</p>
-                )}
+            <li
+              key={tier.name}
+              className={cn(
+                'flex gap-4 rounded-2xl border bg-card p-5',
+                rank === 1 ? 'border-emerald/60 ring-1 ring-emerald/20' : 'border-border',
+              )}
+            >
+              <span
+                aria-hidden
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald font-display text-lg font-bold tabular-nums text-white"
+              >
+                {rank}
+              </span>
+              <div className="flex min-w-0 flex-1 flex-col">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-display text-lg font-bold leading-tight">{tier.name}</h3>
+                    <p className="mt-1 flex items-center gap-2 text-[12.5px] font-semibold text-muted-foreground">
+                      <TierMeter level={count - i} of={count} />
+                      Tier {rank} of {count}
+                      {rank === 1 && <span className="text-emerald">· Top tier</span>}
+                    </p>
+                  </div>
+                  <span className="font-semibold tabular-nums text-emerald">{tier.amount}</span>
+                </div>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground">{tier.perks}</p>
+                <div className="pt-3">
+                  {here.length > 0 ? (
+                    <ul className="flex flex-wrap gap-2" aria-label={`${tier.name} sponsors`}>
+                      {here.map((s) => (
+                        <li key={s.name}>
+                          <a
+                            href={s.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            title={s.name}
+                            className="flex h-12 items-center rounded-lg bg-white px-3 ring-1 ring-border"
+                          >
+                            <img src={s.logo} alt={s.name} loading="lazy" className="max-h-8 w-auto" />
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-[13px] font-medium text-muted-foreground">Open</p>
+                  )}
+                </div>
               </div>
             </li>
           );

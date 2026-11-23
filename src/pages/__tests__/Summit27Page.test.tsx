@@ -83,4 +83,13 @@ describe("Summit '27 page", () => {
     expect(within(pillar).getByRole('img', { name: 'Acme' })).toBeInTheDocument();
     expect(screen.getAllByText('Open')).toHaveLength(SPONSOR_TIERS.length - 1);
   });
+
+  test('each tier shows its rank, Capstone first and marked top tier', () => {
+    render(<SponsorTiers />);
+    const n = SPONSOR_TIERS.length;
+    SPONSOR_TIERS.forEach((_, i) => expect(screen.getByText(`Tier ${i + 1} of ${n}`)).toBeInTheDocument());
+    const items = within(screen.getByRole('list', { name: 'Sponsor tiers, highest first' })).getAllByRole('heading', { level: 3 });
+    expect(items.map((h) => h.textContent)).toEqual(SPONSOR_TIERS.map((t) => t.name));
+    expect(screen.getByText(/Top tier/)).toBeInTheDocument();
+  });
 });
