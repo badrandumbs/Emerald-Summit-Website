@@ -9,12 +9,11 @@ import { Navigate, NavLink, useParams } from 'react-router-dom';
 import { Handshake, Keynote, Plus, Team, type AppIcon } from '@/components/icons';
 import AppShell from '../components/AppShell';
 import { ROLL_ATTR } from '../components/Summit27Intro';
-import { LinkButton, SupportEafCard, ZeffyFormButton } from '../components/home/AboutSections';
+import { LinkButton, SupportEafCard } from '../components/home/AboutSections';
 import { useRequireProfile } from '../hooks/useRequireProfile';
 import { SUMMIT_DATE_LABEL, SUMMIT_HOURS, VENUE } from '../models/summitFacts';
 import {
   SPONSORS,
-  SPONSOR_FORM_EMBED_URL,
   SPONSOR_FORM_URL,
   SPONSOR_TIERS,
   SPONSORSHIP_DETAILS_URL,
@@ -179,8 +178,7 @@ function OpenSpot({ tier, solid, first, onOpen }: { tier: string; solid: boolean
  * spots that open the sponsor form.
  */
 export function SponsorTiers({ sponsors = SPONSORS }: { sponsors?: Sponsor[] }) {
-  const openForm = useRef<(() => void) | null>(null);
-  const onOpen = () => openForm.current?.();
+  const onOpen = () => window.open(SPONSOR_FORM_URL, '_blank', 'noopener,noreferrer');
   return (
     <div className="space-y-5">
       <ol className="flex flex-col items-center gap-2" aria-label="Sponsor tiers, highest first">
@@ -214,14 +212,7 @@ export function SponsorTiers({ sponsors = SPONSORS }: { sponsors?: Sponsor[] }) 
         })}
       </ol>
       <div className="flex flex-wrap gap-2.5">
-        <ZeffyFormButton
-          label="Become a sponsor"
-          dialogTitle="Become a sponsor"
-          pageUrl={SPONSOR_FORM_URL}
-          embedUrl={SPONSOR_FORM_EMBED_URL}
-          icon={Handshake}
-          opener={openForm}
-        />
+        <LinkButton href={SPONSOR_FORM_URL} primary icon={Handshake}>Become a sponsor</LinkButton>
         <LinkButton href={SPONSORSHIP_DETAILS_URL}>Sponsorship details</LinkButton>
       </div>
     </div>

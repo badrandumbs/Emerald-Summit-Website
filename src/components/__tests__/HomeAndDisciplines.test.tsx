@@ -24,7 +24,7 @@ import {
   SupportEafCard,
 } from '../home/AboutSections';
 import { SponsorTiers } from '../../pages/Summit27Page';
-import { SPONSOR_FORM_EMBED_URL, SPONSOR_FORM_URL } from '../../models/sponsors';
+import { SPONSOR_FORM_URL } from '../../models/sponsors';
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -127,14 +127,17 @@ describe('About, Support EAF and Sponsors', () => {
     }
   });
 
-  test('Become a sponsor opens the sponsor Zeffy form in a popup, not the Donate one', async () => {
+  test('Become a sponsor and the open logo spots go to the sponsor Google Form in a new tab', async () => {
     const user = userEvent.setup();
+    const open = vi.spyOn(window, 'open').mockReturnValue(null);
     render(<SponsorTiers sponsors={[]} />);
-    await user.click(screen.getByRole('button', { name: /Become a sponsor/ }));
-    const dialog = screen.getByRole('dialog', { name: 'Become a sponsor' });
-    expect(within(dialog).getByTitle('Donation form powered by Zeffy')).toHaveAttribute('src', SPONSOR_FORM_EMBED_URL);
-    expect(within(dialog).getByRole('link', { name: /Open in a new tab/ })).toHaveAttribute('href', SPONSOR_FORM_URL);
-    expect(SPONSOR_FORM_URL).not.toBe(EAF_DONATE_URL);
+    const link = screen.getByRole('link', { name: /Become a sponsor/ });
+    expect(link).toHaveAttribute('href', SPONSOR_FORM_URL);
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(SPONSOR_FORM_URL).toContain('docs.google.com/forms');
+    await user.click(screen.getAllByRole('button', { name: /logo/i })[0]);
+    expect(open).toHaveBeenCalledWith(SPONSOR_FORM_URL, '_blank', 'noopener,noreferrer');
+    open.mockRestore();
   });
 
   test('About the app credits the student developers', () => {
