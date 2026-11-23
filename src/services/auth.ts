@@ -3,6 +3,7 @@ import type { Person, Visibility } from '../models/people';
 import type { PersonStatus } from '../models/personStatus';
 import type { User } from '@supabase/supabase-js';
 import { isDevLoginEnabled } from '../lib/devLogin';
+import { shrinkToJpeg } from '../lib/shrinkImage';
 import { SIGN_IN_ROLES, VOLUNTEER_SUBTYPE_LABELS, notEligibleMessage, roleByName } from '../models/roles';
 
 export type Profile = {
@@ -714,30 +715,48 @@ export async function markBeamentorSubmitted(): Promise<void> {
 }
 
 const EXPERT_PHOTO_BUCKET = 'expert_photos';
+/** What the bucket takes (expert_beamentor.sql in the app repo). */
 const EXPERT_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 export const EXPERT_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+/** The photo shows small, so 1200 px is plenty and keeps it far under 5 MB. */
+const EXPERT_PHOTO_MAX_EDGE = 1200;
 
-/** Why a photo can't be used, or null when it can. */
+/**
+ * Why a file can't be used, or null when it can. Any image is fine here: the
+ * upload shrinks it to a JPEG. Windows gives HEIC files no type, so the name
+ * counts too.
+ */
 export function expertPhotoProblem(file: File): string | null {
-  if (!EXPERT_PHOTO_TYPES.includes(file.type)) return 'Use a JPG, PNG or WebP photo.';
-  if (file.size > EXPERT_PHOTO_MAX_BYTES) return 'That photo is over 5 MB. Try a smaller one.';
+  if (!file.type.startsWith('image/') && !/\.(heic|heif)$/i.test(file.name)) return 'That file is not a photo.';
   return null;
 }
 
 /**
  * Uploads the expert's photo to expert_photos/<user id>/ and returns its public
- * URL. Older photos in the folder are removed afterwards. The caller saves the
- * URL as details.photo_url.
+ * URL. The photo is redrawn as a JPEG up to 1200 px first, so a large phone
+ * photo or a HEIC one (in browsers that open HEIC) still fits the bucket.
+ * Older photos in the folder are removed afterwards. The caller saves the URL
+ * as details.photo_url.
  */
 export async function uploadExpertPhoto(file: File): Promise<string> {
   const problem = expertPhotoProblem(file);
   if (problem) throw new Error(problem);
+  const small = await shrinkToJpeg(file, EXPERT_PHOTO_MAX_EDGE);
+  let body: Blob = file;
+  let type = file.type;
+  if (small) {
+    body = small;
+    type = 'image/jpeg';
+  } else if (!EXPERT_PHOTO_TYPES.includes(file.type)) {
+    throw new Error("This browser can't open that photo. Save it as a JPG or PNG and try again.");
+  }
+  if (body.size > EXPERT_PHOTO_MAX_BYTES) throw new Error('That photo is over 5 MB. Try a smaller one.');
   const session = await requireRealSession();
   const bucket = requireSupabase().storage.from(EXPERT_PHOTO_BUCKET);
-  const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+  const ext = type === 'image/png' ? 'png' : type === 'image/webp' ? 'webp' : 'jpg';
   const name = `photo-${Date.now()}.${ext}`;
   const path = `${session.user.id}/${name}`;
-  const { error } = await bucket.upload(path, file, { contentType: file.type, upsert: false });
+  const { error } = await bucket.upload(path, body, { contentType: type, upsert: false });
   if (error) throw new Error("Couldn't upload that photo. Try again.");
   // Best effort: an old photo left behind does no harm.
   try {

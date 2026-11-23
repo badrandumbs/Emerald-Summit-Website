@@ -4,6 +4,7 @@
 // (session_pages_setup.sql in the app repo) lets only admins and the session's
 // discipline editors upload or delete, so a bypassed UI is still refused.
 import { supabase } from '../lib/supabase';
+import { shrinkToJpeg } from '../lib/shrinkImage';
 
 const BUCKET = 'session_photos';
 
@@ -52,18 +53,7 @@ export function splitHero(heroUrl: string | null | undefined, photos: SessionPho
 /** Shrinks a photo to 2000 px on its long edge as a JPEG. Null if the browser can't decode it. */
 async function shrink(file: File): Promise<Blob | null> {
   if (file.type === 'image/gif') return null; // keep animation
-  try {
-    const bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(bitmap.width * scale);
-    canvas.height = Math.round(bitmap.height * scale);
-    canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    bitmap.close();
-    return await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', JPEG_QUALITY));
-  } catch {
-    return null;
-  }
+  return shrinkToJpeg(file, MAX_EDGE, JPEG_QUALITY);
 }
 
 const EXTENSION: Record<string, string> = {

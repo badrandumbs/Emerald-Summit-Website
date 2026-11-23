@@ -125,7 +125,7 @@ export default function ExpertPhotoInput({
             )}
           </div>
           <p className="text-[12px] text-muted-foreground">
-            A headshot for the Summit experts page. JPG, PNG or WebP, up to 5 MB.
+            A headshot for the Summit experts page. Any photo works; large ones are made smaller.
             {!linkedIn && ' Or connect LinkedIn to use your LinkedIn photo.'}
             {linkedIn && !linkedIn.photoUrl && ' Your LinkedIn has no photo to use.'}
           </p>
@@ -134,7 +134,7 @@ export default function ExpertPhotoInput({
       <input
         ref={fileRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/*,.heic,.heif"
         className="hidden"
         aria-label="Upload photo"
         onChange={(e) => pick(e.target.files?.[0])}
