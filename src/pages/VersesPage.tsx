@@ -3,7 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { ArrowRight, Check } from '@/components/icons';
 import AppShell from '../components/AppShell';
 import PageHeader from '../components/PageHeader';
-import VerseMotif from '../components/verse/VerseMotif';
+import DisciplineWorld from '../components/verse/DisciplineWorld';
 import {
   VerseBadge,
   VersePortalProvider,
@@ -127,6 +127,10 @@ function VersesBody({ mine }: { mine: Set<string> }) {
   );
 }
 
+const OPEN_WORLD = { fx: 0.5, fy: 0.19, fill: 0.5 };
+const STRIP_WORLD = { fx: 0.5, fy: 0.24, fill: 1.0 };
+const STACKED_WORLD = { fx: 0.7, fy: 0.52, fill: 0.92 };
+
 function VersePanel({
   discipline,
   index,
@@ -179,11 +183,21 @@ function VersePanel({
         boxShadow: `inset 0 0 0 1px ${rgba(vibe.accent, expanded ? 0.45 : 0.22)}`,
       }}
     >
-      <VerseMotif vibe={vibe} compact={!expanded} className="absolute inset-0" />
+      <DisciplineWorld
+        discipline={discipline.name}
+        vibe={vibe}
+        theme={theme}
+        // Collapsed: the world fills the strip, cropped. Open: it floats above the text.
+        targets={stacked ? STACKED_WORLD : expanded ? OPEN_WORLD : STRIP_WORLD}
+        interactive={expanded && !stacked}
+        delay={150 + index * 110}
+        // Phones: a band across the top of the card, above the text.
+        className={stacked ? 'absolute inset-x-0 top-0 h-[170px]' : 'absolute inset-0'}
+      />
       <span
         className="pointer-events-none absolute inset-0"
         style={{
-          background: `linear-gradient(180deg, ${rgba(vibe.background, 0.15)} 0%, ${rgba(vibe.background, 0.55)} 45%, ${rgba(vibe.background, 0.94)} 100%)`,
+          background: `linear-gradient(180deg, ${rgba(vibe.background, 0)} 0%, ${rgba(vibe.background, 0.12)} 40%, ${rgba(vibe.background, 0.78)} 66%, ${rgba(vibe.background, 0.95)} 100%)`,
         }}
         aria-hidden
       />
@@ -212,7 +226,7 @@ function VersePanel({
       <div
         className={cn(
           'pointer-events-none absolute inset-x-0 bottom-0 flex flex-col p-6 sm:p-8',
-          stacked ? 'relative min-h-[300px] justify-end' : 'top-0 justify-end transition-opacity duration-300',
+          stacked ? 'relative min-h-[300px] justify-end pt-32 sm:pt-32' : 'top-0 justify-end transition-opacity duration-300',
           !stacked && (expanded ? 'opacity-100 delay-200' : 'opacity-0'),
         )}
         aria-hidden={!stacked && !expanded}

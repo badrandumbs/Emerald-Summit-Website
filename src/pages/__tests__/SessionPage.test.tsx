@@ -39,7 +39,6 @@ vi.mock('../../services/auth', async (importOriginal) => ({
 }));
 vi.mock('../../context/ScheduleContext', () => ({ useSchedule: () => state.schedule }));
 vi.mock('../../context/ThemeContext', () => ({ useTheme: () => ({ theme: 'light' }) }));
-vi.mock('../../components/verse/VerseMotif', () => ({ default: () => null }));
 vi.mock('../../components/verse/FlowingBorder', () => ({ default: () => null }));
 vi.mock('../../components/session/SessionRoster', () => ({ default: () => <p>Roster</p> }));
 vi.mock('../../components/session/SessionVolunteers', () => ({ default: () => <p>Volunteers list</p> }));

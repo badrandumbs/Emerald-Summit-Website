@@ -5,7 +5,6 @@ import { expect, test, vi } from 'vitest';
 vi.mock('../../../lib/supabase', () => ({ supabase: null, isSupabaseConfigured: false }));
 vi.mock('../../../context/AuthContext', () => ({ useAuth: () => ({ profile: null }) }));
 vi.mock('../../../context/ThemeContext', () => ({ useTheme: () => ({ theme: 'light' }) }));
-vi.mock('../VerseMotif', () => ({ default: () => null }));
 vi.mock('../FlowingBorder', () => ({ default: () => null }));
 vi.mock('../../../context/ScheduleContext', () => ({
   useSchedule: () => ({

@@ -10,19 +10,12 @@ export type DrawFrame = (
 /** Seconds shown when motion is reduced: a settled, representative frame. */
 const STILL_FRAME = 2.5;
 /**
- * How long a motif or flowing border plays before it settles. The last
- * SLOW_DOWN seconds ease the clock to a stop, so it comes to rest rather than
- * freezing mid-move; after that the canvas holds its last frame.
- */
-export const PLAY_SECONDS = 5;
-const SLOW_DOWN = 1.5;
-
-/**
  * Runs `draw` every animation frame on a canvas sized to its box (at device
  * pixel ratio). Like the mobile app's effect ticker, the clock pauses while
  * the canvas is off screen or the tab is hidden, and resumes where it left
- * off. It plays for PLAY_SECONDS, then rests on its last frame. Under
- * prefers-reduced-motion it draws one still frame instead.
+ * off. It keeps moving for as long as it is on screen (since Nov 23, 2026 it
+ * no longer eases to a stop). Under prefers-reduced-motion it draws one still
+ * frame instead.
  */
 export function useCanvasLoop(canvasRef: RefObject<HTMLCanvasElement | null>, draw: DrawFrame) {
   const drawRef = useRef(draw);
@@ -43,8 +36,6 @@ export function useCanvasLoop(canvasRef: RefObject<HTMLCanvasElement | null>, dr
     let last: number | null = null;
     let frame = 0;
     let onScreen = true;
-    let played = 0;
-    let done = false;
 
     const paint = () => {
       if (width === 0 || height === 0) return;
@@ -67,23 +58,15 @@ export function useCanvasLoop(canvasRef: RefObject<HTMLCanvasElement | null>, dr
 
     const tick = (now: number) => {
       if (last !== null) {
-        const dt = Math.min((now - last) / 1000, 0.1);
-        played += dt;
-        // Ease out over the last SLOW_DOWN seconds, then stop for good.
-        clock += dt * Math.min(1, Math.max(0, (PLAY_SECONDS - played) / SLOW_DOWN));
+        clock += Math.min((now - last) / 1000, 0.1);
       }
       last = now;
       paint();
-      if (played >= PLAY_SECONDS) {
-        done = true;
-        frame = 0;
-        return;
-      }
       frame = requestAnimationFrame(tick);
     };
 
     const start = () => {
-      if (reduced || done || frame || !onScreen || document.hidden) return;
+      if (reduced || frame || !onScreen || document.hidden) return;
       last = null;
       frame = requestAnimationFrame(tick);
     };
@@ -117,45 +100,4 @@ export function useCanvasLoop(canvasRef: RefObject<HTMLCanvasElement | null>, dr
       document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [canvasRef]);
-}
-
-/** Small deterministic random generator, so a motif's particles never jump. */
-function mulberry32(seed: number) {
-  let a = seed;
-  return () => {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-export interface Particle {
-  x: number;
-  y: number;
-  size: number;
-  speed: number;
-  phase: number;
-  flag: boolean;
-}
-
-const fields = new Map<string, Particle[]>();
-
-/** A seeded particle field, cached per key (positions stay fixed per motif). */
-export function field(key: string, count: number, seed: number): Particle[] {
-  let list = fields.get(key);
-  if (!list) {
-    const r = mulberry32(seed);
-    list = Array.from({ length: count }, () => ({
-      x: r(),
-      y: r(),
-      size: r(),
-      speed: 0.5 + r(),
-      phase: r() * Math.PI * 2,
-      flag: r() < 0.5,
-    }));
-    fields.set(key, list);
-  }
-  return list;
 }

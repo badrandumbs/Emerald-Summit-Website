@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { afterEach, expect, test, vi } from 'vitest';
 import { render } from '@testing-library/react';
-import { PLAY_SECONDS, useCanvasLoop } from '../useCanvasLoop';
+import { useCanvasLoop } from '../useCanvasLoop';
 
 function Loop({ draw }: { draw: (t: number) => void }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -11,7 +11,7 @@ function Loop({ draw }: { draw: (t: number) => void }) {
 
 afterEach(() => vi.restoreAllMocks());
 
-test('a motif plays for PLAY_SECONDS, slows to a stop, then stops asking for frames', () => {
+test('the border keeps moving at full speed while on screen, never easing to a stop', () => {
   const frames: FrameRequestCallback[] = [];
   vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => frames.push(cb));
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
@@ -22,14 +22,13 @@ test('a motif plays for PLAY_SECONDS, slows to a stop, then stops asking for fra
   const times: number[] = [];
   render(<Loop draw={(t) => times.push(t)} />);
 
-  // Step 60 fps well past the limit.
+  // Twenty seconds at 60 fps.
   let now = 0;
-  for (let i = 0; i < (PLAY_SECONDS + 5) * 60 && frames.length; i++) {
+  for (let i = 0; i < 20 * 60 && frames.length; i++) {
     now += 1000 / 60;
     frames.shift()!(now);
   }
-  expect(frames).toHaveLength(0); // no more frames requested
+  expect(frames.length).toBeGreaterThan(0); // still asking for frames
   const end = times[times.length - 1];
-  expect(end - times[0]).toBeLessThan(PLAY_SECONDS); // eased, so the clock ran less than wall time
-  expect(end - times[times.length - 2]).toBeLessThan(0.002); // came to rest, not frozen mid-move
+  expect(end - times[times.length - 2]).toBeCloseTo(1 / 60, 4); // still at full speed
 });

@@ -11,7 +11,9 @@ import {
   vibeFor,
   type VerseVibe,
 } from '../../models/verseVibes';
-import VerseMotif from './VerseMotif';
+import DisciplineWorld, { useFullWorldTargets, type DisciplineWorldHandle } from './DisciplineWorld';
+import DisciplineIntro, { introDue } from './DisciplineIntro';
+import { EASE_OUT } from '@/lib/motion';
 import EighthGradeBadge from './EighthGradeBadge';
 import { EIGHTH_GRADE_BADGE, isEighthGradeParticipant } from '../../models/registration';
 import { useAuth } from '../../context/AuthContext';
@@ -20,7 +22,7 @@ import { orderTracks } from '../../models/trackOrder';
 import { SessionEditorDialog, type SessionEditorTarget } from './ContentEditors';
 import FlowingBorder from './FlowingBorder';
 import SummitHomeLink from './SummitHomeLink';
-import { growIn, useCircleReveal, type Origin } from './useCircleReveal';
+import { growIn, reducedMotion, useCircleReveal, type Origin } from './useCircleReveal';
 import SessionView from '../session/SessionView';
 import { toast } from 'sonner';
 import { REGISTRATION_CLOSED_MESSAGE, TBD, useSiteSwitches } from '../../services/siteSwitches';
@@ -78,6 +80,7 @@ function VerseSessionCard({
   const { showTimes } = useSiteSwitches();
   return (
     <article
+      data-rise
       className="rounded-[1rem] p-4"
       style={{
         background: rgba(vibe.surface, 0.88),
@@ -216,6 +219,13 @@ function VersePage({
   const backButton = useRef<HTMLButtonElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const sessionPane = useRef<HTMLDivElement>(null);
+  const world = useRef<DisciplineWorldHandle>(null);
+  const worldTargets = useFullWorldTargets();
+  // The discipline's opening scene, over the blurred page (once per session).
+  const [intro, setIntro] = useState(() => introDue(discipline.name));
+  // The words and cards wait, hidden, until the scene starts blurring away.
+  const [held, setHeld] = useState(intro);
+  const risen = useRef(false);
 
   // A session opens inside this world (?session=id) instead of on a page of
   // its own, so the background, motif and border carry on untouched and only
@@ -258,7 +268,41 @@ function VersePage({
         { replace: true },
       );
   }, [location.state, navigate, setParams]);
-  const back = useCallback(() => (sessionId ? backToList() : close(onClosed)), [sessionId, backToList, close, onClosed]);
+  const back = useCallback(() => {
+    if (sessionId) return backToList();
+    // The world scatters back out while the circle closes.
+    world.current?.leave(320);
+    close(onClosed);
+  }, [sessionId, backToList, close, onClosed]);
+
+  // The page's words and cards rise into place one after another while the
+  // world assembles behind them (after the opening scene, if one plays).
+  useLayoutEffect(() => {
+    const root = content.current;
+    if (held || risen.current) return;
+    risen.current = true;
+    if (!root || reducedMotion()) return;
+    root.querySelectorAll<HTMLElement>('[data-rise]').forEach((el, i) => {
+      el.animate?.(
+        [
+          { opacity: 0, transform: 'translateY(24px)' },
+          { opacity: 1, transform: 'translateY(0px)' },
+        ],
+        { duration: 700, delay: 280 + Math.min(i, 10) * 65, easing: EASE_OUT, fill: 'backwards' },
+      );
+    });
+  }, [held]);
+
+  // Scrolling into the tracks (or opening a session) eases the world up and back.
+  const onScroll = useCallback(() => {
+    if (sessionId) return;
+    const top = scroller.current?.scrollTop ?? 0;
+    world.current?.setScroll(Math.min(1, top / 480));
+  }, [sessionId]);
+  useEffect(() => {
+    if (sessionId) world.current?.setScroll(1);
+    else onScroll();
+  }, [sessionId, onScroll]);
 
   // Switching between the list and a session: a session starts at the top
   // and grows in; the list comes back where it was left.
@@ -303,9 +347,21 @@ function VersePage({
       className="fixed inset-0 z-50 overflow-hidden"
       style={{ background: vibe.background, color: vibe.text }}
     >
-      <VerseMotif vibe={vibe} className="absolute inset-0" />
-      <div ref={content} className="absolute inset-0">
-        <div ref={scroller} className="h-full overflow-y-auto">
+      <DisciplineWorld
+        ref={world}
+        discipline={discipline.name}
+        vibe={vibe}
+        theme={theme}
+        targets={worldTargets}
+        full
+        interactive
+        hold={held}
+        // A second after the opening starts fading, so its fade is seen on its own first.
+        afterHoldMs={1000}
+        className="absolute inset-0"
+      />
+      <div ref={content} className="absolute inset-0 [&[data-held]_[data-rise]]:opacity-0" data-held={held || undefined}>
+        <div ref={scroller} onScroll={onScroll} className="h-full overflow-y-auto">
           <div className="mx-auto max-w-4xl px-6 pb-16 pt-8 sm:px-10 sm:pt-10">
             <div className="flex items-center justify-between gap-3">
               <button
@@ -331,14 +387,14 @@ function VersePage({
               </div>
             ) : (
               <>
-                <header className="mt-10">
-                  <h2 className="font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
+                <header className="mt-6 flex min-h-[40vh] flex-col items-start justify-end sm:min-h-[44vh] lg:min-h-[min(58vh,540px)] lg:max-w-[52%]">
+                  <h2 data-rise className="font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
                     {discipline.label}
                   </h2>
-                  <p className="mt-2 text-[15px] leading-relaxed" style={{ color: vibe.textDim }}>
+                  <p data-rise className="mt-2 text-[15px] leading-relaxed" style={{ color: vibe.textDim }}>
                     {discipline.description}
                   </p>
-                  <p className="mt-4 text-[15px]">
+                  <p data-rise className="mt-4 text-[15px]">
                     <span className="font-bold">
                       {sessions.length} {sessions.length === 1 ? 'track' : 'tracks'}
                     </span>
@@ -352,7 +408,7 @@ function VersePage({
                   {canSchedule && <ScheduleButton vibe={vibe} onClick={() => navigate('/schedule')} />}
                 </header>
 
-                <div className="mt-8 mb-3 flex items-center justify-between gap-3">
+                <div data-rise className="mt-8 mb-3 flex items-center justify-between gap-3">
                   <h3 className="text-[12px] font-bold uppercase tracking-[0.14em]" style={{ color: vibe.textDim }}>
                     Tracks
                   </h3>
@@ -398,6 +454,15 @@ function VersePage({
         </div>
       </div>
       <FlowingBorder vibe={vibe} cornerRadius={0} />
+      {intro && (
+        <DisciplineIntro
+          discipline={discipline.name}
+          vibe={vibe}
+          theme={theme}
+          onClear={() => setHeld(false)}
+          onDone={() => setIntro(false)}
+        />
+      )}
       <SessionEditorDialog target={sessionEditor} onClose={() => setSessionEditor(null)} />
     </div>,
     document.body,

@@ -206,7 +206,6 @@ export default function SessionView({
   // The page sits in its discipline's world, like the discipline's own page.
   const vibe = vibeFor(keynote ? null : s.track, theme);
   const accent = vibe.accent;
-  const VerseIcon = vibe.icon;
   const disciplineLabel = s.disciplineName || disciplineByName(s.track)?.label || '';
   const deadline = s.participantDeadline ? new Date(s.participantDeadline) : null;
   const closed = participationClosed(s.participantDeadline);
@@ -647,18 +646,7 @@ export default function SessionView({
   return (
     <>
       <header className="mb-8">
-        {disciplineLabel && (
-          <p className="flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.16em]" style={{ color: accent }}>
-            <span
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md"
-              style={{ background: rgba(accent, 0.16), boxShadow: `inset 0 0 0 1px ${rgba(accent, 0.35)}` }}
-            >
-              <VerseIcon className="h-4 w-4" strokeWidth={2} />
-            </span>
-            {disciplineLabel}
-          </p>
-        )}
-        <h1 className="mt-4 font-display text-4xl font-extrabold leading-[1.05] tracking-tight md:text-5xl">{s.title}</h1>
+        <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight md:text-5xl">{s.title}</h1>
         <div className="mt-4 h-1 w-16 rounded-full" style={{ background: rgba(accent, 0.8) }} />
       </header>
 

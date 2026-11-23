@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import SessionView from '../components/session/SessionView';
 import FlowingBorder from '../components/verse/FlowingBorder';
 import SummitHomeLink from '../components/verse/SummitHomeLink';
-import VerseMotif from '../components/verse/VerseMotif';
+import DisciplineWorld, { useFullWorldTargets } from '../components/verse/DisciplineWorld';
 import { screenCenter, useCircleReveal, type Origin } from '../components/verse/useCircleReveal';
 import { useTheme } from '../context/ThemeContext';
 import { MOCK_SESSIONS } from '../models/sessions';
@@ -67,6 +67,7 @@ function SessionWorld({
 }) {
   const { theme } = useTheme();
   const vibe = vibeFor(verse, theme);
+  const worldTargets = useFullWorldTargets();
   // Fixed for the page's life, so the grow-in runs once.
   const [origin] = useState<Origin>(() => from ?? screenCenter());
   const { shell, content, close } = useCircleReveal(origin);
@@ -78,7 +79,15 @@ function SessionWorld({
       className="fixed inset-0 z-40 overflow-hidden"
       style={{ background: vibe.background, color: vibe.text }}
     >
-      <VerseMotif vibe={vibe} className="absolute inset-0" />
+      {/* Dimmed and set back: the session's own content leads here. */}
+      <DisciplineWorld
+        discipline={verse}
+        vibe={vibe}
+        theme={theme}
+        targets={{ ...worldTargets, fy: worldTargets.fy - 0.12, fill: worldTargets.fill * 0.75 }}
+        full
+        className="absolute inset-0 opacity-45"
+      />
       <div ref={content} className="absolute inset-0 overflow-y-auto">
         <div className="relative mx-auto max-w-4xl px-6 pb-16 pt-8 sm:px-10 sm:pt-10">
           <div className="mb-8 flex items-center justify-between gap-3">
