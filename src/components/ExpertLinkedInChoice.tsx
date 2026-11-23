@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import LinkedInIcon from './LinkedInIcon';
 import {
-  LINKEDIN_CHOICE, LINKEDIN_OWN_PROFILE_URL, LINKEDIN_URL_KEY, LINKEDIN_VISIBLE_KEY, linkedInVisible, type LinkedInVisible,
+  LINKEDIN_CHOICE, LINKEDIN_URL_KEY, LINKEDIN_VISIBLE_KEY, linkedInVisible, type LinkedInVisible,
 } from '../models/expertLinkedIn';
 
 export default function ExpertLinkedInChoice({
@@ -53,15 +53,8 @@ export default function ExpertLinkedInChoice({
             placeholder={LINKEDIN_CHOICE.urlHint}
             value={answers[LINKEDIN_URL_KEY] ?? ''}
             onChange={(e) => onChange(LINKEDIN_URL_KEY, e.target.value)}
-            aria-describedby="linkedin-url-help"
             className={compact ? undefined : 'h-12 rounded-xl bg-secondary/40 text-[15px]'}
           />
-          <p id="linkedin-url-help" className="mt-1.5 text-[12px] text-muted-foreground">
-            <a href={LINKEDIN_OWN_PROFILE_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald underline-offset-4 hover:underline">
-              {LINKEDIN_CHOICE.findLink}
-            </a>{' '}
-            {LINKEDIN_CHOICE.findHelp}
-          </p>
         </div>
       )}
     </fieldset>

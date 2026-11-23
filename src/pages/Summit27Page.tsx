@@ -1,15 +1,16 @@
 // The Summit '27 page (/summit-27/:tab), inside the signed-in portal: one
-// sidebar tab, with Keynote, Team and Sponsors as tabs across the top of the
+// sidebar tab, with Keynote, Team, Experts and Sponsors as tabs across the top of the
 // page. Opening it from the sidebar plays the intro (Summit27Intro.tsx, run
 // from above the routes), whose logo lands in Support EAF (Donate and
 // Volunteer with EAF), under every tab. The sponsor pyramid
 // (src/components/SponsorTiers.tsx) is also on the landing page.
 import { Navigate, NavLink, useParams } from 'react-router-dom';
-import { Handshake, Keynote, Team, type AppIcon } from '@/components/icons';
+import { Award, Handshake, Keynote, Team, type AppIcon } from '@/components/icons';
 import AppShell from '../components/AppShell';
 import { ROLL_ATTR } from '../components/Summit27Intro';
 import { SupportEafCard } from '../components/home/AboutSections';
 import SponsorTiers from '../components/SponsorTiers';
+import ExpertsDirectory, { EXPERTS_INTRO } from '../components/ExpertsDirectory';
 import { useRequireProfile } from '../hooks/useRequireProfile';
 import { SUMMIT_DATE_LABEL, SUMMIT_HOURS, VENUE } from '../models/summitFacts';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,6 +19,7 @@ import { cn } from '@/lib/utils';
 export const SUMMIT27_TABS: { id: string; label: string; icon: AppIcon }[] = [
   { id: 'keynote', label: 'Keynote', icon: Keynote },
   { id: 'team', label: 'Team', icon: Team },
+  { id: 'experts', label: 'Experts', icon: Award },
   { id: 'sponsors', label: 'Sponsors', icon: Handshake },
 ];
 
@@ -101,6 +103,12 @@ export default function Summit27Page() {
       {current.id === 'keynote' && <ComingSoon>This year's keynote speaker will be announced soon.</ComingSoon>}
       {current.id === 'team' && (
         <ComingSoon>About Me pages for the students and organizers working on Emerald Summit '27 are coming soon.</ComingSoon>
+      )}
+      {current.id === 'experts' && (
+        <div className="space-y-4">
+          <p className="max-w-2xl text-[15px] leading-relaxed">{EXPERTS_INTRO}</p>
+          <ExpertsDirectory />
+        </div>
       )}
       {current.id === 'sponsors' && <SponsorTiers />}
 

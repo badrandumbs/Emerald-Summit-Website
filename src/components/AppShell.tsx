@@ -18,6 +18,7 @@ import {
   CornerDownLeft,
   Keynote,
   Team,
+  Award,
   Mountains,
   Handshake,
   HeartHandshake,
@@ -194,6 +195,14 @@ const LINK_HITS: (SearchHit & { words: string[] })[] = [
     to: '/summit-27/team',
     icon: Team,
     words: ['team', 'organizers', 'about me'],
+  },
+  {
+    key: 'summit-27-experts',
+    label: 'Experts',
+    sub: "Summit '27",
+    to: '/summit-27/experts',
+    icon: Award,
+    words: ['experts', 'mentors', 'judges', 'speakers'],
   },
   {
     key: 'summit-27-sponsors',

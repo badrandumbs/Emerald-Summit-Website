@@ -11,12 +11,9 @@ export type LinkedInVisible = 'yes' | 'no';
 export const LINKEDIN_VISIBLE_KEY = 'linkedin_visible';
 export const LINKEDIN_URL_KEY = 'linkedin_url';
 
-/** LinkedIn sends a signed-in member from here to their own profile. */
-export const LINKEDIN_OWN_PROFILE_URL = 'https://www.linkedin.com/in/me/';
-
 /** What an expert is told when they sign up to serve in a track. */
 export function expertTrackNotice(trackTitle: string): string {
-  return `Your profile will be visible to students on the ${trackTitle} page and on a page where we recognize all our experts.`;
+  return `Your profile will be visible to students on the ${trackTitle} page and on our Experts page, where we recognize all our experts.`;
 }
 
 export const LINKEDIN_CHOICE = {
@@ -26,8 +23,6 @@ export const LINKEDIN_CHOICE = {
   no: 'No, leave it off',
   urlLabel: 'Your LinkedIn profile link',
   urlHint: 'linkedin.com/in/your-name',
-  findLink: 'Find my link',
-  findHelp: 'opens your own LinkedIn profile when you are signed in to LinkedIn; copy the address from there.',
   chooseError: 'Please choose whether to attach your LinkedIn.',
   urlError: 'Paste your LinkedIn profile link, like linkedin.com/in/your-name.',
 } as const;

@@ -10,6 +10,7 @@ import LandingNav from '../../components/LandingNav';
 import { navItemsForRole } from '../../components/AppShell';
 import { EAF_VOLUNTEER_URL } from '../../components/home/AboutSections';
 import { SPONSOR_TIERS } from '../../models/sponsors';
+import { EXPERTS_EMPTY } from '../../components/ExpertsDirectory';
 
 const state = vi.hoisted(() => ({
   guard: { ready: true, redirect: null as string | null },
@@ -18,6 +19,7 @@ vi.mock('../../components/AppShell', async (importActual) => ({
   ...(await importActual<typeof import('../../components/AppShell')>()),
   default: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
+vi.mock('../../services/experts', () => ({ fetchPublicExperts: () => Promise.resolve([]) }));
 vi.mock('../../hooks/useRequireProfile', () => ({ useRequireProfile: () => state.guard }));
 
 beforeEach(() => {
@@ -48,7 +50,7 @@ describe("Summit '27 page", () => {
     expect(within(screen.getByRole('navigation', { name: 'Main' })).queryByText("Summit '27")).not.toBeInTheDocument();
   });
 
-  test('the landing navbar has Sponsors, Keynote and Team after Disciplines; Team opens the Keynote & Team page', async () => {
+  test('the landing navbar has Experts, Sponsors, Keynote and Team after Disciplines; Team opens the Keynote & Team page', async () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter initialEntries={['/']}>
@@ -60,7 +62,7 @@ describe("Summit '27 page", () => {
     );
     const nav = screen.getByRole('navigation', { name: 'Main' });
     expect(within(nav).getAllByRole('button').map((b) => b.textContent)).toEqual(
-      ['About', 'Disciplines', 'Sponsors', 'Keynote', 'Team', 'FAQ', 'Contact'],
+      ['About', 'Disciplines', 'Experts', 'Sponsors', 'Keynote', 'Team', 'FAQ', 'Contact'],
     );
     await user.click(within(nav).getByRole('button', { name: 'Team' }));
     // Both on one page, Keynote first.
@@ -76,7 +78,7 @@ describe("Summit '27 page", () => {
     }
   });
 
-  test('subtabs switch between keynote, team and sponsors, with Donate on each', async () => {
+  test('subtabs switch between keynote, team, experts and sponsors, with Donate on each', async () => {
     renderAt('/summit-27/keynote');
     expect(screen.getByText(/keynote speaker will be announced soon/)).toBeInTheDocument();
     expect(screen.getByText('Saturday, January 23, 2027 · 9 AM to 5 PM · Emerald High School, Dublin, CA')).toBeInTheDocument();
@@ -86,6 +88,10 @@ describe("Summit '27 page", () => {
     await userEvent.click(within(tabs).getByRole('link', { name: /Team/ }));
     expect(screen.getByRole('heading', { level: 1, name: "Summit '27" })).toBeInTheDocument();
     expect(screen.getByText(/About Me pages/)).toBeInTheDocument();
+
+    // Experts fills in from the database; with none yet it says so.
+    await userEvent.click(within(tabs).getByRole('link', { name: /Experts/ }));
+    expect(await screen.findByText(EXPERTS_EMPTY)).toBeInTheDocument();
 
     await userEvent.click(within(tabs).getByRole('link', { name: /Sponsors/ }));
     const tiers = screen.getByRole('list', { name: 'Sponsor tiers, highest first' });

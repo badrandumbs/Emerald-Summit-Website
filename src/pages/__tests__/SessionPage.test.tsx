@@ -90,7 +90,7 @@ vi.mock('../../models/sessions', async (importOriginal) => {
 });
 
 import SessionPage from '../SessionPage';
-import { expertTrackNotice, LINKEDIN_CHOICE, LINKEDIN_OWN_PROFILE_URL } from '../../models/expertLinkedIn';
+import { expertTrackNotice, LINKEDIN_CHOICE } from '../../models/expertLinkedIn';
 import { REGISTRATION_CLOSED_MESSAGE, setSiteSwitchesForTests } from '../../services/siteSwitches';
 
 function page() {
@@ -220,7 +220,6 @@ describe('session page', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Serve in this track' }));
     expect(within(dialog).getByRole('alert')).toHaveTextContent(LINKEDIN_CHOICE.chooseError);
     await user.click(within(dialog).getByRole('radio', { name: LINKEDIN_CHOICE.yes }));
-    expect(within(dialog).getByRole('link', { name: LINKEDIN_CHOICE.findLink })).toHaveAttribute('href', LINKEDIN_OWN_PROFILE_URL);
     await user.type(within(dialog).getByLabelText(LINKEDIN_CHOICE.urlLabel), 'linkedin.com/in/robo-expert');
     await user.click(within(dialog).getByRole('button', { name: 'Serve in this track' }));
     await waitFor(() => expect(state.toggle).toHaveBeenCalledWith('s1', expect.objectContaining({ add: true, type: 'expert' })));

@@ -89,7 +89,14 @@
 .lp-nav__sheet-list { display: grid; gap: var(--space-2xs); }
 .lp-nav__sheet .lp-nav__link { justify-content: flex-start; border-radius: var(--radius-card); width: 100%; text-align: left; }
 .lp-nav__sheet .lp-btn { width: 100%; margin-top: var(--space-sm); }
-@media (max-width: 48rem) {
+/* Eight links since Experts (Nov 23, 2026): tighter on laptop widths, and the
+   phone menu takes over below 62rem, where even tight links would run off. */
+@media (max-width: 82rem) {
+  .lp-nav__inner { gap: var(--space-sm); }
+  .lp-nav__links { gap: 0; }
+  .lp-nav__links .lp-nav__link { padding-inline: var(--space-sm); }
+}
+@media (max-width: 62rem) {
   .lp-nav__links, .lp-nav__actions { display: none; }
   .lp-nav__menu-btn { display: inline-flex; }
 }
