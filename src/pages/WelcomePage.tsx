@@ -10,6 +10,7 @@ import OrbitalUniverses from '../components/OrbitalUniverses';
 import PhotoMosaic from '../components/PhotoMosaic';
 import LandingFooter from '../components/LandingFooter';
 import SponsorTiers from '../components/SponsorTiers';
+import DonateSection from '../landing/DonateSection';
 import PhotoRail from '../landing/PhotoRail';
 import HairlineFigure from '../landing/HairlineFigure';
 import { SIGN_IN_ROLES } from '../models/roles';
@@ -434,6 +435,9 @@ export default function WelcomePage() {
             <SponsorTiers />
           </div>
         </section>
+
+        {/* Right after the sponsors: anyone can give, through EAF's Zeffy donation form. */}
+        <DonateSection />
 
         {/* The day, in the owner's photographs. */}
         <section className="lp-section lp-section--tight lp-ruled" aria-labelledby="rail-title">

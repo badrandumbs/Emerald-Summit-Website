@@ -24,6 +24,7 @@ import {
   SupportEafCard,
 } from '../home/AboutSections';
 import SponsorTiers from '../SponsorTiers';
+import DonateSection from '../../landing/DonateSection';
 import { SPONSOR_FORM_EMBED_URL, SPONSOR_FORM_URL } from '../../models/sponsors';
 
 beforeEach(() => vi.clearAllMocks());
@@ -137,6 +138,17 @@ describe('About, Support EAF and Sponsors', () => {
     expect(SPONSOR_FORM_URL).toContain('zeffy.com');
     expect(SPONSOR_FORM_URL).not.toBe(EAF_DONATE_URL);
     expect(document.body.innerHTML).not.toContain('docs.google.com/forms');
+  });
+
+  test("The landing page's Donate section opens EAF's Zeffy donation form and links to volunteering", async () => {
+    const user = userEvent.setup();
+    render(<DonateSection />);
+    const section = screen.getByRole('region', { name: 'Want to help keep the Summit free?' });
+    expect(section).toHaveAttribute('id', 'donate');
+    expect(within(section).getByRole('link', { name: /Volunteer with EAF/ })).toHaveAttribute('href', EAF_VOLUNTEER_URL);
+    await user.click(within(section).getByRole('button', { name: /Donate/ }));
+    const dialog = screen.getByRole('dialog', { name: 'Donate to EAF' });
+    expect(within(dialog).getByTitle('Donation form powered by Zeffy')).toHaveAttribute('src', EAF_DONATE_EMBED_URL);
   });
 
   test('About the app credits the student developers', () => {

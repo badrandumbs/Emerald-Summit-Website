@@ -532,12 +532,22 @@
 .lp-soon p { color: var(--color-ink-2); font-size: var(--text-lead); line-height: 1.5; }
 .lp-soon .lp-soon__tag { justify-self: start; padding: 4px 12px; border-radius: var(--radius-pill); background: color-mix(in oklab, var(--color-accent) 14%, transparent); color: var(--color-accent-hover); font-size: var(--text-sm); font-weight: 600; }
 
-/* The sponsor buttons on the landing page: bigger and brighter than the portal's (SponsorTiers' .sponsor-actions). */
+/* The sponsor and donate buttons on the landing page: bigger and brighter than the portal's
+   (SponsorTiers' .sponsor-actions, DonateSection's .lp-donate__actions). */
 #sponsors .sponsor-actions { justify-content: center; gap: var(--space-sm); margin-top: var(--space-2xl); }
-#sponsors .sponsor-actions > :is(a, button) { gap: 10px; padding: 14px 24px; border-radius: 12px; font-size: 1.0625rem; }
-#sponsors .sponsor-actions > :is(a, button) svg { width: 18px; height: 18px; }
-#sponsors .sponsor-actions > :first-child { background: var(--color-accent); color: var(--color-accent-ink); box-shadow: 0 10px 30px -8px color-mix(in oklab, var(--color-accent) 70%, transparent); }
-#sponsors .sponsor-actions > :first-child:hover { background: var(--color-accent-hover); transform: translateY(-1px); }
-#sponsors .sponsor-actions > :last-child { border: 1.5px solid color-mix(in oklab, var(--color-accent) 70%, transparent); background: color-mix(in oklab, var(--color-accent) 10%, transparent); color: var(--color-ink); }
-#sponsors .sponsor-actions > :last-child:hover { background: color-mix(in oklab, var(--color-accent) 20%, transparent); }
-@media (max-width: 40rem) { #sponsors .sponsor-actions > :is(a, button) { flex: 1 1 100%; justify-content: center; } }
+:is(#sponsors .sponsor-actions, #donate .lp-donate__actions) > :is(a, button) { gap: 10px; padding: 14px 24px; border-radius: 12px; font-size: 1.0625rem; }
+:is(#sponsors .sponsor-actions, #donate .lp-donate__actions) > :is(a, button) svg { width: 18px; height: 18px; }
+:is(#sponsors .sponsor-actions, #donate .lp-donate__actions) > :first-child { background: var(--color-accent); color: var(--color-accent-ink); box-shadow: 0 10px 30px -8px color-mix(in oklab, var(--color-accent) 70%, transparent); }
+:is(#sponsors .sponsor-actions, #donate .lp-donate__actions) > :first-child:hover { background: var(--color-accent-hover); transform: translateY(-1px); }
+:is(#sponsors .sponsor-actions, #donate .lp-donate__actions) > :last-child { border: 1.5px solid color-mix(in oklab, var(--color-accent) 70%, transparent); background: color-mix(in oklab, var(--color-accent) 10%, transparent); color: var(--color-ink); }
+:is(#sponsors .sponsor-actions, #donate .lp-donate__actions) > :last-child:hover { background: color-mix(in oklab, var(--color-accent) 20%, transparent); }
+@media (max-width: 40rem) { :is(#sponsors .sponsor-actions, #donate .lp-donate__actions) > :is(a, button) { flex: 1 1 100%; justify-content: center; } }
+
+/* Donate, right after Sponsors (DonateSection.tsx): a short centered band on the second paper. */
+.lp-donate { background: var(--color-paper-2); padding-block: var(--section-gap-s); }
+#donate { scroll-margin-top: calc(var(--bar-h) - var(--space-3xl)); }
+.lp-donate__inner { display: grid; justify-items: center; gap: var(--space-lg); text-align: center; }
+.lp-donate__inner h2 { max-width: none; }
+.lp-donate__lede { max-width: 60ch; color: var(--color-ink-2); font-size: var(--text-lead); line-height: 1.5; }
+#donate .lp-donate__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-sm); margin-top: var(--space-sm); }
+@media (max-width: 40rem) { #donate .lp-donate__actions { width: 100%; } }
