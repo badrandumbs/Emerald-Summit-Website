@@ -77,19 +77,13 @@ describe("Summit '27 page", () => {
     expect(screen.getByText(/keynote speaker will be announced soon/)).toBeInTheDocument();
   });
 
-  test('sponsors show in their tier; an empty tier says Open', () => {
+  test('sponsors show in their tier, and every tier has a spot for your company logo', () => {
     render(<SponsorTiers sponsors={[{ name: 'Acme', tier: 'Pillar', url: 'https://acme.test', logo: '/acme.png' }]} />);
     const pillar = screen.getByRole('list', { name: 'Pillar sponsors' });
     expect(within(pillar).getByRole('img', { name: 'Acme' })).toBeInTheDocument();
-    expect(screen.getAllByText('Open')).toHaveLength(SPONSOR_TIERS.length - 1);
-  });
-
-  test('each tier shows its rank, Capstone first and marked top tier', () => {
-    render(<SponsorTiers />);
-    const n = SPONSOR_TIERS.length;
-    SPONSOR_TIERS.forEach((_, i) => expect(screen.getByText(`Tier ${i + 1} of ${n}`)).toBeInTheDocument());
-    const items = within(screen.getByRole('list', { name: 'Sponsor tiers, highest first' })).getAllByRole('heading', { level: 3 });
-    expect(items.map((h) => h.textContent)).toEqual(SPONSOR_TIERS.map((t) => t.name));
-    expect(screen.getByText(/Top tier/)).toBeInTheDocument();
+    const spots = screen.getAllByRole('button', { name: /^Your company logo could go here/ });
+    expect(spots.map((b) => b.getAttribute('aria-label')!.split('become a ')[1])).toEqual(
+      SPONSOR_TIERS.map((t) => `${t.name} sponsor`),
+    );
   });
 });

@@ -4,8 +4,9 @@
 // from above the routes), whose logo lands in Support EAF (Donate and
 // Volunteer with EAF), under every tab. Sponsors stay off the public site:
 // the organizers don't want unpaid sponsors getting free advertising.
+import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { Navigate, NavLink, useParams } from 'react-router-dom';
-import { Handshake, Keynote, Team, type AppIcon } from '@/components/icons';
+import { Handshake, Keynote, Plus, Team, type AppIcon } from '@/components/icons';
 import AppShell from '../components/AppShell';
 import { ROLL_ATTR } from '../components/Summit27Intro';
 import { LinkButton, SupportEafCard, ZeffyFormButton } from '../components/home/AboutSections';
@@ -66,79 +67,146 @@ function ComingSoon({ children }: { children: string }) {
 }
 
 /**
- * Five bars stepping up, filled up to the tier's level (Capstone all five,
- * Cornerstone one), so the ranking reads at a glance. Decorative: the badge
- * and the "Tier n of 5" label carry it for screen readers.
+ * Each step of the pyramid, top to bottom: how wide it is from sm up (the
+ * tiers stack into a peak) and its colors. The top two are solid emerald,
+ * the rest fade to a light tint.
  */
-function TierMeter({ level, of }: { level: number; of: number }) {
+const TIER_STEPS: { width: string; band: string; solid: boolean }[] = [
+  { width: 'sm:w-[56%]', band: 'bg-emerald-deep text-white', solid: true },
+  { width: 'sm:w-[67%]', band: 'bg-emerald text-white', solid: true },
+  { width: 'sm:w-[78%]', band: 'border border-emerald/25 bg-emerald/[0.15]', solid: false },
+  { width: 'sm:w-[89%]', band: 'border border-emerald/20 bg-emerald/[0.09]', solid: false },
+  { width: 'sm:w-full', band: 'border border-emerald/15 bg-emerald/[0.04]', solid: false },
+];
+
+const TILE = 'flex h-16 w-full items-center justify-center rounded-xl';
+
+/**
+ * How many tiles fit across a tier's row. The row is a CSS grid that fits as
+ * many 9rem columns as it can (6.75rem on phones, so two fit), so this reads
+ * the column count back from the browser and follows it as the window
+ * resizes. 1 where there's no layout (tests).
+ */
+function useGridColumns(ref: RefObject<HTMLElement>): number {
+  const [columns, setColumns] = useState(1);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const update = () => {
+      const n = getComputedStyle(el).gridTemplateColumns.split(' ').filter((c) => c.endsWith('px')).length;
+      setColumns(Math.max(1, n));
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref]);
+  return columns;
+}
+
+/**
+ * A tier's logos, then open spots filling out the last row so every row is
+ * full (a whole row of them when the tier is empty or its logos end a row).
+ * Only the first open spot is announced to screen readers; the rest repeat it.
+ */
+function TierRow({ tier, sponsors, solid, onOpen }: { tier: string; sponsors: Sponsor[]; solid: boolean; onOpen: () => void }) {
+  const ref = useRef<HTMLUListElement>(null);
+  const columns = useGridColumns(ref);
+  const open = columns - (sponsors.length % columns);
   return (
-    <span aria-hidden className="flex items-end gap-[3px]">
-      {Array.from({ length: of }, (_, i) => (
-        <span
-          key={i}
-          className={cn('w-[5px] rounded-sm', i < level ? 'bg-emerald' : 'bg-border')}
-          style={{ height: 6 + i * 3 }}
-        />
+    <ul
+      ref={ref}
+      className="mt-3.5 grid grid-cols-[repeat(auto-fill,minmax(6.75rem,1fr))] gap-3 sm:grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] sm:gap-4"
+      aria-label={`${tier} sponsors`}
+    >
+      {sponsors.map((s) => (
+        <li key={s.name}>
+          <a
+            href={s.url}
+            target="_blank"
+            rel="noreferrer"
+            title={s.name}
+            className={cn(TILE, 'border border-black/5 bg-white px-3 py-2 shadow-sm transition-transform hover:-translate-y-0.5')}
+          >
+            <img src={s.logo} alt={s.name} loading="lazy" className="max-h-full max-w-full object-contain" />
+          </a>
+        </li>
       ))}
-    </span>
+      {Array.from({ length: open }, (_, k) => (
+        <li key={`open-${k}`} aria-hidden={k > 0 || undefined}>
+          <OpenSpot tier={tier} solid={solid} first={k === 0} onOpen={onOpen} />
+        </li>
+      ))}
+    </ul>
   );
 }
 
+/**
+ * An open spot in a tier; it opens the sponsor form, like Become a sponsor.
+ * The first open spot in a tier says "Your company logo could go here"; the
+ * rest are quieter empty slots with a small +, so a row of them doesn't
+ * repeat the same words.
+ */
+function OpenSpot({ tier, solid, first, onOpen }: { tier: string; solid: boolean; first: boolean; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={first ? `Your company logo could go here: become a ${tier} sponsor` : undefined}
+      title={first ? undefined : `Your company logo could go here: become a ${tier} sponsor`}
+      tabIndex={first ? undefined : -1}
+      className={cn(
+        TILE,
+        'border-dashed px-3 text-center transition-colors',
+        first ? 'border-[1.5px] text-[12px] font-semibold leading-tight' : 'border',
+        solid
+          ? first
+            ? 'border-white/45 text-white/85 hover:border-white/75 hover:text-white'
+            : 'border-white/20 text-white/35 hover:border-white/50 hover:text-white/70'
+          : first
+            ? 'border-emerald/40 text-emerald/85 hover:border-emerald/65 hover:text-emerald'
+            : 'border-emerald/20 text-emerald/35 hover:border-emerald/45 hover:text-emerald/70',
+      )}
+    >
+      {first ? 'Your company logo could go here' : <Plus className="h-4 w-4" aria-hidden />}
+    </button>
+  );
+}
+
+/**
+ * The sponsor tiers as a stepped pyramid, Capstone at the peak and
+ * Cornerstone at the base, each with its price, perks and logos, and open
+ * spots that open the sponsor form.
+ */
 export function SponsorTiers({ sponsors = SPONSORS }: { sponsors?: Sponsor[] }) {
-  const count = SPONSOR_TIERS.length;
+  const openForm = useRef<(() => void) | null>(null);
+  const onOpen = () => openForm.current?.();
   return (
     <div className="space-y-5">
-      <ol className="space-y-3" aria-label="Sponsor tiers, highest first">
-        {SPONSOR_TIERS.map((tier, i) => {
-          const here = sponsors.filter((s) => s.tier === tier.name);
-          const rank = i + 1;
+      <ol className="flex flex-col items-center gap-2" aria-label="Sponsor tiers, highest first">
+        {SPONSOR_TIERS.map((t, i) => {
+          const step = TIER_STEPS[i];
+          const inTier = sponsors.filter((s) => s.tier === t.name);
           return (
-            <li
-              key={tier.name}
-              className={cn(
-                'flex gap-4 rounded-2xl border bg-card p-5',
-                rank === 1 ? 'border-emerald/60 ring-1 ring-emerald/20' : 'border-border',
-              )}
-            >
-              <span
-                aria-hidden
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald font-display text-lg font-bold tabular-nums text-white"
-              >
-                {rank}
-              </span>
-              <div className="flex min-w-0 flex-1 flex-col">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="font-display text-lg font-bold leading-tight">{tier.name}</h3>
-                    <p className="mt-1 flex items-center gap-2 text-[12.5px] font-semibold text-muted-foreground">
-                      <TierMeter level={count - i} of={count} />
-                      Tier {rank} of {count}
-                      {rank === 1 && <span className="text-emerald">· Top tier</span>}
-                    </p>
+            <li key={t.name} aria-label={t.name} className={cn('w-full rounded-2xl px-4 py-3.5 sm:px-5', step.width, step.band)}>
+              <div className="flex items-start gap-3.5">
+                <span
+                  className={cn('mt-0.5 font-mono text-[12px] font-semibold tabular-nums', step.solid ? 'text-white/60' : 'text-emerald/70')}
+                  aria-hidden
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                    <h3 className="font-display text-[16px] font-bold">{t.name}</h3>
+                    <span className={cn('font-mono text-[12.5px] font-medium tabular-nums', step.solid ? 'text-white/85' : 'text-emerald')}>
+                      {t.amount}
+                    </span>
                   </div>
-                  <span className="font-semibold tabular-nums text-emerald">{tier.amount}</span>
-                </div>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground">{tier.perks}</p>
-                <div className="pt-3">
-                  {here.length > 0 ? (
-                    <ul className="flex flex-wrap gap-2" aria-label={`${tier.name} sponsors`}>
-                      {here.map((s) => (
-                        <li key={s.name}>
-                          <a
-                            href={s.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            title={s.name}
-                            className="flex h-12 items-center rounded-lg bg-white px-3 ring-1 ring-border"
-                          >
-                            <img src={s.logo} alt={s.name} loading="lazy" className="max-h-8 w-auto" />
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-[13px] font-medium text-muted-foreground">Open</p>
-                  )}
+                  <p className={cn('mt-0.5 text-[12.5px] leading-snug', step.solid ? 'text-white/75' : 'text-muted-foreground')}>
+                    {t.perks}
+                  </p>
+                  <TierRow tier={t.name} sponsors={inTier} solid={step.solid} onOpen={onOpen} />
                 </div>
               </div>
             </li>
@@ -152,6 +220,7 @@ export function SponsorTiers({ sponsors = SPONSORS }: { sponsors?: Sponsor[] }) 
           pageUrl={SPONSOR_FORM_URL}
           embedUrl={SPONSOR_FORM_EMBED_URL}
           icon={Handshake}
+          opener={openForm}
         />
         <LinkButton href={SPONSORSHIP_DETAILS_URL}>Sponsorship details</LinkButton>
       </div>

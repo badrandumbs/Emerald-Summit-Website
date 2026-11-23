@@ -4,7 +4,7 @@
 // ehsacademics.org (Initiatives → Emerald Summit '27 → Sponsor; checked
 // Nov 14, 2026). The old Google Sites page (sites.google.com/view/
 // ehs-academic-foundation) is out of date: don't use it.
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, type MutableRefObject } from 'react';
 import { ArrowRight, HeartHandshake, Loader2, X, type AppIcon } from '@/components/icons';
 import { useIsPhoneScreen } from '@/lib/device';
 import SummitLogo from '../SummitLogo';
@@ -70,12 +70,19 @@ export function ZeffyFormButton({
   pageUrl,
   embedUrl,
   icon: Icon,
+  opener,
 }: {
   label: string;
   dialogTitle: string;
   pageUrl: string;
   embedUrl: string;
   icon: AppIcon;
+  /**
+   * Set to a function that opens this form, so other controls on the page
+   * (the Sponsors subtab's open logo spots) can open the same popup, or the
+   * Zeffy page in a new tab on phones.
+   */
+  opener?: MutableRefObject<(() => void) | null>;
 }) {
   const phone = useIsPhoneScreen();
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -133,6 +140,19 @@ export function ZeffyFormButton({
       else dialog.removeAttribute('open');
     }
   }, [open, preload]);
+
+  useEffect(() => {
+    if (!opener) return;
+    opener.current = phone
+      ? () => window.open(pageUrl, '_blank', 'noreferrer')
+      : () => {
+          setPreload(true);
+          setOpen(true);
+        };
+    return () => {
+      opener.current = null;
+    };
+  }, [opener, phone, pageUrl]);
 
   // The page behind the popup stays put, as with the other dialogs.
   useEffect(() => {
