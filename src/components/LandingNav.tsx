@@ -17,6 +17,7 @@ const SECTION_LINKS: { id: string; label: string; path?: string }[] = [
   { id: 'keynote', label: 'Keynote', path: KEYNOTE_TEAM_PATH },
   { id: 'team', label: 'Team', path: KEYNOTE_TEAM_PATH },
   { id: 'faq', label: 'FAQ' },
+  { id: 'donate', label: 'Donate' },
   { id: 'contact', label: 'Contact' },
 ];
 

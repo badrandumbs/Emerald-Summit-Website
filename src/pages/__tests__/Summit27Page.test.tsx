@@ -50,7 +50,7 @@ describe("Summit '27 page", () => {
     expect(within(screen.getByRole('navigation', { name: 'Main' })).queryByText("Summit '27")).not.toBeInTheDocument();
   });
 
-  test('the landing navbar has Experts, Sponsors, Keynote and Team after Disciplines; Team opens the Keynote & Team page', async () => {
+  test('the landing navbar has Experts, Sponsors, Keynote and Team after Disciplines, Donate before Contact; Team opens the Keynote & Team page', async () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter initialEntries={['/']}>
@@ -62,7 +62,7 @@ describe("Summit '27 page", () => {
     );
     const nav = screen.getByRole('navigation', { name: 'Main' });
     expect(within(nav).getAllByRole('button').map((b) => b.textContent)).toEqual(
-      ['About', 'Disciplines', 'Experts', 'Sponsors', 'Keynote', 'Team', 'FAQ', 'Contact'],
+      ['About', 'Disciplines', 'Experts', 'Sponsors', 'Keynote', 'Team', 'FAQ', 'Donate', 'Contact'],
     );
     await user.click(within(nav).getByRole('button', { name: 'Team' }));
     // Both on one page, Keynote first.

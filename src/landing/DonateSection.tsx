@@ -1,4 +1,4 @@
-// The landing page's Donate section, right after Sponsors: why to give, then
+// The landing page's Donate section, the last before Contact: why to give, then
 // Donate (EAF's Zeffy donation form, in the same popup as Home's Support EAF
 // card; a new tab on phones) and Volunteer with EAF. The buttons share the
 // Sponsors section's bigger landing style (landing.css, .lp-donate__actions).

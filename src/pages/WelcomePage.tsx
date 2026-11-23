@@ -436,9 +436,6 @@ export default function WelcomePage() {
           </div>
         </section>
 
-        {/* Right after the sponsors: anyone can give, through EAF's Zeffy donation form. */}
-        <DonateSection />
-
         {/* The day, in the owner's photographs. */}
         <section className="lp-section lp-section--tight lp-ruled" aria-labelledby="rail-title">
           <PhotoRail
@@ -489,6 +486,9 @@ export default function WelcomePage() {
             </div>
           </div>
         </section>
+
+        {/* Near the end, right before Contact: anyone can give, through EAF's Zeffy donation form. */}
+        <DonateSection />
       </main>
 
       {/* The close: the way in, and who to write to. */}

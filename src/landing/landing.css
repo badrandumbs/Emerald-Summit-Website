@@ -89,14 +89,15 @@
 .lp-nav__sheet-list { display: grid; gap: var(--space-2xs); }
 .lp-nav__sheet .lp-nav__link { justify-content: flex-start; border-radius: var(--radius-card); width: 100%; text-align: left; }
 .lp-nav__sheet .lp-btn { width: 100%; margin-top: var(--space-sm); }
-/* Eight links since Experts (Nov 23, 2026): tighter on laptop widths, and the
-   phone menu takes over below 62rem, where even tight links would run off. */
+/* Nine links since Donate (Nov 23, 2026): tighter on laptop widths, and the
+   phone menu takes over below 72rem, where even tight links would run off
+   (they overflowed up to about 71rem). */
 @media (max-width: 82rem) {
   .lp-nav__inner { gap: var(--space-sm); }
   .lp-nav__links { gap: 0; }
   .lp-nav__links .lp-nav__link { padding-inline: var(--space-sm); }
 }
-@media (max-width: 62rem) {
+@media (max-width: 72rem) {
   .lp-nav__links, .lp-nav__actions { display: none; }
   .lp-nav__menu-btn { display: inline-flex; }
 }
@@ -543,7 +544,7 @@
 :is(#sponsors .sponsor-actions, #donate .lp-donate__actions) > :last-child:hover { background: color-mix(in oklab, var(--color-accent) 20%, transparent); }
 @media (max-width: 40rem) { :is(#sponsors .sponsor-actions, #donate .lp-donate__actions) > :is(a, button) { flex: 1 1 100%; justify-content: center; } }
 
-/* Donate, right after Sponsors (DonateSection.tsx): a short centered band on the second paper. */
+/* Donate, the last section before Contact (DonateSection.tsx): a short centered band on the second paper. */
 .lp-donate { background: var(--color-paper-2); padding-block: var(--section-gap-s); }
 #donate { scroll-margin-top: calc(var(--bar-h) - var(--space-3xl)); }
 .lp-donate__inner { display: grid; justify-items: center; gap: var(--space-lg); text-align: center; }
