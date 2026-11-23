@@ -4,7 +4,6 @@ import {
   ArrowRight,
   BookUser,
   CalendarDays,
-  Clock,
   Gavel,
   Megaphone,
   QrCode,
@@ -295,24 +294,26 @@ export default function HomePage() {
       (a, b) =>
         toMinutes(a.session.time) - toMinutes(b.session.time),
     );
-  const next = agenda[0];
+  // The next session that hasn't started: on Summit day that goes by the clock;
+  // before it (or while times are hidden) it's simply the first one of the day.
+  const now = new Date();
+  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const upcoming = showTimes && summitDate === todayIso
+    ? agenda.filter((a) => toMinutes(a.session.time) >= nowMinutes)
+    : agenda;
+  const next = upcoming[0];
   const daySlots = [...new Set(MOCK_SESSIONS.map((s) => s.time))].sort((a, b) => toMinutes(a) - toMinutes(b));
   const slotIndex = next ? daySlots.indexOf(next.session.time) : -1;
 
   const actions = QUICK_ACTIONS[roleName] ?? [];
   const primaryAction = actions[0];
 
-  const heroSub = next
-    ? `You have ${agenda.length} track${agenda.length === 1 ? '' : 's'} on your schedule. First up: ${next.session.title}${showTimes ? ` at ${next.session.time}` : ''}.`
+  const heroSub = agenda.length
+    ? `You have ${agenda.length} track${agenda.length === 1 ? '' : 's'} on your schedule.`
     : null;
 
   const stats = [
-    {
-      label: 'Next up',
-      value: next ? (showTimes ? next.session.time : `Time ${TBD}`) : 'None yet',
-      sub: next ? joinParts(sessionPlace(next.session), showTimes ? next.session.duration : undefined) : 'Nothing scheduled yet',
-      icon: Clock,
-    },
     {
       label: 'Check-in',
       value: checkedInAt ? 'Checked in' : 'Not yet',
@@ -375,54 +376,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {canSchedule && (
-            <div className="w-full rounded-lg border border-white/20 bg-white/10 p-5 backdrop-blur-sm lg:w-[360px] lg:shrink-0">
-              {next ? (
-                <>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-[10.5px] font-medium uppercase tracking-[0.1em] text-emerald-300">
-                      Up next · {next.kind}
-                    </span>
-                    <span className="rounded-full bg-emerald-300 px-2.5 py-0.5 text-[11.5px] font-bold text-[#0B2E22]">
-                      {showTimes ? next.session.time : `Time ${TBD}`}
-                    </span>
-                  </div>
-                  <div className="mt-2.5 font-display text-[21px] font-bold leading-snug">
-                    {next.session.title}
-                  </div>
-                  <div className="mt-1 text-[13px] text-white/75">
-                    {joinParts(sessionPlace(next.session), showTimes ? next.session.duration : undefined)}
-                  </div>
-                  <div className="mt-4 flex gap-1" aria-hidden>
-                    {daySlots.map((t, i) => (
-                      <span
-                        key={t}
-                        className={cn(
-                          'h-[5px] flex-1 rounded-full',
-                          i <= slotIndex ? 'bg-emerald-300' : 'bg-white/20',
-                        )}
-                      />
-                    ))}
-                  </div>
-                  <div className="mt-2 text-[11.5px] text-white/60">
-                    Time slot {slotIndex + 1} of {daySlots.length}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="font-mono text-[10.5px] font-medium uppercase tracking-[0.1em] text-emerald-300">
-                    Your day
-                  </div>
-                  <div className="mt-2.5 font-display text-[21px] font-bold leading-snug">
-                    {ownKind === 'volunteering' ? 'No shifts yet' : 'Nothing on your day yet'}
-                  </div>
-                  <div className="mt-1 text-[13px] text-white/75">
-                    {ownKind === 'volunteering' ? 'An organizer will assign your tracks.' : 'Browse the disciplines to add a track.'}
-                  </div>
-                </>
-              )}
-            </div>
-          )}
         </div>
       </section>
 
@@ -470,8 +423,8 @@ export default function HomePage() {
                 </div>
               ) : (
                 <div className="space-y-1.5">
-                  {agenda.map((item, i) => (
-                    <AgendaRow key={item.session.id} item={item} first={i === 0} />
+                  {agenda.map((item) => (
+                    <AgendaRow key={item.session.id} item={item} first={item === next} />
                   ))}
                 </div>
               )}
@@ -480,7 +433,7 @@ export default function HomePage() {
 
         <div className={cn('flex flex-col gap-6', showYourDay && 'xl:h-0 xl:min-h-full')}>
           {showYourDay && (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3">
               {stats.map((s) => (
                 <StatTile key={s.label} {...s}>
                   {s.label === 'Check-in' && isQrEligible && (
@@ -496,6 +449,57 @@ export default function HomePage() {
                 </StatTile>
               ))}
             </div>
+          )}
+          {canSchedule && (
+            <section aria-label="Up next" className="relative overflow-hidden rounded-2xl bg-[#0A5F43] p-5 text-white">
+              <div className="pointer-events-none absolute -right-12 -top-24 h-56 w-56 rounded-full bg-emerald-300/25 blur-[80px]" aria-hidden />
+              <div className="relative">
+              {next ? (
+                <>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-[10.5px] font-medium uppercase tracking-[0.1em] text-emerald-300">
+                      Up next · {next.kind}
+                    </span>
+                    <span className="rounded-full bg-emerald-300 px-2.5 py-0.5 text-[11.5px] font-bold text-[#0B2E22]">
+                      {showTimes ? next.session.time : `Time ${TBD}`}
+                    </span>
+                  </div>
+                  <div className="mt-2.5 font-display text-[21px] font-bold leading-snug">
+                    {next.session.title}
+                  </div>
+                  <div className="mt-1 text-[13px] text-white/75">
+                    {joinParts(sessionPlace(next.session), showTimes ? next.session.duration : undefined)}
+                  </div>
+                  <div className="mt-4 flex gap-1" aria-hidden>
+                    {daySlots.map((t, i) => (
+                      <span
+                        key={t}
+                        className={cn(
+                          'h-[5px] flex-1 rounded-full',
+                          i <= slotIndex ? 'bg-emerald-300' : 'bg-white/20',
+                        )}
+                      />
+                    ))}
+                  </div>
+                  <div className="mt-2 text-[11.5px] text-white/60">
+                    Time slot {slotIndex + 1} of {daySlots.length}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="font-mono text-[10.5px] font-medium uppercase tracking-[0.1em] text-emerald-300">
+                    Up next
+                  </div>
+                  <div className="mt-2.5 font-display text-[21px] font-bold leading-snug">
+                    {ownKind === 'volunteering' ? 'No shifts yet' : 'Nothing on your day yet'}
+                  </div>
+                  <div className="mt-1 text-[13px] text-white/75">
+                    {ownKind === 'volunteering' ? 'An organizer will assign your tracks.' : 'Browse the disciplines to add a track.'}
+                  </div>
+                </>
+              )}
+              </div>
+            </section>
           )}
           <div className="min-h-0 flex-1 overflow-y-auto rounded-2xl">
             <AnnouncementsPanel

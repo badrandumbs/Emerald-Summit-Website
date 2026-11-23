@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import type { ReactNode } from 'react';
 
@@ -91,5 +91,15 @@ describe('Your day for spectators', () => {
     expect(screen.queryByText('Robotics Lab')).not.toBeInTheDocument();
     expect(screen.queryByText('Product Design')).not.toBeInTheDocument();
     expect(screen.getByText('Room TBD · Spectating')).toBeInTheDocument();
+  });
+});
+
+describe('Up next', () => {
+  test('is its own card above announcements, not in the greeting, and shows the first session', () => {
+    state.spectating = ['c', 'b'];
+    renderHome();
+    const card = screen.getByRole('region', { name: 'Up next' });
+    expect(within(card).getByText('Genetics Lab')).toBeInTheDocument();
+    expect(screen.queryByText(/First up/)).not.toBeInTheDocument();
   });
 });
