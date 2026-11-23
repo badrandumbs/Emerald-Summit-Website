@@ -533,7 +533,7 @@
 .lp-soon .lp-soon__tag { justify-self: start; padding: 4px 12px; border-radius: var(--radius-pill); background: color-mix(in oklab, var(--color-accent) 14%, transparent); color: var(--color-accent-hover); font-size: var(--text-sm); font-weight: 600; }
 
 /* The sponsor buttons on the landing page: bigger and brighter than the portal's (SponsorTiers' .sponsor-actions). */
-#sponsors .sponsor-actions { gap: var(--space-sm); margin-top: var(--space-md); }
+#sponsors .sponsor-actions { justify-content: center; gap: var(--space-sm); margin-top: var(--space-2xl); }
 #sponsors .sponsor-actions a { gap: 10px; padding: 14px 24px; border-radius: 12px; font-size: 1.0625rem; }
 #sponsors .sponsor-actions a svg { width: 18px; height: 18px; }
 #sponsors .sponsor-actions a:first-child { background: var(--color-accent); color: var(--color-accent-ink); box-shadow: 0 10px 30px -8px color-mix(in oklab, var(--color-accent) 70%, transparent); }
