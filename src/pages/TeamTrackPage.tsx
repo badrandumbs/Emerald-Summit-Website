@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import LandingNav from '../components/LandingNav';
+import LandingFooter from '../components/LandingFooter';
+import '../landing/landing.css';
 import { MOCK_SESSIONS } from '../models/sessions';
 import type { TeamLinkKey } from '../models/team';
 import { teamTarget, teamTrackMatches } from '../models/teamLinks';
@@ -40,8 +43,8 @@ export default function TeamTrackPage() {
     return <Navigate to={'/sessions/' + encodeURIComponent(matches[0].id)} replace />;
   }
 
-  return (
-    <main className="mx-auto max-w-3xl space-y-5 px-6 py-12">
+  const body = (
+    <main id="main" className="mx-auto max-w-3xl space-y-5 px-6 py-12">
       <Link to={returnTo} state={{ scrollTo: 'team' }} className="text-sm font-semibold text-emerald underline underline-offset-2">
         Back to Team
       </Link>
@@ -74,4 +77,12 @@ export default function TeamTrackPage() {
       </section>
     </main>
   );
+  // Reached from the public Team section: keep the landing page's navbar and footer around it.
+  return returnTo === '/keynote-and-team' ? (
+    <div className="lp lp-page">
+      <LandingNav />
+      <div className="lp-lineup">{body}</div>
+      <LandingFooter />
+    </div>
+  ) : body;
 }

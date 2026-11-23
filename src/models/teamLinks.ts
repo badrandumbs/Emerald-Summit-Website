@@ -58,10 +58,10 @@ export const TEAM_TARGETS: Record<TeamLinkKey, TeamTarget> = {
     kind: 'track', label: 'Drama', discipline: 'imaginex',
     topic: /\b(?:drama|improv|theatre|theater)\b/, aliases: ['Drama', 'Drama and Improv'],
   },
-  'business-management-marketing': {
-    kind: 'track', label: 'Business Management and Marketing', discipline: 'ventureverse',
-    topic: /\b(?:marketing|business management)\b/,
-    aliases: ['Business Management & Marketing', 'Business Management and Marketing', 'Marketing'],
+  marketing: {
+    kind: 'track', label: 'Marketing', discipline: 'ventureverse',
+    topic: /\bmarketing\b/,
+    aliases: ['Marketing', 'Marketing Track'],
   },
   biosphere: { kind: 'discipline', label: 'BioSphere', discipline: 'biosphere' },
   imaginex: { kind: 'discipline', label: 'ImagineX', discipline: 'imaginex' },

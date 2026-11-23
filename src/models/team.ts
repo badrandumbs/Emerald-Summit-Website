@@ -5,7 +5,7 @@ export type TeamLinkKey =
   | 'ai-playground'
   | 'art-literature'
   | 'biosphere'
-  | 'business-management-marketing'
+  | 'marketing'
   | 'cadathon'
   | 'computer-science-presentations'
   | 'drama'
@@ -154,20 +154,20 @@ export const TEAM_MEMBERS: readonly TeamMember[] = [
   {
     "id": "prisha-chandra",
     "name": "Prisha Chandra",
-    "role": "Track Lead: AI Playground and Business Management & Marketing",
-    "bio": "Hi my name is Prisha and I'm a junior at Emerald High leading the Business Management & Marketing Track and the AI Playground Track for Summit 2027! Some of my hobbies are cooking and a reading. A fun fact about me is that I've been swimming and dancing competitively for years and now I coach kids in the sports I love!",
+    "role": "Track Lead: AI Playground and Marketing",
+    "bio": "Hi my name is Prisha and I'm a junior at Emerald High leading the Marketing Track and the AI Playground Track for Summit 2027! Some of my hobbies are cooking and a reading. A fun fact about me is that I've been swimming and dancing competitively for years and now I coach kids in the sports I love!",
     "affiliations": [
       "ai-playground",
-      "business-management-marketing"
+      "marketing"
     ],
     "mentions": [
       {
-        "text": "Business Management & Marketing Track",
-        "target": "business-management-marketing"
+        "text": "Marketing Track",
+        "target": "marketing"
       },
       {
-        "text": "Business Management & Marketing",
-        "target": "business-management-marketing"
+        "text": "Marketing",
+        "target": "marketing"
       },
       {
         "text": "AI Playground Track",

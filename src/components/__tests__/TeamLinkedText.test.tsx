@@ -17,3 +17,14 @@ test('renders clickable track names without changing any paragraph characters', 
   expect(screen.getByRole('link', { name: 'Engineering Exhibits' })).toHaveAttribute('href', '/team/tracks/engineering-exhibits');
   expect(screen.getByRole('link', { name: 'CADathon' })).toHaveAttribute('href', '/team/tracks/cadathon');
 });
+
+test('on the public page a discipline opens the landing Disciplines section; in the portal, the discipline itself', () => {
+  const mentions = [{ text: 'BioSphere', target: 'biosphere' as const }];
+  const { unmount } = render(
+    <MemoryRouter initialEntries={['/keynote-and-team']}><TeamLinkedText text="I lead BioSphere." mentions={mentions} /></MemoryRouter>,
+  );
+  expect(screen.getByRole('link', { name: 'BioSphere' })).toHaveAttribute('href', '/');
+  unmount();
+  render(<MemoryRouter initialEntries={['/summit-27/team']}><TeamLinkedText text="I lead BioSphere." mentions={mentions} /></MemoryRouter>);
+  expect(screen.getByRole('link', { name: 'BioSphere' })).toHaveAttribute('href', '/disciplines?verse=biosphere');
+});

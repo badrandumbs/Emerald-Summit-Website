@@ -14,7 +14,7 @@ test('canonical labels and known aliases resolve to real session IDs', () => {
     { id: 'cs-talks', title: 'Comp Sci Presentations', track: 'techverse' },
     { id: 'cs-exhibits', title: 'Computer Science Exhibits', track: 'techverse' },
   ]).map((session) => session.id)).toEqual(['cs-talks']);
-  expect(teamTrackMatches('business-management-marketing', [
+  expect(teamTrackMatches('marketing', [
     { id: 'marketing-id', title: 'Marketing', track: 'ventureverse' },
   ]).map((session) => session.id)).toEqual(['marketing-id']);
 });
