@@ -496,6 +496,8 @@
 /* ───────────── Keynote & Team page: coming-soon cards ───────────── */
 .lp-lineup { padding-top: var(--space-2xl); }
 .lp-lineup .lp-section { padding-block: var(--space-2xl); }
+/* Each section fills the screen under the bar, and the nav lands it right under the bar, so Keynote and Team never show at once. */
+.lp-lineup .lp-section { min-height: calc(100svh - var(--bar-h)); scroll-margin-top: calc(var(--bar-h) - var(--space-3xl)); }
 .lp-lineup .lp-head { margin-bottom: var(--space-lg); }
 /* A full-width rule between Keynote and Team, like the landing sections. */
 .lp-lineup .lp-section + .lp-section { border-top: 1px solid var(--color-rule); }
