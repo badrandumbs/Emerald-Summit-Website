@@ -20,9 +20,14 @@ export default function KeynoteTeamPage() {
 
   // The nav sends { scrollTo: 'team' } (or keynote) when it brings you here.
   useEffect(() => {
+    // Jump, not glide: the page opens at the landing page's scroll position, and a
+    // long smooth scroll outruns painting, flashing empty bands on the way.
     const id = (location.state as { scrollTo?: string } | null)?.scrollTo;
-    if (!id) return;
-    const frame = requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: 'start' }));
+    const frame = requestAnimationFrame(() => {
+      const el = id ? document.getElementById(id) : null;
+      if (el) el.scrollIntoView({ block: 'start', behavior: 'instant' });
+      else window.scrollTo({ top: 0, behavior: 'instant' });
+    });
     return () => cancelAnimationFrame(frame);
   }, [location.state]);
 
