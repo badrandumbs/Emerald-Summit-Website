@@ -96,6 +96,44 @@ describe('landing navigation disclosures', () => {
     expect(within(main()).queryByRole('button', { name: 'Experts' })).not.toBeInTheDocument();
   });
 
+  test('hovering another group preserves a submenu that contains keyboard focus', async () => {
+    const user = userEvent.setup();
+    renderNav();
+    const about = within(main()).getByRole('button', { name: 'About' });
+    const summit = within(main()).getByRole('button', { name: summitName });
+    about.focus();
+    await user.keyboard('{ArrowDown}');
+    const firstLink = within(controlledPanel(about)).getByRole('button', { name: 'About the Summit' });
+    await waitFor(() => expect(firstLink).toHaveFocus());
+
+    await user.hover(summit);
+    expect(about).toHaveAttribute('aria-expanded', 'true');
+    expect(summit).toHaveAttribute('aria-expanded', 'false');
+    expect(firstLink).toHaveFocus();
+  });
+
+  test('selecting a section on the current page restores focus before its menu closes', async () => {
+    const user = userEvent.setup();
+    renderNav('/');
+    const about = within(main()).getByRole('button', { name: 'About' });
+    about.focus();
+    await user.keyboard('{ArrowDown}');
+    await waitFor(() => expect(within(controlledPanel(about)).getByRole('button', { name: 'About the Summit' })).toHaveFocus());
+    await user.tab();
+    expect(within(main()).getByRole('button', { name: 'FAQ' })).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(about).toHaveAttribute('aria-expanded', 'false');
+    expect(about).toHaveFocus();
+
+    const toggle = screen.getByRole('button', { name: 'Toggle menu' });
+    await user.click(toggle);
+    const mobile = screen.getByRole('navigation', { name: 'Main mobile' });
+    await user.click(within(mobile).getByRole('button', { name: 'FAQ' }));
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveFocus();
+    await waitFor(() => expect(screen.queryByRole('navigation', { name: 'Main mobile' })).not.toBeInTheDocument());
+  });
+
   test('outside pointer and focus changes close the open menu', async () => {
     const user = userEvent.setup();
     renderNav();

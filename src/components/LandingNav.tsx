@@ -184,7 +184,27 @@ export default function LandingNav({
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  const openGroup = (id: string, via: 'hover' | 'press') => {
+    setActiveGroup((current) => {
+      if (via === 'hover' && current) {
+        if (current.id === id) return current;
+        const trigger = document.getElementById('lp-nav-' + current.id + '-trigger');
+        // Moving the pointer must not hide a submenu being used by keyboard.
+        if (trigger?.parentElement?.contains(document.activeElement)) return current;
+      }
+      return { id, via };
+    });
+  };
+
   const goToSection = (id: string, path = '/') => {
+    // Same-page jumps keep the header mounted; return focus before hiding
+    // the selected button so it never remains inside a collapsed menu.
+    if (open && sheetRef.current?.contains(document.activeElement)) {
+      menuBtnRef.current?.focus({ preventScroll: true });
+    } else if (activeGroup) {
+      const trigger = document.getElementById('lp-nav-' + activeGroup.id + '-trigger');
+      if (trigger?.parentElement?.contains(document.activeElement)) trigger.focus({ preventScroll: true });
+    }
     setOpen(false);
     setActiveGroup(null);
     if (location.pathname === path) {
@@ -227,7 +247,7 @@ export default function LandingNav({
                   key={s.id}
                   group={s}
                   active={activeGroup}
-                  onOpen={(via) => setActiveGroup((current) => current?.id === s.id && via === 'hover' ? current : { id: s.id, via })}
+                  onOpen={(via) => openGroup(s.id, via)}
                   onClose={() => setActiveGroup((current) => current?.id === s.id ? null : current)}
                   onSelect={goToSection}
                 />
