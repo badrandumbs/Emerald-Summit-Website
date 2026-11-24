@@ -49,3 +49,15 @@ test('discipline affiliations retain discipline navigation while track links use
   expect(teamLinkHref('imaginex')).toBe('/disciplines?verse=imaginex');
   expect(teamLinkHref('cadathon')).toBe('/team/tracks/cadathon');
 });
+
+test('the Team runs organizers first, then by discipline, a discipline lead before its track leads', async () => {
+  const { TEAM_MEMBERS } = await import('../team');
+  const { sortTeam, mainDiscipline } = await import('../teamLinks');
+  const sorted = sortTeam(TEAM_MEMBERS);
+  const groups = sorted.map((m) => mainDiscipline(m) ?? 'organizers');
+  const order = ['organizers', 'techverse', 'ventureverse', 'biosphere', 'novasphere', 'civicverse', 'imaginex'];
+  expect(groups.map((g) => order.indexOf(g))).toEqual([...groups.map((g) => order.indexOf(g))].sort((a, b) => a - b));
+  expect(sorted.slice(0, 2).every((m) => m.role === 'Event Organization Lead')).toBe(true);
+  expect(sorted[2].role).toMatch(/TechVerse Engineering Lead/);
+  expect(sorted.length).toBe(TEAM_MEMBERS.length);
+});

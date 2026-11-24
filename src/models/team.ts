@@ -117,7 +117,7 @@ export const TEAM_MEMBERS: readonly TeamMember[] = [
     "id": "kashvi-gupta",
     "name": "Kashvi Gupta",
     "role": "Computer Science Presentations Track Lead",
-    "bio": "Hi, my name is Kashvi and I'm a junior at Emerald High School. For the Emerald summit, I am leading the computer science presentations track and I am really excited to see what people will construct through my track. For a little bit about me, one of my biggest hobbies is reading books, especially books in the fantasy genre and one fun fact about me is that I am left handed (yes we function just like right handed people)!",
+    "bio": "Hi, my name is Kashvi and I'm a junior at Emerald High School. For the Emerald summit, I am leading the computer science presentations track and I am really excited to see what people will construct through my track. For a little bit about me, one of my biggest hobbies is reading books, especially books in the fantasy genre.",
     "affiliations": [
       "computer-science-presentations"
     ],

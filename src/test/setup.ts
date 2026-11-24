@@ -49,3 +49,8 @@ for (const name of ['localStorage', 'sessionStorage'] as const) {
     Object.defineProperty(window, name, { value: store, configurable: true, writable: true });
   }
 }
+
+// jsdom has no scrollIntoView; pages that jump to a section call it.
+if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = () => {};
+}
