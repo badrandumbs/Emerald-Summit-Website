@@ -1,5 +1,5 @@
 import { TEAM_MEMBERS } from '../models/team';
-import { disciplineOf, mainDiscipline, sortTeam } from '../models/teamLinks';
+import { mainDiscipline, sortTeam } from '../models/teamLinks';
 import { vibeFor } from '../models/verseVibes';
 import { useTheme } from '../context/ThemeContext';
 import TeamLinkedText from './TeamLinkedText';
@@ -13,6 +13,7 @@ export default function TeamDirectory() {
   const { theme } = useTheme();
   // Each discipline's own accent (the deeper light-theme one on light cards); organizers get the Summit's emerald.
   const accent = (discipline: string | null) => vibeFor(discipline, theme).accent;
+  // Roles are plain text; track and discipline links live in the bios only.
   return (
     <div className="space-y-5">
       <p className="max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{TEAM_INTRO}</p>
@@ -23,7 +24,7 @@ export default function TeamDirectory() {
               <div className="space-y-2">
                 <h3 className="break-words font-display text-xl font-semibold leading-snug">{member.name}</h3>
                 <p className="whitespace-pre-line text-sm font-medium leading-relaxed text-emerald" style={{ color: accent(mainDiscipline(member)) }}>
-                  <TeamLinkedText text={member.role} mentions={member.mentions} colorFor={(k) => accent(disciplineOf(k))} />
+                  {member.role}
                 </p>
               </div>
               <p className="break-words text-[15px] leading-relaxed text-muted-foreground">
