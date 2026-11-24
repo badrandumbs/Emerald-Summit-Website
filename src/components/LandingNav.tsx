@@ -3,23 +3,87 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { EASE_OUT_ARRAY } from '@/lib/motion';
-import { Menu, X } from '@/components/icons';
+import { ChevronDown, Menu, X } from '@/components/icons';
 import BrandMark from './BrandMark';
 import { cn } from '@/lib/utils';
 
 /** Keynote, Experts and Team live on their own page (KeynoteTeamPage); the rest are sections of "/". */
 const KEYNOTE_TEAM_PATH = '/keynote-and-team';
-const SECTION_LINKS: { id: string; label: string; path?: string }[] = [
-  { id: 'about', label: 'About' },
+type SectionLink = { id: string; label: string; path?: string };
+type NavGroup = { id: string; label: string; children: SectionLink[] };
+type ActiveGroup = { id: string; via: 'hover' | 'press' } | null;
+
+const NAV_ITEMS: (SectionLink | NavGroup)[] = [
+  { id: 'about-menu', label: 'About', children: [
+    { id: 'about', label: 'About the Summit' },
+    { id: 'faq', label: 'FAQ' },
+    { id: 'contact', label: 'Contact' },
+  ] },
   { id: 'disciplines', label: 'Disciplines' },
-  { id: 'sponsors', label: 'Sponsors' },
-  { id: 'keynote', label: 'Keynote', path: KEYNOTE_TEAM_PATH },
-  { id: 'experts', label: 'Experts', path: KEYNOTE_TEAM_PATH },
-  { id: 'team', label: 'Team', path: KEYNOTE_TEAM_PATH },
-  { id: 'faq', label: 'FAQ' },
-  { id: 'donate', label: 'Donate' },
-  { id: 'contact', label: 'Contact' },
+  { id: 'summit-menu', label: 'Summit ’27', children: [
+    { id: 'keynote', label: 'Keynote', path: KEYNOTE_TEAM_PATH },
+    { id: 'experts', label: 'Experts', path: KEYNOTE_TEAM_PATH },
+    { id: 'team', label: 'Team', path: KEYNOTE_TEAM_PATH },
+  ] },
+  { id: 'support-menu', label: 'Support', children: [
+    { id: 'sponsors', label: 'Sponsors' },
+    { id: 'donate', label: 'Donate' },
+  ] },
 ];
+
+function DesktopNavGroup({ group, active, onOpen, onClose, onSelect }: {
+  group: NavGroup;
+  active: ActiveGroup;
+  onOpen: (via: 'hover' | 'press') => void;
+  onClose: () => void;
+  onSelect: (id: string, path?: string) => void;
+}) {
+  const groupRef = useRef<HTMLDivElement>(null);
+  const expanded = active?.id === group.id;
+  const panelId = 'lp-nav-' + group.id;
+  return (
+    <div
+      ref={groupRef}
+      className="lp-nav__group"
+      onPointerEnter={(event) => { if (event.pointerType === 'mouse') onOpen('hover'); }}
+      onPointerLeave={() => {
+        if (!groupRef.current?.contains(document.activeElement)) onClose();
+      }}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) onClose();
+      }}
+    >
+      <button
+        id={panelId + '-trigger'}
+        type="button"
+        className="lp-nav__link lp-nav__group-trigger"
+        aria-expanded={expanded}
+        aria-controls={panelId}
+        onClick={() => {
+          if (expanded && active?.via === 'press') onClose();
+          else onOpen('press');
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== 'ArrowDown') return;
+          event.preventDefault();
+          onOpen('press');
+          requestAnimationFrame(() => groupRef.current?.querySelector<HTMLElement>('.lp-nav__dropdown .lp-nav__link')?.focus());
+        }}
+      >
+        {group.label}<ChevronDown aria-hidden="true" />
+      </button>
+      <div id={panelId} className="lp-nav__dropdown" hidden={!expanded}>
+        <div className="lp-nav__dropdown-list">
+          {group.children.map((link) => (
+            <button key={link.id} type="button" className="lp-nav__link" onClick={() => onSelect(link.id, link.path)}>
+              {link.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface LandingNavProps {
   /**
@@ -39,11 +103,9 @@ interface LandingNavProps {
 }
 
 /**
- * Marketing nav shared by the landing page and the /app showcase: an
- * edge-aligned bar, clear over the sky and solid once the page moves, with
- * Sign in always in reach. "About"/"Universes"/"FAQ"/"Contact" are
- * anchors on "/"; from elsewhere they route home and pass the target id via
- * nav state, which WelcomePage picks up on mount to finish the scroll.
+ * Public navigation with four top-level choices. Grouped destinations use
+ * desktop disclosures and labeled sections in the phone menu. Section links
+ * from other pages route home with the existing scroll target in nav state.
  */
 export default function LandingNav({
   overlay = false,
@@ -53,23 +115,65 @@ export default function LandingNav({
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [activeGroup, setActiveGroup] = useState<ActiveGroup>(null);
   const reduceMotion = useReducedMotion();
   const menuBtnRef = useRef<HTMLButtonElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null);
 
   // The phone menu: Escape closes it and hands focus back to its button;
   // opening it moves focus to its first link.
   useEffect(() => {
     if (!open) return;
     sheetRef.current?.querySelector<HTMLElement>('.lp-nav__link')?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      setOpen(false);
-      menuBtnRef.current?.focus();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
   }, [open]);
+
+  useEffect(() => {
+    if (!open && !activeGroup) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!navRef.current?.contains(event.target as Node)) setActiveGroup(null);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      if (open) {
+        setOpen(false);
+        menuBtnRef.current?.focus();
+      } else if (activeGroup) {
+        if (navRef.current?.contains(document.activeElement)) {
+          document.getElementById('lp-nav-' + activeGroup.id + '-trigger')?.focus();
+        }
+        setActiveGroup(null);
+      }
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open, activeGroup]);
+
+  useEffect(() => {
+    setOpen(false);
+    setActiveGroup(null);
+  }, [location.key]);
+
+  // A sheet left open on a phone must not reappear alongside desktop links.
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return;
+    const media = window.matchMedia('(max-width: 60rem)');
+    const onChange = () => {
+      if (sheetRef.current?.contains(document.activeElement) && !media.matches) {
+        navRef.current?.querySelector<HTMLElement>('.lp-nav__link')?.focus();
+      } else if (navRef.current?.contains(document.activeElement) && media.matches) {
+        menuBtnRef.current?.focus();
+      }
+      setOpen(false);
+      setActiveGroup(null);
+    };
+    media.addEventListener('change', onChange);
+    return () => media.removeEventListener('change', onChange);
+  }, []);
   // Clear over the sky while parked at the top; solid once the page moves.
   const [scrolled, setScrolled] = useState(false);
 
@@ -82,6 +186,7 @@ export default function LandingNav({
 
   const goToSection = (id: string, path = '/') => {
     setOpen(false);
+    setActiveGroup(null);
     if (location.pathname === path) {
       document
         .getElementById(id)
@@ -96,7 +201,7 @@ export default function LandingNav({
       className={cn(
         'lp lp-night lp-nav',
         overlay && 'lp-nav--overlay',
-        (scrolled || open) && 'is-scrolled',
+        (scrolled || open || activeGroup) && 'is-scrolled',
       )}
       initial={entered === undefined ? false : { transform: 'translateY(-105%)' }}
       animate={{ transform: entered === false ? 'translateY(-105%)' : 'translateY(0%)' }}
@@ -116,8 +221,17 @@ export default function LandingNav({
               gap="gap-2.5"
             />
 
-            <nav className="lp-nav__links" aria-label="Main">
-              {SECTION_LINKS.map((s) => (
+            <nav ref={navRef} className="lp-nav__links" aria-label="Main">
+              {NAV_ITEMS.map((s) => 'children' in s ? (
+                <DesktopNavGroup
+                  key={s.id}
+                  group={s}
+                  active={activeGroup}
+                  onOpen={(via) => setActiveGroup((current) => current?.id === s.id && via === 'hover' ? current : { id: s.id, via })}
+                  onClose={() => setActiveGroup((current) => current?.id === s.id ? null : current)}
+                  onSelect={goToSection}
+                />
+              ) : (
                 <button
                   key={s.id}
                   type="button"
@@ -166,8 +280,21 @@ export default function LandingNav({
             transition={{ duration: 0.22, ease: EASE_OUT_ARRAY }}
           >
             <div className="container lp-nav__sheet-list">
-              <ThemeToggle tone="onDark" labels className="mb-2 self-start" />
-              {SECTION_LINKS.map((s) => (
+              <div className="lp-nav__sheet-actions">
+                <ThemeToggle tone="onDark" labels />
+                <button type="button" className="lp-btn" onClick={() => { setOpen(false); navigate('/home'); }}>Sign in</button>
+              </div>
+              <nav aria-label="Main mobile" className="lp-nav__sheet-sections">
+              {NAV_ITEMS.map((s) => 'children' in s ? (
+                <section key={s.id} aria-labelledby={'lp-nav-mobile-' + s.id} className="lp-nav__sheet-group">
+                  <h2 id={'lp-nav-mobile-' + s.id} className="lp-nav__sheet-heading">{s.label}</h2>
+                  {s.children.map((link) => (
+                    <button key={link.id} type="button" className="lp-nav__link" onClick={() => goToSection(link.id, link.path)}>
+                      {link.label}
+                    </button>
+                  ))}
+                </section>
+              ) : (
                 <button
                   key={s.id}
                   type="button"
@@ -177,16 +304,7 @@ export default function LandingNav({
                   {s.label}
                 </button>
               ))}
-              <button
-                type="button"
-                className="lp-btn"
-                onClick={() => {
-                  setOpen(false);
-                  navigate('/home');
-                }}
-              >
-                Sign in
-              </button>
+              </nav>
             </div>
           </motion.div>
         )}

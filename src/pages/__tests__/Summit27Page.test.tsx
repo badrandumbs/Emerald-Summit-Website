@@ -45,12 +45,14 @@ describe("Summit '27 page", () => {
     expect(screen.queryByRole('list', { name: 'Sponsor tiers, highest first' })).not.toBeInTheDocument();
   });
 
-  test('the landing navbar has no Summit \'27 link', () => {
+  test('the landing navbar groups public Summit pages without linking to the signed-in portal', () => {
     render(<MemoryRouter><LandingNav /></MemoryRouter>);
-    expect(within(screen.getByRole('navigation', { name: 'Main' })).queryByText("Summit '27")).not.toBeInTheDocument();
+    const nav = screen.getByRole('navigation', { name: 'Main' });
+    expect(within(nav).getByRole('button', { name: /Summit ['’]27/ })).toHaveAttribute('aria-expanded', 'false');
+    expect(within(nav).queryByRole('link', { name: /Summit ['’]27/ })).not.toBeInTheDocument();
   });
 
-  test('the landing navbar has Sponsors, Keynote, Experts and Team after Disciplines, Donate before Contact; Team opens the Keynote, Experts & Team page', async () => {
+  test('Team in the Summit dropdown opens the public Keynote, Experts & Team page', async () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter initialEntries={['/']}>
@@ -61,9 +63,7 @@ describe("Summit '27 page", () => {
       </MemoryRouter>,
     );
     const nav = screen.getByRole('navigation', { name: 'Main' });
-    expect(within(nav).getAllByRole('button').map((b) => b.textContent)).toEqual(
-      ['About', 'Disciplines', 'Sponsors', 'Keynote', 'Experts', 'Team', 'FAQ', 'Donate', 'Contact'],
-    );
+    await user.click(within(nav).getByRole('button', { name: /Summit ['’]27/ }));
     await user.click(within(nav).getByRole('button', { name: 'Team' }));
     // All three on one page, Experts between Keynote and Team.
     const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
